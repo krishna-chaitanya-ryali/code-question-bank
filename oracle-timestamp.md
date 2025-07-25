@@ -1,20 +1,33 @@
-UPDATE MEET_INSTC SET CREAT_DT_TMP = NULL;
-UPDATE MEET_INSTC
-SET CREAT_DT_TMP = 
-  CASE 
-    -- Format: DD-MM-YYYY HH24:MI:SS
-    WHEN REGEXP_LIKE(CREAT_DT, '^\d{2}-\d{2}-\d{4} \d{2}:\d{2}:\d{2}$') THEN 
-      TO_TIMESTAMP(CREAT_DT, 'DD-MM-YYYY HH24:MI:SS')
-
-    -- Format: DD-MM-RR HH24:MI:SS
-    WHEN REGEXP_LIKE(CREAT_DT, '^\d{2}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$') THEN 
-      TO_TIMESTAMP(CREAT_DT, 'DD-MM-RR HH24:MI:SS')
-
-    -- Format: DD-MON-RR
-    WHEN REGEXP_LIKE(CREAT_DT, '^\d{2}-[A-Z]{3}-\d{2}$') THEN 
-      TO_TIMESTAMP(CREAT_DT, 'DD-MON-RR')
-
-    -- Default fallback: NULL
-    ELSE NULL
-  END
-WHERE CREAT_DT IS NOT NULL;
+BEGIN
+  FOR rec IN (
+    SELECT ROWID AS rid, CREAT_DT FROM MEET_INSTC
+    WHERE CREAT_DT IS NOT NULL
+  ) LOOP
+    BEGIN
+      UPDATE MEET_INSTC
+      SET CREAT_DT_TMP = 
+        TO_TIMESTAMP(rec.CREAT_DT, 'DD-MM-YYYY HH24:MI:SS')
+      WHERE ROWID = rec.rid;
+    EXCEPTION
+      WHEN OTHERS THEN
+        BEGIN
+          UPDATE MEET_INSTC
+          SET CREAT_DT_TMP = 
+            TO_TIMESTAMP(rec.CREAT_DT, 'DD-MM-RR HH24:MI:SS')
+          WHERE ROWID = rec.rid;
+        EXCEPTION
+          WHEN OTHERS THEN
+            BEGIN
+              UPDATE MEET_INSTC
+              SET CREAT_DT_TMP = 
+                TO_TIMESTAMP(rec.CREAT_DT, 'DD-MON-RR')
+              WHERE ROWID = rec.rid;
+            EXCEPTION
+              WHEN OTHERS THEN
+                NULL; -- skip if all formats fail
+            END;
+        END;
+    END;
+  END LOOP;
+END;
+/
