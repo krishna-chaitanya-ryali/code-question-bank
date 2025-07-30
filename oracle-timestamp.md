@@ -1,20 +1,84 @@
-Risk Type ID Update Across RAP Tables + Prevent Future Duplicates
+JIRA Ticket Title:
+[PROD Deployment] DateTime Standardization Across RAP Application
 
-📌 Description:
-We found duplicate RISK_TYPE_IDs in the RAP_RISK_TYPE table for the same RISK_HEADER values (e.g., "Credit Risk" having IDs: 4, 1443, 1444, 1445). These duplicates were impacting downstream tables like:
+Project: RAP Incremental Dataload
+Type: Task / Change Request
+Priority: High
+Assignee: [Assign to yourself or responsible engineer]
+Labels: prod-deployment, datetime-standardization, RAP
+
+Description:
+This ticket is to track the Production deployment of DateTime standardization changes across the RAP application. The changes have been thoroughly implemented, tested, and verified in both DEV and UAT environments.
+
+Scope of Changes:
+Database Schema Changes:
+
+Converted CREAT_DT and UPDT_DT columns from VARCHAR to TIMESTAMP(6)
+
+Applied default values using SYSTIMESTAMP or triggers
+
+Implemented fallback conversion logic to handle various date formats
+
+Created triggers for hard deletes (for 4 tables)
+
+Code Changes:
+
+Modified all INSERT/UPDATE queries to support timestamp columns
+
+Updated logic to avoid null insertions
+
+Cleaned up redundant date parsing logic in Python backend
+
+Affected Tables (Partial List):
+
+MAP_RAP_USER_ROLE
+
+MEET_INSTC
+
+METRIC_ACCESS
 
 RAP
 
-RAP_MASTER_METRIC_DETAILS
+RAP_METRICS_PACK_MAPPING
 
 RAP_METRICS_DETAILS
 
-To address this, we performed a data correction:
+Environment Details:
 
-Identified the minimal RISK_TYPE_ID for each RISK_HEADER
+Changes deployed and verified in DEV
 
-Updated all dependent tables to use the correct minimal ID
+Functionally tested and signed off in UAT
 
-Backfilled MASTER_METRIC_ID in RAP_METRICS_DETAILS wherever it was missing
+Deployment Steps for PROD:
+✅ Take DB backup before deployment
+✅ Apply all DB schema and data migration scripts
+✅ Deploy latest code from branch timestamp-standardization-task
+✅ Run sanity checks for each module post-deployment
+✅ Coordinate with team for individual functionality testing
 
-Planned to delete redundant entries from RAP_RISK_TYPE
+Expected Outcome:
+All date-related fields should consistently use TIMESTAMP(6)
+
+No null date insertions
+
+Data integrity preserved across all modules
+
+Smooth insert/update/delete operations in PROD
+
+Dependencies / Risks:
+Sync required for DB and code changes
+
+Common tables updated — impacts multiple modules
+
+DBA support is required during deployment
+
+Checklist:
+ Code changes merged to production branch
+
+ DB scripts reviewed and tested
+
+ UAT sign-off received from all teams
+
+ DBA available during deployment window
+
+ Post-deployment sanity testing planned
