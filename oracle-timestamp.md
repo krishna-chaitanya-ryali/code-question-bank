@@ -1,96 +1,37 @@
-UPDATE RAP r
-SET r.RISK_TYPE_ID = (
-    SELECT m.NEW_RISK_TYPE_ID
-    FROM RISK_TYPE_ID_MAPPING m
-    WHERE m.OLD_RISK_TYPE_ID = r.RISK_TYPE_ID
-)
-WHERE EXISTS (
-    SELECT 1
-    FROM RISK_TYPE_ID_MAPPING m
-    WHERE m.OLD_RISK_TYPE_ID = r.RISK_TYPE_ID
-);
+JIRA ticket description including RAP, RAP_RISK_TYPE, and RAP_MASTER_METRIC_DETAILS tables:
 
+Title: Update RISK_TYPE_ID Values Across RAP-Related Tables Using Temporary Mapping
 
-UPDATE RAP_MASTER_METRIC_DETAILS rmd
-SET rmd.RISK_TYPE_ID = (
-    SELECT m.NEW_RISK_TYPE_ID
-    FROM RISK_TYPE_ID_MAPPING m
-    WHERE m.OLD_RISK_TYPE_ID = rmd.RISK_TYPE_ID
-)
-WHERE EXISTS (
-    SELECT 1
-    FROM RISK_TYPE_ID_MAPPING m
-    WHERE m.OLD_RISK_TYPE_ID = rmd.RISK_TYPE_ID
-);
+Description:
 
-SELECT * FROM RAP
-WHERE RISK_TYPE_ID IN (SELECT OLD_RISK_TYPE_ID FROM RISK_TYPE_ID_MAPPING);
+To support data correction and integrity across the RAP module, the RISK_TYPE_ID values need to be updated using a predefined mapping. This change impacts the following tables:
 
-=========================================================================
-Create Temporary Mapping Table
-We'll create a dedicated mapping table to hold:
+RAP_RISK_TYPE
 
-OLD_RISK_TYPE_ID: the ID to be replaced
+RAP
 
-NEW_RISK_TYPE_ID: the ID to which it should be updated
+RAP_MASTER_METRIC_DETAILS
 
-RISK_HEADER: for reference/tracing
+Tasks Completed:
 
-CREATE GLOBAL TEMPORARY TABLE RISK_TYPE_ID_MAPPING (
-    OLD_RISK_TYPE_ID NUMBER,
-    NEW_RISK_TYPE_ID NUMBER,
-    RISK_HEADER      VARCHAR2(200)
-) ON COMMIT PRESERVE ROWS;
+Created a temporary table TMP_RISK_TYPE_MAPPING to store old-to-new RISK_TYPE_ID mappings.
 
-Mapping Table
+Inserted mapping data into the temporary table.
 
-WITH duplicates AS (
-    SELECT RISK_HEADER, RISK_TYPE_ID,
-           MIN(RISK_TYPE_ID) OVER (PARTITION BY RISK_HEADER) AS NEW_RISK_TYPE_ID
-    FROM RAP_RISK_TYPE
-)
-SELECT DISTINCT RISK_HEADER, RISK_TYPE_ID AS OLD_RISK_TYPE_ID, NEW_RISK_TYPE_ID
-FROM duplicates
-WHERE RISK_TYPE_ID != NEW_RISK_TYPE_ID;
+Executed MERGE statements to update RISK_TYPE_ID in:
 
-insert into the mapping table:
+RAP_RISK_TYPE
 
-INSERT INTO RISK_TYPE_ID_MAPPING (RISK_HEADER, OLD_RISK_TYPE_ID, NEW_RISK_TYPE_ID)
-WITH duplicates AS (
-    SELECT RISK_HEADER, RISK_TYPE_ID,
-           MIN(RISK_TYPE_ID) OVER (PARTITION BY RISK_HEADER) AS NEW_RISK_TYPE_ID
-    FROM RAP_RISK_TYPE
-)
-SELECT RISK_HEADER, RISK_TYPE_ID, NEW_RISK_TYPE_ID
-FROM duplicates
-WHERE RISK_TYPE_ID != NEW_RISK_TYPE_ID;
+RAP
 
-Update Target Tables RAP Using Mapping
+RAP_MASTER_METRIC_DETAILS
 
-MERGE INTO RAP r
-USING RISK_TYPE_ID_MAPPING m
-ON (r.RISK_TYPE_ID = m.OLD_RISK_TYPE_ID)
-WHEN MATCHED THEN
-    UPDATE SET r.RISK_TYPE_ID = m.NEW_RISK_TYPE_ID;
+Handled and resolved the ORA-38104 error in the MERGE by excluding the updated column from the ON clause usage.
 
-Update RAP_MASTER_METRIC_DETAILS Table:
+Verified successful update with 1:1 mapping consistency and data validation post-update.
 
-MERGE INTO RAP_MASTER_METRIC_DETAILS rmd
-USING RISK_TYPE_ID_MAPPING m
-ON (rmd.RISK_TYPE_ID = m.OLD_RISK_TYPE_ID)
-WHEN MATCHED THEN
-    UPDATE SET rmd.RISK_TYPE_ID = m.NEW_RISK_TYPE_ID;
+Notes:
 
-(Optional) Verify Before Deletion
+Scripts have been deployed and validated in DEV.
 
-SELECT * FROM RAP_RISK_TYPE
-WHERE RISK_TYPE_ID IN (
-    SELECT OLD_RISK_TYPE_ID FROM RISK_TYPE_ID_MAPPING
-);
-
- Delete Duplicate IDs from RAP_RISK_TYPE
- 
- DELETE FROM RAP_RISK_TYPE
-WHERE RISK_TYPE_ID IN (
-    SELECT OLD_RISK_TYPE_ID FROM RISK_TYPE_ID_MAPPING
-);
+Refer to update_risk_type_id_mapping.sql in the GitHub repo data-fix-risk-type-id for implementation details and rollback steps if necessary.
