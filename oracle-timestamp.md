@@ -1,27 +1,20 @@
-MERGE INTO RAP_METRICS_DETAILS d
-USING (
-    SELECT *
-    FROM (
-        SELECT d.ROWID AS d_rowid,
-               m.MASTER_METRIC_ID,
-               ROW_NUMBER() OVER (PARTITION BY d.ROWID ORDER BY m.RISK_TYPE_ID) AS rn
-        FROM RAP_METRICS_DETAILS d
-        JOIN RAP r ON d.RAP_ID = r.RAP_ID
-        JOIN MEET_INSTC mi ON r.RAP_INSTANCE_ID = mi.MEET_INSTC_ID
-        JOIN RAP_METRICS_PACK_MAPPING p ON d.RAP_METRICS_MAPPING_ID = p.RAP_METRICS_MAPPING_ID
-        JOIN (
-            SELECT MASTER_METRIC_NAME, MIN(RISK_TYPE_ID) AS min_risk_type_id
-            FROM RAP_MASTER_METRIC_DETAILS
-            GROUP BY MASTER_METRIC_NAME
-        ) min_m ON p.METRICS_DISP = min_m.MASTER_METRIC_NAME
-        JOIN RAP_MASTER_METRIC_DETAILS m 
-          ON m.MASTER_METRIC_NAME = min_m.MASTER_METRIC_NAME 
-         AND m.RISK_TYPE_ID = min_m.min_risk_type_id
-        WHERE d.MASTER_METRIC_ID IS NULL
-          AND mi.ACT_ON_RCRD = 'insert-rap-open'
-    )
-    WHERE rn = 1
-) src
-ON (d.ROWID = src.d_rowid)
-WHEN MATCHED THEN
-UPDATE SET d.MASTER_METRIC_ID = src.MASTER_METRIC_ID;
+Risk Type ID Update Across RAP Tables + Prevent Future Duplicates
+
+📌 Description:
+We found duplicate RISK_TYPE_IDs in the RAP_RISK_TYPE table for the same RISK_HEADER values (e.g., "Credit Risk" having IDs: 4, 1443, 1444, 1445). These duplicates were impacting downstream tables like:
+
+RAP
+
+RAP_MASTER_METRIC_DETAILS
+
+RAP_METRICS_DETAILS
+
+To address this, we performed a data correction:
+
+Identified the minimal RISK_TYPE_ID for each RISK_HEADER
+
+Updated all dependent tables to use the correct minimal ID
+
+Backfilled MASTER_METRIC_ID in RAP_METRICS_DETAILS wherever it was missing
+
+Planned to delete redundant entries from RAP_RISK_TYPE
