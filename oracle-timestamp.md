@@ -1,3 +1,32 @@
+UPDATE RAP r
+SET r.RISK_TYPE_ID = (
+    SELECT m.NEW_RISK_TYPE_ID
+    FROM RISK_TYPE_ID_MAPPING m
+    WHERE m.OLD_RISK_TYPE_ID = r.RISK_TYPE_ID
+)
+WHERE EXISTS (
+    SELECT 1
+    FROM RISK_TYPE_ID_MAPPING m
+    WHERE m.OLD_RISK_TYPE_ID = r.RISK_TYPE_ID
+);
+
+
+UPDATE RAP_MASTER_METRIC_DETAILS rmd
+SET rmd.RISK_TYPE_ID = (
+    SELECT m.NEW_RISK_TYPE_ID
+    FROM RISK_TYPE_ID_MAPPING m
+    WHERE m.OLD_RISK_TYPE_ID = rmd.RISK_TYPE_ID
+)
+WHERE EXISTS (
+    SELECT 1
+    FROM RISK_TYPE_ID_MAPPING m
+    WHERE m.OLD_RISK_TYPE_ID = rmd.RISK_TYPE_ID
+);
+
+SELECT * FROM RAP
+WHERE RISK_TYPE_ID IN (SELECT OLD_RISK_TYPE_ID FROM RISK_TYPE_ID_MAPPING);
+
+=========================================================================
 Create Temporary Mapping Table
 We'll create a dedicated mapping table to hold:
 
