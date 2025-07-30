@@ -1,10 +1,26 @@
-JIRA ticket description including RAP, RAP_RISK_TYPE, and RAP_MASTER_METRIC_DETAILS tables:
+🔧 Task Summary: Risk Type ID Update Across RAP Tables
+📌 Objective
+Update RISK_TYPE_ID values using a predefined mapping across key RAP-related tables to ensure consistency and integrity.
 
-Title: Update RISK_TYPE_ID Values Across RAP-Related Tables Using Temporary Mapping
+🗂️ Affected Tables
+RAP_RISK_TYPE
 
-Description:
+RAP
 
-To support data correction and integrity across the RAP module, the RISK_TYPE_ID values need to be updated using a predefined mapping. This change impacts the following tables:
+RAP_MASTER_METRIC_DETAILS
+
+🛠️ Implementation Steps
+Created temporary table TMP_RISK_TYPE_MAPPING:
+
+Structure includes OLD_RISK_TYPE_ID and NEW_RISK_TYPE_ID.
+
+Populated with the required mapping values.
+
+Executed update queries using MERGE for each affected table:
+
+Ensured proper aliasing to avoid ORA-38104 errors by keeping updated columns out of ON conditions.
+
+Updates applied on:
 
 RAP_RISK_TYPE
 
@@ -12,26 +28,17 @@ RAP
 
 RAP_MASTER_METRIC_DETAILS
 
-Tasks Completed:
+Validated updates:
 
-Created a temporary table TMP_RISK_TYPE_MAPPING to store old-to-new RISK_TYPE_ID mappings.
+Verified that all old RISK_TYPE_ID values were successfully updated to new ones.
 
-Inserted mapping data into the temporary table.
+Performed data checks post-update to ensure referential integrity.
 
-Executed MERGE statements to update RISK_TYPE_ID in:
+✅ Outcome
+Data correction completed successfully in DEV environment.
 
-RAP_RISK_TYPE
+Scripts available in GitHub repo: data-fix-risk-type-id
 
-RAP
+📄 Script Name: update_risk_type_id_mapping.sql
 
-RAP_MASTER_METRIC_DETAILS
-
-Handled and resolved the ORA-38104 error in the MERGE by excluding the updated column from the ON clause usage.
-
-Verified successful update with 1:1 mapping consistency and data validation post-update.
-
-Notes:
-
-Scripts have been deployed and validated in DEV.
-
-Refer to update_risk_type_id_mapping.sql in the GitHub repo data-fix-risk-type-id for implementation details and rollback steps if necessary.
+Includes update logic and rollback guidance.
