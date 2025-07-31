@@ -1,84 +1,164 @@
-JIRA Ticket Title:
-[PROD Deployment] DateTime Standardization Across RAP Application
+Identify and clean up duplicate entries in the RAP_RISK_TYPE table.
 
-Project: RAP Incremental Dataload
-Type: Task / Change Request
-Priority: High
-Assignee: [Assign to yourself or responsible engineer]
-Labels: prod-deployment, datetime-standardization, RAP
+Ensure consistent RISK_TYPE_ID values across multiple related tables.
 
-Description:
-This ticket is to track the Production deployment of DateTime standardization changes across the RAP application. The changes have been thoroughly implemented, tested, and verified in both DEV and UAT environments.
+Backfill missing MASTER_METRIC_IDs in the RAP_METRICS_DETAILS table based on other relationships.
 
-Scope of Changes:
-Database Schema Changes:
+✅ 1. Create a Temporary Table for Risk Type Mapping
+sql
+Copy
+Edit
+CREATE GLOBAL TEMPORARY TABLE RISK_TYPE_ID_MAPPING (
+    OLD_RISK_TYPE_ID NUMBER,
+    NEW_RISK_TYPE_ID NUMBER,
+    RISK_HEADER      VARCHAR2(200)
+) ON COMMIT PRESERVE ROWS;
+What this does:
 
-Converted CREAT_DT and UPDT_DT columns from VARCHAR to TIMESTAMP(6)
+Creates a temporary table to store a mapping from old (duplicate) RISK_TYPE_IDs to their new, correct (lowest) IDs.
 
-Applied default values using SYSTIMESTAMP or triggers
+This table exists only for your session, and it won’t keep data after you log out.
 
-Implemented fallback conversion logic to handle various date formats
+ON COMMIT PRESERVE ROWS means the data won’t disappear until you explicitly delete it or end your session.
 
-Created triggers for hard deletes (for 4 tables)
+✅ 2. Find Duplicate RISK_TYPE_IDs with Same RISK_HEADER
+sql
+Copy
+Edit
+WITH duplicates AS (
+    SELECT RISK_HEADER, RISK_TYPE_ID,
+           MIN(RISK_TYPE_ID) OVER (PARTITION BY RISK_HEADER) AS NEW_RISK_TYPE_ID
+    FROM RAP_RISK_TYPE
+)
+SELECT DISTINCT RISK_HEADER, RISK_TYPE_ID AS OLD_RISK_TYPE_ID, NEW_RISK_TYPE_ID
+FROM duplicates
+WHERE RISK_TYPE_ID != NEW_RISK_TYPE_ID;
+What this does:
 
-Code Changes:
+Finds duplicate RISK_TYPE_IDs that belong to the same RISK_HEADER.
 
-Modified all INSERT/UPDATE queries to support timestamp columns
+For example, if "Credit Risk" has 4 IDs (1443, 1444, 1445, 4), this query will identify 4 as the correct one (since it’s the smallest ID).
 
-Updated logic to avoid null insertions
+All other IDs for "Credit Risk" will be marked as duplicates (old IDs).
 
-Cleaned up redundant date parsing logic in Python backend
+✅ 3. Insert Mappings into the Temporary Table
+sql
+Copy
+Edit
+INSERT INTO RISK_TYPE_ID_MAPPING (RISK_HEADER, OLD_RISK_TYPE_ID, NEW_RISK_TYPE_ID)
+WITH duplicates AS (
+    SELECT RISK_HEADER, RISK_TYPE_ID,
+           MIN(RISK_TYPE_ID) OVER (PARTITION BY RISK_HEADER) AS NEW_RISK_TYPE_ID
+    FROM RAP_RISK_TYPE
+)
+SELECT RISK_HEADER, RISK_TYPE_ID, NEW_RISK_TYPE_ID
+FROM duplicates
+WHERE RISK_TYPE_ID != NEW_RISK_TYPE_ID;
+What this does:
 
-Affected Tables (Partial List):
+Saves all duplicate-to-original ID mappings into the temporary table RISK_TYPE_ID_MAPPING.
 
-MAP_RAP_USER_ROLE
+This table will now tell us:
 
-MEET_INSTC
+OLD_RISK_TYPE_ID = 1444
 
-METRIC_ACCESS
+NEW_RISK_TYPE_ID = 4
 
-RAP
+RISK_HEADER = Credit Risk
 
-RAP_METRICS_PACK_MAPPING
+✅ 4. Update RAP Table with Correct Risk Type IDs
+sql
+Copy
+Edit
+UPDATE RAP r
+SET r.RISK_TYPE_ID = (
+    SELECT m.NEW_RISK_TYPE_ID
+    FROM RISK_TYPE_ID_MAPPING m
+    WHERE m.OLD_RISK_TYPE_ID = r.RISK_TYPE_ID
+)
+WHERE EXISTS (
+    SELECT 1
+    FROM RISK_TYPE_ID_MAPPING m
+    WHERE m.OLD_RISK_TYPE_ID = r.RISK_TYPE_ID
+);
+What this does:
 
-RAP_METRICS_DETAILS
+Updates the RISK_TYPE_ID in the RAP table wherever it has a duplicate ID.
 
-Environment Details:
+It replaces it with the correct one from the mapping table.
 
-Changes deployed and verified in DEV
+✅ 5. Update RAP_MASTER_METRIC_DETAILS Table
+sql
+Copy
+Edit
+UPDATE RAP_MASTER_METRIC_DETAILS rmd
+SET rmd.RISK_TYPE_ID = (
+    SELECT m.NEW_RISK_TYPE_ID
+    FROM RISK_TYPE_ID_MAPPING m
+    WHERE m.OLD_RISK_TYPE_ID = rmd.RISK_TYPE_ID
+)
+WHERE EXISTS (
+    SELECT 1
+    FROM RISK_TYPE_ID_MAPPING m
+    WHERE m.OLD_RISK_TYPE_ID = rmd.RISK_TYPE_ID
+);
+What this does:
 
-Functionally tested and signed off in UAT
+Same as the above update, but applies to the RAP_MASTER_METRIC_DETAILS table.
 
-Deployment Steps for PROD:
-✅ Take DB backup before deployment
-✅ Apply all DB schema and data migration scripts
-✅ Deploy latest code from branch timestamp-standardization-task
-✅ Run sanity checks for each module post-deployment
-✅ Coordinate with team for individual functionality testing
+✅ 6. Delete Duplicate Records from RAP_RISK_TYPE
+sql
+Copy
+Edit
+DELETE FROM RAP_RISK_TYPE
+WHERE RISK_TYPE_ID IN (
+    SELECT OLD_RISK_TYPE_ID FROM RISK_TYPE_ID_MAPPING
+);
+What this does:
 
-Expected Outcome:
-All date-related fields should consistently use TIMESTAMP(6)
+Deletes the unwanted duplicate risk type IDs from the original table.
 
-No null date insertions
+Now only unique, clean RISK_HEADER-RISK_TYPE_ID combinations will remain.
 
-Data integrity preserved across all modules
+✅ 7. Backfill Missing MASTER_METRIC_IDs in RAP_METRICS_DETAILS
+sql
+Copy
+Edit
+MERGE INTO RAP_METRICS_DETAILS d
+USING (
+    SELECT *
+    FROM (
+        SELECT d.ROWID AS d_rowid,
+               m.MASTER_METRIC_ID,
+               ROW_NUMBER() OVER (PARTITION BY d.ROWID ORDER BY m.RISK_TYPE_ID) AS rn
+        FROM RAP_METRICS_DETAILS d
+        JOIN RAP r ON d.RAP_ID = r.RAP_ID
+        JOIN MEET_INSTC mi ON r.RAP_INSTANCE_ID = mi.MEET_INSTC_ID
+        JOIN RAP_METRICS_PACK_MAPPING p ON d.RAP_METRICS_MAPPING_ID = p.RAP_METRICS_MAPPING_ID
+        JOIN (
+            SELECT MASTER_METRIC_NAME, MIN(RISK_TYPE_ID) AS min_risk_type_id
+            FROM RAP_MASTER_METRIC_DETAILS
+            GROUP BY MASTER_METRIC_NAME
+        ) min_m ON p.METRICS_DISP = min_m.MASTER_METRIC_NAME
+        JOIN RAP_MASTER_METRIC_DETAILS m 
+          ON m.MASTER_METRIC_NAME = min_m.MASTER_METRIC_NAME 
+         AND m.RISK_TYPE_ID = min_m.min_risk_type_id
+        WHERE d.MASTER_METRIC_ID IS NULL
+          AND mi.ACT_ON_RCRD = 'insert-rap-open'
+    )
+    WHERE rn = 1
+) src
+ON (d.ROWID = src.d_rowid)
+WHEN MATCHED THEN
+UPDATE SET d.MASTER_METRIC_ID = src.MASTER_METRIC_ID;
+What this does (step-by-step):
 
-Smooth insert/update/delete operations in PROD
+Checks for rows in RAP_METRICS_DETAILS where MASTER_METRIC_ID is NULL.
 
-Dependencies / Risks:
-Sync required for DB and code changes
+Finds the matching MASTER_METRIC_ID from RAP_MASTER_METRIC_DETAILS, using:
 
-Common tables updated — impacts multiple modules
+A match on METRICS_DISP = MASTER_METRIC_NAME
 
-DBA support is required during deployment
+And choosing the smallest RISK_TYPE_ID if duplicates exist.
 
-Checklist:
- Code changes merged to production branch
-
- DB scripts reviewed and tested
-
- UAT sign-off received from all teams
-
- DBA available during deployment window
-
- Post-deployment sanity testing planned
+Uses a MERGE (upsert) to update the matching rows.
