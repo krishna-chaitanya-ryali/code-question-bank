@@ -1,3 +1,9 @@
+SELECT *
+FROM RAP_MASTER_METRIC_DETAILS
+WHERE MASTER_METRIC_ID IN (
+    SELECT OLD_MASTER_METRIC_ID FROM MASTER_METRIC_ID_MAPPING
+);
+
 Final SQL Steps (Based on Corrected Requirement):
 1. Create Mapping Table
 sql
