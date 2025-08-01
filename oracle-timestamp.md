@@ -6,8 +6,6 @@ Standardize and clean up data across RAP-related tables, specifically:
 
 Eliminate duplicate RISK_TYPE_IDs.
 
-Remove duplicate MASTER_METRIC_IDs.
-
 Backfill missing MASTER_METRIC_IDs in RAP_METRICS_DETAILS.
 
 Ensure accurate mappings between metrics and risk types.
@@ -61,9 +59,9 @@ WHERE RISK_TYPE_ID IN (
     SELECT OLD_RISK_TYPE_ID FROM RISK_TYPE_ID_MAPPING
 );
 
-Step 3: Clean Up Duplicate MASTER_METRIC_IDs
+Step 3: Cleanup Duplicate MASTER_METRIC_IDs in RAP_MASTER_METRIC_DETAILS
 
-Step 3.1: Create Mapping Table
+1. Create Mapping Table
 
 CREATE GLOBAL TEMPORARY TABLE MASTER_METRIC_ID_MAPPING (
     MASTER_METRIC_NAME VARCHAR2(500),
@@ -72,7 +70,7 @@ CREATE GLOBAL TEMPORARY TABLE MASTER_METRIC_ID_MAPPING (
     NEW_MASTER_METRIC_ID NUMBER
 ) ON COMMIT PRESERVE ROWS;
 
-Step 3.2: Insert Only True Duplicates (Same Name + Same Risk Type)
+2. Insert Only True Duplicates (Same Name + Same Risk Type)
 
 INSERT INTO MASTER_METRIC_ID_MAPPING (MASTER_METRIC_NAME, RISK_TYPE_ID, OLD_MASTER_METRIC_ID, NEW_MASTER_METRIC_ID)
 WITH ranked AS (
@@ -84,7 +82,7 @@ SELECT MASTER_METRIC_NAME, RISK_TYPE_ID, MASTER_METRIC_ID, NEW_MASTER_METRIC_ID
 FROM ranked
 WHERE MASTER_METRIC_ID != NEW_MASTER_METRIC_ID;
 
-Step 3.3: Update All References in RAP_METRICS_DETAILS
+3. Update All References in RAP_METRICS_DETAILS
 
 UPDATE RAP_METRICS_DETAILS d
 SET MASTER_METRIC_ID = (
@@ -98,20 +96,14 @@ WHERE EXISTS (
     WHERE m.OLD_MASTER_METRIC_ID = d.MASTER_METRIC_ID
 );
 
-Step 3.4: Delete Only the True Duplicate Master Metric Records
+✅ Note: This step ensures that all existing references in RAP_METRICS_DETAILS (e.g., 9087 → 8245) are updated correctly before we delete the old MASTER_METRIC_ID values.
+
+4. Delete Only the True Duplicate Master Metric Records
 
 DELETE FROM RAP_MASTER_METRIC_DETAILS
 WHERE MASTER_METRIC_ID IN (
     SELECT OLD_MASTER_METRIC_ID FROM MASTER_METRIC_ID_MAPPING
 );
-
-✅ Summary:
-
-Only deletes exact duplicates (same name + same risk_type_id)
-
-Keeps records with the same name but different risk types
-
-Safely updates references before deletion
 
 Step 4: Backfill Missing MASTER_METRIC_IDs
 
@@ -144,7 +136,13 @@ Always check if a RISK_HEADER already exists before inserting a new RISK_TYPE_ID
 
 Final Note:
 
-This cleanup ensures that RAP_METRICS_DETAILS refers to a valid MASTER_METRIC_ID and that there is only one valid RISK_TYPE_ID per unique RISK_HEADER.
+This cleanup ensures that:
+
+RAP_METRICS_DETAILS refers to valid MASTER_METRIC_IDs only.
+
+Only one valid RISK_TYPE_ID exists per unique RISK_HEADER.
+
+Only one MASTER_METRIC_ID exists per unique combination of MASTER_METRIC_NAME + RISK_TYPE_ID.
 
 Future insertions must be validated for duplication to maintain data integrity.
 
