@@ -1,48 +1,79 @@
-MERGE INTO RAP_METRICS_DETAILS d
-USING (
-    SELECT 
-        d.ROWID AS d_rowid,
-        m.MASTER_METRIC_ID
-    FROM RAP_METRICS_DETAILS d
-    JOIN RAP r 
-        ON d.RAP_ID = r.RAP_ID
-    JOIN MEET_INSTC mi 
-        ON r.RAP_INSTANCE_ID = mi.MEET_INSTC_ID
-    JOIN RAP_METRICS_PACK_MAPPING p 
-        ON d.RAP_METRICS_MAPPING_ID = p.RAP_METRICS_MAPPING_ID
-    JOIN RAP_MASTER_METRIC_DETAILS m
-        ON p.METRICS_DISP = m.MASTER_METRIC_NAME
-       AND r.RISK_TYPE_ID = m.RISK_TYPE_ID
-    WHERE d.MASTER_METRIC_ID IS NULL
-      AND mi.ACT_ON_RCRD = 'insert-rap-open'
-) src
-ON (d.ROWID = src.d_rowid)
-WHEN MATCHED THEN
-UPDATE SET d.MASTER_METRIC_ID = src.MASTER_METRIC_ID;
+Title: End-to-End Risk Type and Master Metric Cleanup Process in RAP Tables
 
+Objective
 
+Standardize and clean up data across RAP-related tables, specifically:
 
-SELECT *
-FROM RAP_MASTER_METRIC_DETAILS
-WHERE MASTER_METRIC_ID IN (
-    SELECT OLD_MASTER_METRIC_ID FROM MASTER_METRIC_ID_MAPPING
+Eliminate duplicate RISK_TYPE_IDs.
+
+Remove duplicate MASTER_METRIC_IDs.
+
+Backfill missing MASTER_METRIC_IDs in RAP_METRICS_DETAILS.
+
+Ensure accurate mappings between metrics and risk types.
+
+Step 1: Identify and Map Duplicate RISK_TYPE_IDs
+
+CREATE GLOBAL TEMPORARY TABLE RISK_TYPE_ID_MAPPING (
+    OLD_RISK_TYPE_ID NUMBER,
+    NEW_RISK_TYPE_ID NUMBER,
+    RISK_HEADER      VARCHAR2(200)
+) ON COMMIT PRESERVE ROWS;
+
+Populate Mapping Table
+
+INSERT INTO RISK_TYPE_ID_MAPPING (RISK_HEADER, OLD_RISK_TYPE_ID, NEW_RISK_TYPE_ID)
+WITH duplicates AS (
+    SELECT RISK_HEADER, RISK_TYPE_ID,
+           MIN(RISK_TYPE_ID) OVER (PARTITION BY RISK_HEADER) AS NEW_RISK_TYPE_ID
+    FROM RAP_RISK_TYPE
+)
+SELECT RISK_HEADER, RISK_TYPE_ID, NEW_RISK_TYPE_ID
+FROM duplicates
+WHERE RISK_TYPE_ID != NEW_RISK_TYPE_ID;
+
+Step 2: Update RISK_TYPE_IDs in Dependent Tables
+
+UPDATE RAP r
+SET r.RISK_TYPE_ID = (
+    SELECT m.NEW_RISK_TYPE_ID FROM RISK_TYPE_ID_MAPPING m
+    WHERE m.OLD_RISK_TYPE_ID = r.RISK_TYPE_ID
+)
+WHERE EXISTS (
+    SELECT 1 FROM RISK_TYPE_ID_MAPPING m
+    WHERE m.OLD_RISK_TYPE_ID = r.RISK_TYPE_ID
 );
 
-Final SQL Steps (Based on Corrected Requirement):
-1. Create Mapping Table
-sql
-Copy
-Edit
+UPDATE RAP_MASTER_METRIC_DETAILS rmd
+SET rmd.RISK_TYPE_ID = (
+    SELECT m.NEW_RISK_TYPE_ID FROM RISK_TYPE_ID_MAPPING m
+    WHERE m.OLD_RISK_TYPE_ID = rmd.RISK_TYPE_ID
+)
+WHERE EXISTS (
+    SELECT 1 FROM RISK_TYPE_ID_MAPPING m
+    WHERE m.OLD_RISK_TYPE_ID = rmd.RISK_TYPE_ID
+);
+
+Delete Old Duplicate RISK_TYPE_IDs
+
+DELETE FROM RAP_RISK_TYPE
+WHERE RISK_TYPE_ID IN (
+    SELECT OLD_RISK_TYPE_ID FROM RISK_TYPE_ID_MAPPING
+);
+
+Step 3: Clean Up Duplicate MASTER_METRIC_IDs
+
+Step 3.1: Create Mapping Table
+
 CREATE GLOBAL TEMPORARY TABLE MASTER_METRIC_ID_MAPPING (
     MASTER_METRIC_NAME VARCHAR2(500),
     RISK_TYPE_ID NUMBER,
     OLD_MASTER_METRIC_ID NUMBER,
     NEW_MASTER_METRIC_ID NUMBER
 ) ON COMMIT PRESERVE ROWS;
-2. Insert Only True Duplicates (Same Name + Same Risk Type)
-sql
-Copy
-Edit
+
+Step 3.2: Insert Only True Duplicates (Same Name + Same Risk Type)
+
 INSERT INTO MASTER_METRIC_ID_MAPPING (MASTER_METRIC_NAME, RISK_TYPE_ID, OLD_MASTER_METRIC_ID, NEW_MASTER_METRIC_ID)
 WITH ranked AS (
     SELECT MASTER_METRIC_ID, MASTER_METRIC_NAME, RISK_TYPE_ID,
@@ -52,16 +83,9 @@ WITH ranked AS (
 SELECT MASTER_METRIC_NAME, RISK_TYPE_ID, MASTER_METRIC_ID, NEW_MASTER_METRIC_ID
 FROM ranked
 WHERE MASTER_METRIC_ID != NEW_MASTER_METRIC_ID;
-This ensures:
 
-We only collect true duplicates (same name + same risk type)
+Step 3.3: Update All References in RAP_METRICS_DETAILS
 
-Keep the smallest ID as master
-
-3. Update All References in RAP_METRICS_DETAILS
-sql
-Copy
-Edit
 UPDATE RAP_METRICS_DETAILS d
 SET MASTER_METRIC_ID = (
     SELECT m.NEW_MASTER_METRIC_ID
@@ -73,11 +97,54 @@ WHERE EXISTS (
     FROM MASTER_METRIC_ID_MAPPING m
     WHERE m.OLD_MASTER_METRIC_ID = d.MASTER_METRIC_ID
 );
-4. Delete Only the True Duplicate Master Metric Records
-sql
-Copy
-Edit
+
+Step 3.4: Delete Only the True Duplicate Master Metric Records
+
 DELETE FROM RAP_MASTER_METRIC_DETAILS
 WHERE MASTER_METRIC_ID IN (
     SELECT OLD_MASTER_METRIC_ID FROM MASTER_METRIC_ID_MAPPING
 );
+
+✅ Summary:
+
+Only deletes exact duplicates (same name + same risk_type_id)
+
+Keeps records with the same name but different risk types
+
+Safely updates references before deletion
+
+Step 4: Backfill Missing MASTER_METRIC_IDs
+
+Only one unique MASTER_METRIC_ID per (MASTER_METRIC_NAME + RISK_TYPE_ID) exists.
+
+MERGE INTO RAP_METRICS_DETAILS d
+USING (
+    SELECT
+        d.ROWID AS d_rowid,
+        m.MASTER_METRIC_ID
+    FROM RAP_METRICS_DETAILS d
+    JOIN RAP r ON d.RAP_ID = r.RAP_ID
+    JOIN MEET_INSTC mi ON r.RAP_INSTANCE_ID = mi.MEET_INSTC_ID
+    JOIN RAP_METRICS_PACK_MAPPING p ON d.RAP_METRICS_MAPPING_ID = p.RAP_METRICS_MAPPING_ID
+    JOIN RAP_MASTER_METRIC_DETAILS m
+      ON p.METRICS_DISP = m.MASTER_METRIC_NAME
+     AND r.RISK_TYPE_ID = m.RISK_TYPE_ID
+    WHERE d.MASTER_METRIC_ID IS NULL
+      AND mi.ACT_ON_RCRD = 'insert-rap-open'
+) src
+ON (d.ROWID = src.d_rowid)
+WHEN MATCHED THEN
+UPDATE SET d.MASTER_METRIC_ID = src.MASTER_METRIC_ID;
+
+Step 5: Prevent Future Duplicate RISK_TYPE_IDs (Optional Fix in Python or Insertion Logic)
+
+Apply validation in the backend code (e.g., Flask/FastAPI layer or PL/SQL insert procedure).
+
+Always check if a RISK_HEADER already exists before inserting a new RISK_TYPE_ID.
+
+Final Note:
+
+This cleanup ensures that RAP_METRICS_DETAILS refers to a valid MASTER_METRIC_ID and that there is only one valid RISK_TYPE_ID per unique RISK_HEADER.
+
+Future insertions must be validated for duplication to maintain data integrity.
+
