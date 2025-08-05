@@ -1,3 +1,43 @@
+Subject: Request to Validate Missing MASTER_METRIC_ID Fixes in RAP Tables
+
+Hi Shubhadip,
+
+We've completed the end-to-end cleanup for the missing MASTER_METRIC_ID mappings in the RAP tables. This includes both:
+
+New inserts into RAP_MASTER_METRIC_DETAILS, and
+
+Updates to RAP_METRICS_DETAILS.MASTER_METRIC_ID (including corrections where incorrect mappings existed earlier).
+
+📌 This also covers cases where metric names had slight variations (e.g., '30+ days delinquency' not matching exactly across tables).
+
+📎 Kindly test and validate the updated data in UAT.
+
+📝 Detailed documentation with all queries and logic is available here:
+👉 Confluence Page – Risk Type and Master Metric Cleanup
+
+📅 Note: I will be on leave on the 6th and 7th of August, so please reach out before or after for any clarifications.
+
+Thanks,
+Chaitanya
+
+Let me know if you'd like me to:
+
+Generate a PDF/DOCX version of the Confluence page
+
+Create a Confluence summary snippet for pasting
+
+Help with an Outlook meeting/reminder setup before your leave
+
+
+
+
+
+
+
+
+Ask ChatGPT
+
+
 Great! Since the MASTER_METRIC_IDs are now updated, here’s a professional email draft to Shubhadip, along with:
 
 📩 Email message
