@@ -1,3 +1,28 @@
+
+MERGE INTO RAP_METRICS_DETAILS d
+USING (
+    SELECT *
+    FROM (
+        SELECT
+            d.ROWID AS d_rowid,
+            m.MASTER_METRIC_ID,
+            ROW_NUMBER() OVER (
+                PARTITION BY d.ROWID
+                ORDER BY m.MASTER_METRIC_ID
+            ) AS rn
+        FROM RAP_METRICS_DETAILS d
+        JOIN RAP r ON d.RAP_ID = r.RAP_ID
+        JOIN RAP_MASTER_METRIC_DETAILS m
+          ON TRIM(UPPER(d.METRICS_DISPLAY)) = TRIM(UPPER(m.MASTER_METRIC_NAME))
+         AND r.RISK_TYPE_ID = m.RISK_TYPE_ID
+    )
+    WHERE rn = 1
+) src
+ON (d.ROWID = src.d_rowid)
+WHEN MATCHED THEN
+UPDATE SET d.MASTER_METRIC_ID = src.MASTER_METRIC_ID;
+
+
 SELECT 
     d.ROWID,
     d.METRICS_DISPLAY,
