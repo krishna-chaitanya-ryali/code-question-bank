@@ -1,29 +1,55 @@
-SELECT d.ROWID AS d_rowid,
-       d.METRICS_DISPLAY,
-       p.METRICS_DISP,
-       mi.RISK_TYPE_ID,
-       m.MASTER_METRIC_NAME,
-       m.MASTER_METRIC_ID,
-       CASE
-           WHEN mi.RISK_TYPE_ID = m.RISK_TYPE_ID THEN 'RISK_TYPE_ID match'
-           WHEN UPPER(d.METRICS_DISPLAY) = UPPER(m.MASTER_METRIC_NAME) THEN 'METRICS_DISPLAY match'
-           WHEN UPPER(p.METRICS_DISP) = UPPER(m.MASTER_METRIC_NAME) THEN 'METRICS_DISP match'
-           ELSE 'No match'
-       END AS MATCH_REASON
-FROM RAP_METRICS_DETAILS d
-JOIN RAP r
+WITH candidates AS (
+  SELECT d.ROWID               AS d_rowid,
+         d.METRICS_DISPLAY,
+         p.METRICS_DISP,
+         r.RISK_TYPE_ID         AS rap_risk_type_id,
+         m.MASTER_METRIC_NAME,
+         m.MASTER_METRIC_ID,
+         CASE
+           WHEN r.RISK_TYPE_ID = m.RISK_TYPE_ID THEN 1
+           WHEN INSTR(UPPER(d.METRICS_DISPLAY), UPPER(m.MASTER_METRIC_NAME)) > 0
+                OR INSTR(UPPER(m.MASTER_METRIC_NAME), UPPER(d.METRICS_DISPLAY)) > 0 THEN 2
+           WHEN INSTR(UPPER(p.METRICS_DISP), UPPER(m.MASTER_METRIC_NAME)) > 0
+                OR INSTR(UPPER(m.MASTER_METRIC_NAME), UPPER(p.METRICS_DISP)) > 0 THEN 3
+           ELSE 4
+         END                                AS match_priority,
+         ROW_NUMBER() OVER (
+           PARTITION BY d.ROWID
+           ORDER BY 
+             CASE
+               WHEN r.RISK_TYPE_ID = m.RISK_TYPE_ID THEN 1
+               WHEN INSTR(UPPER(d.METRICS_DISPLAY), UPPER(m.MASTER_METRIC_NAME)) > 0
+                    OR INSTR(UPPER(m.MASTER_METRIC_NAME), UPPER(d.METRICS_DISPLAY)) > 0 THEN 2
+               WHEN INSTR(UPPER(p.METRICS_DISP), UPPER(m.MASTER_METRIC_NAME)) > 0
+                    OR INSTR(UPPER(m.MASTER_METRIC_NAME), UPPER(p.METRICS_DISP)) > 0 THEN 3
+               ELSE 4
+             END
+         ) AS rn
+  FROM RAP_METRICS_DETAILS d
+  JOIN RAP r
     ON d.RAP_ID = r.RAP_ID
-JOIN MEET_INSTC mi
+  JOIN MEET_INSTC mi
     ON r.RAP_INSTANCE_ID = mi.MEET_INSTC_ID
-JOIN RAP_METRICS_PACK_MAPPING p
+  JOIN RAP_METRICS_PACK_MAPPING p
     ON d.RAP_METRICS_MAPPING_ID = p.RAP_METRICS_MAPPING_ID
-JOIN RAP_MASTER_METRIC_DETAILS m
+  JOIN RAP_MASTER_METRIC_DETAILS m
     ON (
-           mi.RISK_TYPE_ID = m.RISK_TYPE_ID
-        OR UPPER(d.METRICS_DISPLAY) = UPPER(m.MASTER_METRIC_NAME)
-        OR UPPER(p.METRICS_DISP)   = UPPER(m.MASTER_METRIC_NAME)
+         r.RISK_TYPE_ID = m.RISK_TYPE_ID
+      OR INSTR(UPPER(d.METRICS_DISPLAY), UPPER(m.MASTER_METRIC_NAME)) > 0
+      OR INSTR(UPPER(p.METRICS_DISP), UPPER(m.MASTER_METRIC_NAME)) > 0
     )
-WHERE d.MASTER_METRIC_ID IS NULL
-  AND mi.ACT_ON_RCRD = 'insert-rap-open'
-  AND m.RMM_ID = 2
-  AND mi.MEET_INSTC_ID = 11657;
+  WHERE d.MASTER_METRIC_ID IS NULL
+    AND mi.ACT_ON_RCRD = 'insert-rap-open'
+    AND mi.MEET_INSTC_ID = 11657
+    -- AND p.RMM_ID = 2    -- uncomment if you need this extra filter (you earlier referenced m1.RMM_ID)
+)
+SELECT d_rowid,
+       METRICS_DISPLAY,
+       METRICS_DISP,
+       rap_risk_type_id,
+       MASTER_METRIC_NAME,
+       MASTER_METRIC_ID,
+       match_priority
+FROM candidates
+WHERE rn = 1
+ORDER BY d_rowid;
