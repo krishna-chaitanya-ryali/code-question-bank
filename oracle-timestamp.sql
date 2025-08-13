@@ -1,3 +1,24 @@
+UPDATE (
+    SELECT d.MASTER_METRIC_ID AS old_id,
+           m.MASTER_METRIC_ID AS new_id
+    FROM RAP_METRICS_DETAILS d
+    JOIN RAP r
+      ON d.RAP_ID = r.RAP_ID
+    JOIN MEET_INSTC mi
+      ON r.RAP_INSTANCE_ID = mi.MEET_INSTC_ID
+    JOIN RAP_METRICS_PACK_MAPPING p
+      ON d.RAP_METRICS_MAPPING_ID = p.RAP_METRICS_MAPPING_ID
+    JOIN RAP_MASTER_METRIC_DETAILS m
+      ON TRIM(UPPER(p.METRICS_DISP)) = TRIM(UPPER(m.MASTER_METRIC_NAME))
+    WHERE d.MASTER_METRIC_ID IS NULL
+      -- Optional filters
+      -- AND mi.ACT_ON_RCRD = 'insert-rap-open'
+      -- AND mi.MEET_INSTC_ID = 11657
+) t
+SET t.old_id = t.new_id;
+
+
+
 UPDATE RAP_METRICS_DETAILS d
 SET d.MASTER_METRIC_ID = (
     SELECT MIN(m.MASTER_METRIC_ID)  -- pick one deterministic value
