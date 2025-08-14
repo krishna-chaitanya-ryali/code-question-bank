@@ -1,113 +1,168 @@
-Title: PROD Data Fix — Backfill MASTER_METRIC_ID in RAP_METRICS_DETAILS
+Step 2 – Deduplication of RAP_MASTER_METRIC_DETAILS after RISK_TYPE_ID Consolidation
+
+Background
+During Step 1, we consolidated duplicate RISK_TYPE_IDs in RISK_TYPE table (e.g., 1947 → 13).
+As a result, in RAP_MASTER_METRIC_DETAILS, some metrics now have the same MASTER_METRIC_NAME and RISK_TYPE_ID but different MASTER_METRIC_IDs.
+
+Example
+
+MASTER_METRIC_ID	MASTER_METRIC_NAME	RISK_TYPE_ID
+
+100	MODEL RISK	13
+101	MODEL RISK	1947
 
 
----
+After Step 1 (1947 → 13):
 
-Summary:
-A data inconsistency was identified in production where MASTER_METRIC_ID in RAP_METRICS_DETAILS is NULL for multiple records. These should map to entries in RAP_MASTER_METRIC_DETAILS but are missing due to application logic gaps. This ticket covers the one-time production data backfill.
+MASTER_METRIC_ID	MASTER_METRIC_NAME	RISK_TYPE_ID
 
-
----
-
-Root Cause:
-
-1. When new metrics were created, corresponding entries in RAP_MASTER_METRIC_DETAILS were not inserted (possible gap in Python code).
-
-
-2. RAP_METRICS_DETAILS.MASTER_METRIC_ID was never populated for those metrics, resulting in null values.
-
-
-
-
----
-
-Deployment Type:
-
-One-time PROD Data Fix (DML execution).
-
-Requires DBA execution in controlled deployment window.
+100	MODEL RISK	13
+101	MODEL RISK	13
 
 
 
 ---
 
-Steps to be Executed in PROD:
+Why direct deletion is unsafe
 
-Step 1 — Identify Null Master Metric Records:
-
-Query to list all rows in RAP_METRICS_DETAILS where MASTER_METRIC_ID is NULL.
-
-Match with RAP_MASTER_METRIC_DETAILS using p.METRICS_DISP (case-insensitive, trimmed).
-
-
-Step 2 — Insert Missing Master Metrics:
-
-For metrics not present in RAP_MASTER_METRIC_DETAILS, insert new rows with:
-
-MASTER_METRIC_NAME = p.METRICS_DISP
-
-RISK_TYPE_ID from RAP table
-
-CREATE_DT and UPDT_DT as SYSDATE
-
-
-
-Step 3 — Backfill MASTER_METRIC_ID:
-
-Update RAP_METRICS_DETAILS to set MASTER_METRIC_ID from matching RAP_MASTER_METRIC_DETAILS.
-
-Ensure no ORA-01427 multiple-row errors by using ROWNUM = 1.
-
+RAP_METRICS_DETAILS stores a foreign key MASTER_METRIC_ID pointing to RAP_MASTER_METRIC_DETAILS.
+If we delete MASTER_METRIC_ID = 101 without updating its references, we break referential integrity.
 
 
 ---
 
-Rollback Plan:
+Steps Performed
 
-Backup affected rows before update:
+1. Identify true duplicates
+
+Criteria: Same MASTER_METRIC_NAME (case-insensitive, trimmed) and same RISK_TYPE_ID.
+
+Retain the lowest MASTER_METRIC_ID as the canonical ID.
+
+Store the mapping of OLD_MASTER_METRIC_ID → NEW_MASTER_METRIC_ID.
 
 
-CREATE TABLE RAP_METRICS_DETAILS_BKP_YYYYMMDD AS
-SELECT * FROM RAP_METRICS_DETAILS
-WHERE MASTER_METRIC_ID IS NULL;
+CREATE GLOBAL TEMPORARY TABLE MASTER_METRIC_ID_MAPPING (
+  MASTER_METRIC_NAME     VARCHAR2(500),
+  RISK_TYPE_ID           NUMBER,
+  OLD_MASTER_METRIC_ID   NUMBER,
+  NEW_MASTER_METRIC_ID   NUMBER
+) ON COMMIT PRESERVE ROWS;
 
-In case of issue, rollback by:
+INSERT INTO MASTER_METRIC_ID_MAPPING (MASTER_METRIC_NAME, RISK_TYPE_ID, OLD_MASTER_METRIC_ID, NEW_MASTER_METRIC_ID)
+WITH ranked AS (
+  SELECT MASTER_METRIC_ID, MASTER_METRIC_NAME, RISK_TYPE_ID,
+         MIN(MASTER_METRIC_ID) OVER (PARTITION BY TRIM(UPPER(MASTER_METRIC_NAME)), RISK_TYPE_ID) AS NEW_MASTER_METRIC_ID
+  FROM RAP_MASTER_METRIC_DETAILS
+)
+SELECT MASTER_METRIC_NAME, RISK_TYPE_ID, MASTER_METRIC_ID, NEW_MASTER_METRIC_ID
+FROM ranked
+WHERE MASTER_METRIC_ID <> NEW_MASTER_METRIC_ID;
 
+
+---
+
+2. Update dependent records in RAP_METRICS_DETAILS
+Before deletion, re-point all rows referencing the duplicate IDs to the canonical ID.
 
 UPDATE RAP_METRICS_DETAILS d
-SET d.MASTER_METRIC_ID = NULL
-WHERE d.ROWID IN (SELECT ROWID FROM RAP_METRICS_DETAILS_BKP_YYYYMMDD);
+SET d.MASTER_METRIC_ID = (
+  SELECT m.NEW_MASTER_METRIC_ID
+  FROM MASTER_METRIC_ID_MAPPING m
+  WHERE m.OLD_MASTER_METRIC_ID = d.MASTER_METRIC_ID
+)
+WHERE EXISTS (
+  SELECT 1
+  FROM MASTER_METRIC_ID_MAPPING m
+  WHERE m.OLD_MASTER_METRIC_ID = d.MASTER_METRIC_ID
+);
 
 
 ---
 
-Validation Post Deployment:
+3. Delete duplicate master metric rows
+Only after step 2 is complete and no RAP_METRICS_DETAILS rows reference the duplicate IDs.
 
-Count of rows where MASTER_METRIC_ID is NULL should drop to zero (or only valid exceptions remain).
-
-Cross-check newly inserted RAP_MASTER_METRIC_DETAILS entries with source data.
-
-Random sample verification of updated rows.
-
-
-
----
-
-Approvals Required:
-
-Product Owner approval.
-
-QA sign-off from UAT results.
-
-DBA execution approval.
-
+DELETE FROM RAP_MASTER_METRIC_DETAILS
+WHERE MASTER_METRIC_ID IN (
+  SELECT OLD_MASTER_METRIC_ID
+  FROM MASTER_METRIC_ID_MAPPING
+);
 
 
 ---
 
-Attachments:
+Outcome
 
-Final SQL scripts for Step 1, Step 2, Step 3.
+All metrics in RAP_MASTER_METRIC_DETAILS are now unique per (MASTER_METRIC_NAME, RISK_TYPE_ID).
 
-Before/After dataset samples from UAT execution.
+All references in RAP_METRICS_DETAILS correctly point to the retained master metric ID.
+
+Referential integrity is preserved.
+
+
+
+---
+itle: PROD Deployment – Risk Type ID & Master Metric Data Cleanup
+
+Summary
+
+This document records the production changes performed to remove duplicate RISK_TYPE_ID values, update all dependent tables, and clean up duplicate MASTER_METRIC_ID records in RAP_MASTER_METRIC_DETAILS caused by the consolidation.
+The activities ensured referential integrity across all related RAP tables.
+
+
+---
+
+Step 1: Risk Type ID Consolidation
+
+Objective:
+Eliminate duplicate risk type entries and standardize all references to use the lowest RISK_TYPE_ID.
+
+Process:
+
+1. Identification of Duplicates
+
+Queried the RISK_TYPE table to identify multiple entries having the same RISK_TYPE_NAME but different IDs.
+
+Example:
+
+Model Risk → ID 13
+
+Model Risk → ID 1479
+
+
+
+
+2. Master ID Selection
+
+Retained the lowest RISK_TYPE_ID (e.g., 13) as the canonical value.
+
+Mapped all duplicate IDs (e.g., 1479) to the master ID.
+
+
+
+3. Updates Performed
+
+RAP table → Updated all matching rows to reference the master RISK_TYPE_ID.
+
+RAP_MASTER_METRIC_DETAILS table → Updated all matching rows to reference the master RISK_TYPE_ID.
+
+
+
+
+SQL Reference:
+
+Queries executed included:
+
+Selection of duplicate risk types.
+
+Update statements to replace duplicate IDs in dependent tables.
+
+
+
+Data Verification:
+
+Count checks before and after update.
+
+Ensured no invalid RISK_TYPE_ID references remained.
 
