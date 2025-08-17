@@ -1,133 +1,40 @@
+SELECT constraint_name, constraint_type, status
+FROM user_constraints
+WHERE table_name = UPPER('YOUR_TABLE');
 
-UPDATE RAP_METRICS_DETAILS d
-SET d.MASTER_METRIC_ID = (
-  SELECT MIN(m.MASTER_METRIC_ID)   -- single-row guarantee
-  FROM RAP r
-  JOIN MEET_INSTC mi
-    ON r.RAP_INSTANCE_ID = mi.MEET_INSTC_ID
-  JOIN RAP_METRICS_PACK_MAPPING p
-    ON d.RAP_METRICS_MAPPING_ID = p.RAP_METRICS_MAPPING_ID
-  JOIN RAP_MASTER_METRIC_DETAILS m
-    ON TRIM(UPPER(p.METRICS_DISP)) = TRIM(UPPER(m.MASTER_METRIC_NAME))
-  WHERE r.RAP_ID = d.RAP_ID
-    AND mi.ACT_ON_RCRD = 'insert-rap-open'
-    AND mi.MEET_INSTC_ID = 11558
-)
-WHERE d.MASTER_METRIC_ID IS NULL
-  AND EXISTS (                             -- update only those rows in that pack/state
-    SELECT 1
-    FROM RAP r2
-    JOIN MEET_INSTC mi2
-      ON r2.RAP_INSTANCE_ID = mi2.MEET_INSTC_ID
-    WHERE r2.RAP_ID = d.RAP_ID
-      AND mi2.ACT_ON_RCRD = 'insert-rap-open'
-      AND mi2.MEET_INSTC_ID = 11558
-  );
+SELECT a.constraint_name,
+       a.table_name   AS child_table,
+       a.column_name  AS child_column,
+       c.table_name   AS parent_table,
+       c.column_name  AS parent_column
+FROM user_cons_columns a
+JOIN user_constraints b
+     ON a.constraint_name = b.constraint_name
+JOIN user_cons_columns c
+     ON b.r_constraint_name = c.constraint_name
+WHERE b.constraint_type = 'R'
+  AND c.table_name = UPPER('YOUR_TABLE');
 
-UPDATE RAP_METRICS_DETAILS d
-SET MASTER_METRIC_ID = (
-    SELECT MIN(m.MASTER_METRIC_ID)
-    FROM RAP r
-    JOIN RAP_INSTANCE mi
-        ON r.RAP_ID = mi.RAP_ID
-    JOIN RAP_METRICS_MAPPING p
-        ON d.RAP_METRICS_MAPPING_ID = p.RAP_METRICS_MAPPING_ID
-    JOIN RAP_MASTER_METRIC_DETAILS m
-        ON TRIM(UPPER(m.METRICS_DISPLAY)) = TRIM(UPPER(m.MASTER_METRIC_NAME))
-    WHERE p.RAP_METRICS_MAPPING_ID = m.RAP_METRICS_MAPPING_ID
-      AND mi.MEET_INSTC_ID = 11558
-      AND d.MASTER_METRIC_ID IS NULL
-)
-WHERE d.MASTER_METRIC_ID IS NULL
-  AND EXISTS (
-      SELECT 1
-      FROM RAP r2
-      JOIN MEET_INSTC mi2
-        ON r2.RAP_INSTANCE_ID = mi2.MEET_INSTC_ID
-      WHERE r2.RAP_ID = d.RAP_ID
-        AND mi2.ACT_ON_RCRD = 'insert-rap-open'
-        AND mi2.MEET_INSTC_ID = 11558
-  );
+-- Disable foreign key constraint
+ALTER TABLE child_table_name DISABLE CONSTRAINT fk_name;
 
-UPDATE RAP_METRICS_DETAILS d
-SET d.MASTER_METRIC_ID = (
-    SELECT MIN(m.MASTER_METRIC_ID)  -- pick smallest ID if multiple match
-    FROM RAP_MEET_INSTC mi
-    JOIN RAP_METRICS_PACK_MAPPING g 
-        ON g.MEET_INSTC_ID = mi.MEET_INSTC_ID
-    JOIN RAP_METRICS_MAPPING p
-        ON p.RAP_METRICS_MAPPING_ID = g.RAP_METRICS_MAPPING_ID
-    JOIN RAP_MASTER_METRIC_DETAILS m
-        ON TRIM(UPPER(m.MASTER_METRIC_NAME)) = TRIM(UPPER(d.METRICS_DISPLAY))
-    WHERE d.RAP_ID = mi.RAP_ID
-      AND p.RAP_METRICS_MAPPING_ID = m.RAP_METRICS_MAPPING_ID
-      AND d.MASTER_METRIC_ID IS NULL
-      AND mi.ACT_ON_RCRD = 'insert-rap-open'
-      AND mi.MEET_INSTC_ID = 11558
-      AND EXISTS (
-          SELECT 1
-          FROM RAP_MEET_INSTC mi2
-          WHERE mi2.RAP_INSTANCE_ID = mi2.MEET_INSTC_ID
-            AND mi2.ACT_ON_RCRD = 'insert-rap-open'
-            AND mi2.MEET_INSTC_ID = 11558
-      )
-)
-WHERE d.MASTER_METRIC_ID IS NULL;
+-- Delete parent data
+DELETE FROM your_table;
+
+-- Reload from backup
+INSERT INTO your_table
+SELECT * FROM your_table_backup;
+
+-- Re-enable the constraint
+ALTER TABLE child_table_name ENABLE CONSTRAINT fk_name;
 
 
-
-INSERT INTO MASTER_METRIC_ID_MAPPING (OLD_MASTER_METRIC_ID, NEW_MASTER_METRIC_ID)
-SELECT OLD_ID, NEW_ID
-FROM (
-    SELECT MASTER_METRIC_ID AS OLD_ID,
-           MIN(MASTER_METRIC_ID) OVER (
-               PARTITION BY TRIM(UPPER(REGEXP_REPLACE(MASTER_METRIC_NAME, '\s+', ' '))),
-                            RISK_TYPE_ID
-           ) AS NEW_ID
-    FROM RAP_MASTER_METRIC_DETAILS
-    WHERE MASTER_METRIC_ID IS NOT NULL
-      AND TRIM(UPPER(REGEXP_REPLACE(MASTER_METRIC_NAME, '\s+', ' '))) IS NOT NULL
-) t
-WHERE OLD_ID <> NEW_ID;
-
-
-CREATE GLOBAL TEMPORARY TABLE MASTER_METRIC_ID_MAPPING
-(
-    OLD_MASTER_METRIC_ID NUMBER,
-    NEW_MASTER_METRIC_ID NUMBER
-) ON COMMIT PRESERVE ROWS;
-
-INSERT INTO MASTER_METRIC_ID_MAPPING (OLD_MASTER_METRIC_ID, NEW_MASTER_METRIC_ID)
-SELECT MASTER_METRIC_ID AS OLD_ID,
-       MIN(MASTER_METRIC_ID) OVER (
-           PARTITION BY TRIM(UPPER(REGEXP_REPLACE(MASTER_METRIC_NAME, '\s+', ' '))),
-                        RISK_TYPE_ID
-       ) AS NEW_ID
-FROM RAP_MASTER_METRIC_DETAILS
-WHERE MASTER_METRIC_ID IS NOT NULL
-  AND TRIM(UPPER(REGEXP_REPLACE(MASTER_METRIC_NAME, '\s+', ' '))) IS NOT NULL
-  AND MASTER_METRIC_ID <> MIN(MASTER_METRIC_ID) OVER (
-           PARTITION BY TRIM(UPPER(REGEXP_REPLACE(MASTER_METRIC_NAME, '\s+', ' '))),
-                        RISK_TYPE_ID
-       )
-;
-
-
-UPDATE RAP_METRICS_DETAILS d
-SET MASTER_METRIC_ID = (
-    SELECT NEW_MASTER_METRIC_ID
-    FROM MASTER_METRIC_ID_MAPPING m
-    WHERE m.OLD_MASTER_METRIC_ID = d.MASTER_METRIC_ID
-)
-WHERE EXISTS (
-    SELECT 1
-    FROM MASTER_METRIC_ID_MAPPING m
-    WHERE m.OLD_MASTER_METRIC_ID = d.MASTER_METRIC_ID
-);
-
-
-DELETE FROM RAP_MASTER_METRIC_DETAILS
-WHERE MASTER_METRIC_ID IN (
-    SELECT OLD_MASTER_METRIC_ID
-    FROM MASTER_METRIC_ID_MAPPING
+SELECT 'ALTER TABLE ' || table_name || ' DISABLE CONSTRAINT ' || constraint_name || ';' AS disable_sql,
+       'ALTER TABLE ' || table_name || ' ENABLE CONSTRAINT '  || constraint_name || ';' AS enable_sql
+FROM user_constraints
+WHERE r_constraint_name IN (
+    SELECT constraint_name
+    FROM user_constraints
+    WHERE table_name = UPPER('YOUR_TABLE')
+      AND constraint_type = 'P'
 );
