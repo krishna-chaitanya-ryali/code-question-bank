@@ -1,51 +1,43 @@
-SELECT 
-    d.RAP_METRICS_DETAILS_ID,
-    d.RAP_METRICS_MAPPING_ID,
-    p.METRICS_DISPLAY           AS PACK_MAPPING_METRIC_NAME,
-    d.MASTER_METRIC_ID,
-    m.MASTER_METRIC_NAME        AS MASTER_METRIC_NAME,
-    r.RISK_TYPE_ID              AS RAP_RISK_TYPE_ID,
-    m.RISK_TYPE_ID              AS MASTER_METRIC_RISK_TYPE_ID,
-    CASE 
-        WHEN m.MASTER_METRIC_ID IS NULL 
-            THEN 'MISSING_IN_MASTER'   -- Case A candidate (insert needed)
-        WHEN m.MASTER_METRIC_NAME <> p.METRICS_DISPLAY 
-            THEN 'NAME_MISMATCH'       -- Case B candidate (update name)
-        WHEN r.RISK_TYPE_ID <> m.RISK_TYPE_ID
-            THEN 'RISK_TYPE_MISMATCH'  -- Risk type mismatch between RAP and Master
-        ELSE 'OK'
-    END AS STATUS
-FROM RAP_METRICS_DETAILS d
-JOIN RAP_METRICS_PACK_MAPPING p 
-    ON d.RAP_METRICS_MAPPING_ID = p.RAP_METRICS_MAPPING_ID
-JOIN RAP r 
-    ON d.RAP_ID = r.RAP_ID
-LEFT JOIN RAP_MASTER_METRIC_DETAILS m 
-    ON d.MASTER_METRIC_ID = m.MASTER_METRIC_ID
-WHERE d.MASTER_METRIC_ID IS NOT NULL
-ORDER BY STATUS, d.RAP_METRICS_MAPPING_ID, d.MASTER_METRIC_ID;
+SELECT d.metricDetailId,
+       d.masterMetricId,
+       p.rapMetrixMappingId,
+       p.metricsDisp,
+       r.riskTypeId
+FROM   RAP_METRICS_DETAILS d
+       JOIN RAP p ON d.rap_id = p.rap_id
+       JOIN RAP_RISK_TYPE r ON r.risk_type_id = p.risk_type_id
+WHERE  NOT EXISTS (
+          SELECT 1
+          FROM   RAP_MASTER_METRIC_DETAILS m
+          WHERE  m.master_metric_id = d.masterMetricId
+       );
 
 
-SELECT STATUS, COUNT(*) AS RECORD_COUNT
-FROM (
-    SELECT 
-        CASE 
-            WHEN m.MASTER_METRIC_ID IS NULL 
-                THEN 'MISSING_IN_MASTER'
-            WHEN m.MASTER_METRIC_NAME <> p.METRICS_DISPLAY 
-                THEN 'NAME_MISMATCH'
-            WHEN r.RISK_TYPE_ID <> m.RISK_TYPE_ID
-                THEN 'RISK_TYPE_MISMATCH'
-            ELSE 'OK'
-        END AS STATUS
-    FROM RAP_METRICS_DETAILS d
-    JOIN RAP_METRICS_PACK_MAPPING p 
-        ON d.RAP_METRICS_MAPPING_ID = p.RAP_METRICS_MAPPING_ID
-    JOIN RAP r 
-        ON d.RAP_ID = r.RAP_ID
-    LEFT JOIN RAP_MASTER_METRIC_DETAILS m 
-        ON d.MASTER_METRIC_ID = m.MASTER_METRIC_ID
-    WHERE d.MASTER_METRIC_ID IS NOT NULL
-)
-GROUP BY STATUS
-ORDER BY RECORD_COUNT DESC;
+SELECT d.metricDetailId,
+       d.masterMetricId,
+       m.master_metric_name,
+       p.metricsDisp,
+       p.rapMetrixMappingId,
+       r.riskTypeId
+FROM   RAP_METRICS_DETAILS d
+       JOIN RAP p ON d.rap_id = p.rap_id
+       JOIN RAP_RISK_TYPE r ON r.risk_type_id = p.risk_type_id
+       JOIN RAP_MASTER_METRIC_DETAILS m
+            ON m.master_metric_id = d.masterMetricId
+WHERE  m.master_metric_name <> p.metricsDisp;
+
+
+SELECT d.metricDetailId,
+       d.masterMetricId,
+       m.master_metric_name,
+       p.metricsDisp,
+       m.risk_type_id AS masterRiskTypeId,
+       r.risk_type_id AS rapRiskTypeId,
+       p.rapMetrixMappingId
+FROM   RAP_METRICS_DETAILS d
+       JOIN RAP p ON d.rap_id = p.rap_id
+       JOIN RAP_RISK_TYPE r ON r.risk_type_id = p.risk_type_id
+       JOIN RAP_MASTER_METRIC_DETAILS m
+            ON m.master_metric_id = d.masterMetricId
+WHERE  m.risk_type_id <> r.risk_type_id;
+
