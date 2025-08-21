@@ -1,1 +1,2 @@
-We have made every effort to update the MASTER_METRIC_IDs as accurately as possible based on the available data and our understanding. However, given the complexity, there may still be a few data discrepancies. We will continue to monitor and address any issues that come up.
+
+5. Please note that this is a data fix only. The permanent resolution requires 8–10 code fixes, which are already in progress. Until those code changes are deployed, a few more discrepancies may still appear even after this data fix.
