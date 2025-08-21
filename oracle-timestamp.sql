@@ -1,41 +1,26 @@
-SELECT d.RAP_METRICS_MAPPING_ID,
-       p.METRICS_DISP,
-       m.RISK_TYPE_ID,
-       COUNT(DISTINCT m.MASTER_METRIC_ID) AS METRIC_COUNT,
-       LISTAGG(m.MASTER_METRIC_ID, ', ') 
-            WITHIN GROUP (ORDER BY m.MASTER_METRIC_ID) AS METRIC_IDS
-FROM RAP_MASTER_METRIC_DETAILS m
-JOIN RAP_METRICS_DETAILS d
-  ON d.MASTER_METRIC_ID = m.MASTER_METRIC_ID
-JOIN RAP_METRICS_PACK_MAPPING p
-  ON d.RAP_METRICS_MAPPING_ID = p.RAP_METRICS_MAPPING_ID
-GROUP BY d.RAP_METRICS_MAPPING_ID, p.METRICS_DISP, m.RISK_TYPE_ID
-HAVING COUNT(DISTINCT m.MASTER_METRIC_ID) > 1
-ORDER BY d.RAP_METRICS_MAPPING_ID, p.METRICS_DISP, m.RISK_TYPE_ID;
+Update on Backfilling Missing Master Metric IDs
+
+Hi Team,
+
+I have attached three screenshots that detail the step-by-step procedure I’m following to backfill the missing MASTER_METRIC_IDs and the challenges we faced while resolving the NULL values. The document outlines:
+
+Duplicate RISK_TYPE_ID cleanup and dependency updates
+
+Removal of duplicate MASTER_METRIC_ID entries in RAP_MASTER_METRIC_DETAILS
+
+The backfilling approach for handling missing MASTER_METRIC_IDs
 
 
-MERGE INTO RAP_MASTER_METRIC_DETAILS m
-USING (
-    SELECT d.MASTER_METRIC_ID,
-           p.METRICS_DISP,
-           m.RISK_TYPE_ID,
-           ROW_NUMBER() OVER (
-               PARTITION BY m.RISK_TYPE_ID, p.METRICS_DISP
-               ORDER BY d.MASTER_METRIC_ID
-           ) AS RN
-    FROM RAP_MASTER_METRIC_DETAILS m
-    JOIN RAP_METRICS_DETAILS d
-      ON d.MASTER_METRIC_ID = m.MASTER_METRIC_ID
-    JOIN RAP_METRICS_PACK_MAPPING p
-      ON d.RAP_METRICS_MAPPING_ID = p.RAP_METRICS_MAPPING_ID
-    WHERE d.RAP_METRICS_MAPPING_ID = 25
-) src
-ON (m.MASTER_METRIC_ID = src.MASTER_METRIC_ID)
-WHEN MATCHED THEN
-    UPDATE SET 
-        m.MASTER_METRIC_NAME = src.METRICS_DISP,
-        m.RISK_TYPE_ID = CASE 
-                            WHEN src.RN > 1 
-                            THEN 0   -- mark duplicates with risk type 0
-                            ELSE src.RISK_TYPE_ID
-                         END;
+Additional Notes:
+
+1. When a parent metric ID is changed, there is a possibility of having multiple MASTER_METRIC_IDs associated with that same metric. This needs to be accounted for during cleanup.
+
+
+2. We are not modifying any existing data or IDs that are already associated in production. While there might be discrepancies in historical data, those are out of scope. Our focus here is only on refilling the missing MASTER_METRIC_IDs to restore referential integrity.
+
+
+
+Please review the attached screenshots for the detailed workflow and let me know if you have any questions or suggestions.
+
+Thanks,
+[Your Name]
