@@ -1,14 +1,10 @@
-Subject: Approval Required for Change Request – [CR ID/Name] (Before 25th Aug, 1:00 PM)
+Subject: RE: Thank You and Congratulations – Gupta
 
-Dear Kailash and Gupta,
+Hi Gupta,
 
-I hope you are doing well.
+Congratulations on your new role! It has been a pleasure working with you since 2022 – I’ve truly appreciated your guidance, support, and leadership over the last three years. You’ve always been approachable, encouraging, and a great manager to work with.
 
-I have created the Change Request [CR ID/Name] as per our recent discussions. The activity is scheduled for Monday, 25th August 2025, at 1:00 PM, and we require your approval before that time to proceed.
+Wishing you all the very best in your new journey – I’m sure you’ll continue to bring the same value and dedication to your new role as you have here.
 
-Kindly review and approve the CR at the earliest to avoid any delays in execution.
-
-Thank you for your support.
-
-Best regards,
-R Krishna Chaitanya
+Best Regards,
+Krishna
