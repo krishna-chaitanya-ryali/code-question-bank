@@ -1,15 +1,24 @@
-Closure Notes:
-The change was successfully implemented on 25th August 2025 at 1:00 PM as per the approved plan.
+Subject: Change Implementation Completed – CRT Closed Successfully
 
-Backup of the affected table (RAP_METRICS_DETAILS) was taken prior to execution.
+Dear Team,
 
-Update query executed successfully, and MASTER_METRIC_ID values were corrected as per business requirement.
+The change request (CRT ID: [Insert CRT ID]) has been successfully implemented on 25th August 2025 at 1:00 PM as per the approved plan.
 
-Post-implementation verification was performed: validated that the updated records reflected correctly in the application front-end and database.
+Key highlights of the activity:
 
-No errors, data integrity issues, or performance impacts observed.
+Successfully updated 1,54,000 records in RAP_METRICS_DETAILS with the correct MASTER_METRIC_ID.
 
-Business services were not impacted during the activity.
+Pre-change backup was taken to ensure data safety.
+
+Post-change validations confirmed data accuracy in both the database and application front-end.
+
+No errors, performance issues, or business impact were reported during or after the change window.
 
 
-The change is considered successful and complete, and the CRT is ready to be closed.
+The CRT has now been closed and marked as successful.
+
+Thank you all for your support during this activity.
+
+Regards,
+R Krishna Chaitanya
+
