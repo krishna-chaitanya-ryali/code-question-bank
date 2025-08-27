@@ -1,59 +1,102 @@
-Project: [Your Project Name]
-Issue Type: Task / Story (depending on your Jira workflow)
-Summary: Code Changes & Deployment for Master Metric ID Alignment
+1. Back-End Activity Jira Ticket
+
+Title:
+Enhancement: API to Download Security Reports for All Dashboards (Super Admin Page)
 
 Description:
-As part of the recently completed backend change (CRT ID: [Insert CRT ID]), we successfully updated MASTER_METRIC_ID in RAP_METRICS_DETAILS.
-Now, corresponding code changes are required to ensure:
+Currently, in the Normal Admin page, there is an option to download the security report for a specific dashboard. The requirement is to extend this functionality to the Super Admin page, where the Super Admin should be able to download security reports for all dashboards at once in Excel format.
 
-1. The application fetches and displays MASTER_METRIC_ID correctly across all impacted modules.
+Scope / Requirements:
 
+Create a new API endpoint that:
 
-2. Validation logic aligns with the updated data structure (including METRICS_DISPLAY handling from RAP_METRICS_PACK_MAPPING).
+Fetches security access details for all dashboards.
 
+Compiles the data into a single Excel file (similar format to existing individual dashboard reports).
 
-3. Any redundant or duplicate metric handling logic is cleaned up.
-
-
-
-Scope:
-
-Update DAO/Repository layers to ensure correct retrieval of metrics.
-
-Modify service/business logic to handle updated MASTER_METRIC_ID mappings.
-
-Update UI/API layer if impacted by the new MASTER_METRIC_ID references.
-
-Add/Update unit and integration tests for impacted components.
+Returns the file for download.
 
 
-Deployment Plan:
+Ensure existing data validation and access checks are applied.
 
-1. Code changes will be developed in UAT branch.
+Reuse or extend existing report generation logic where possible.
 
-
-2. Deployment to UAT environment for testing.
-
-
-3. Post successful UAT sign-off, deploy to PROD during the next approved release window.
-
+Optimize for performance since the data could be large.
 
 
 Acceptance Criteria:
 
-All impacted modules fetch and display metrics correctly using the updated MASTER_METRIC_ID.
+API returns a downloadable Excel file containing security reports of all dashboards.
 
-No functional or regression issues in UAT.
+Data format matches the existing per-dashboard security report format.
 
-All test cases pass successfully.
+Proper error handling (e.g., no dashboards available, access issues, server errors).
 
-
-Attachments/References:
-
-CRT ID: [Insert CRT ID] – Backend Change Details
-
-Pre and Post Change Verification Reports
+API is secured and accessible only to Super Admin users.
 
 
-Priority: High
-Assignee: [Assign to appropriate developer/yourself]
+Dependencies:
+
+Existing per-dashboard report generation logic.
+
+Authentication & authorization module.
+
+
+Testing Considerations:
+
+Validate Excel format and data accuracy.
+
+Test with a large number of dashboards.
+
+Test with zero dashboards (edge case).
+
+
+
+---
+
+2. Front-End Activity Jira Ticket
+
+Title:
+UI Enhancement: Add "Download All Security Reports" Option in Super Admin Page
+
+Description:
+Enhance the Super Admin page to allow downloading of all dashboards' security reports in a single click. This is similar to the existing "Security Access Report" option in the Normal Admin page, but it should fetch all dashboards at once.
+
+Scope / Requirements:
+
+Add a new button/link in the Super Admin page under RAP Metric Management → Security Access Report section.
+
+On click, trigger the newly created backend API to generate and download the consolidated security report.
+
+Show a loading spinner/progress indicator while the file is being generated.
+
+Handle error scenarios gracefully (e.g., show a user-friendly error message if download fails).
+
+
+Acceptance Criteria:
+
+New "Download All Security Reports" option is visible to Super Admins.
+
+Clicking the option triggers file download of the consolidated report.
+
+Proper loading and error messages are displayed.
+
+UI matches existing look and feel of other download options.
+
+
+Dependencies:
+
+Backend API providing consolidated report.
+
+
+Testing Considerations:
+
+Verify file downloads correctly and contains accurate data.
+
+Verify error handling (e.g., API failure, network issues).
+
+Verify button is only visible to Super Admins.
+
+
+
+---
