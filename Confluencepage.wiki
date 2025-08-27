@@ -1,49 +1,35 @@
-Back-End Implementation: Query, Python Service, and API Development for Security Reports
+Subject: Sprint 40 Ticket Assignment Request
 
-Description:
-Carry out all backend development for the Super Admin Security Reports feature:
+Hi Nitin,
 
-1. Database Query Preparation
+As part of Sprint 40 planning, I would like to request the following ticket assignments since I will be on leave tomorrow and may not be available during the Sprint call:
 
-Prepare optimized SQL queries for fetching security data for all dashboards and selected dashboards.
+1. KMIT-1249 – Code changes and deployments for Master Metric ID alignment
 
-Validate queries on test data.
+The data fixes were completed in the current Sprint, and I would like to continue with the code changes and deployments in Sprint 40.
 
-
-
-2. Python Service Development
-
-Build Python services to execute queries, transform data, and generate Excel reports.
-
-Ensure output matches existing format.
+Request: Assign this ticket to me.
 
 
 
-3. API Development & Integration
+2. KMIT-1251 – Backend implementation: Query, Python service, and API development for Security Report
 
-Develop REST API endpoints for Generic and Individual report download.
+This is a continuation of the work done in KMIT-308.
 
-Integrate with Python services and enforce Super Admin access control.
+Request: Assign this ticket to me.
 
 
 
-4. Testing & Deployment
+3. KMIT-1250 – UI enhancements: Add Report tab in Super Admin page for Security Access Report
 
-Perform unit testing of queries, Python logic, and APIs.
+This ticket covers the front-end changes required for my backend ticket (KMIT-1251).
 
-Conduct integration testing with UI.
-
-Deploy to QA/UAT and verify with front-end team.
+Request: Assign this ticket to Prasad.
 
 
 
 
-Acceptance Criteria:
+Please ensure these are considered during tomorrow’s Sprint call so that we have the right assignments in place for Sprint 40.
 
-Queries return accurate and complete data.
-
-APIs generate Excel reports identical to current per-dashboard reports.
-
-Endpoints secured and tested successfully.
-
-Backend changes signed off after UAT testing.
+Thanks,
+Krishna Chaitanya
