@@ -1,54 +1,54 @@
-1. Back-End Activity Jira Ticket
+Back-End Activity Jira Ticket
 
 Title:
-Enhancement: API to Download Security Reports for All Dashboards (Super Admin Page)
+Enhancement: API for Generic & Individual Security Reports in Super Admin Page
 
 Description:
-Currently, in the Normal Admin page, there is an option to download the security report for a specific dashboard. The requirement is to extend this functionality to the Super Admin page, where the Super Admin should be able to download security reports for all dashboards at once in Excel format.
+Enhance backend services to support the download of Security Access Reports in the Super Admin page, similar to how announcements are managed. This includes:
+
+Generic Report: Download all dashboards’ security reports combined in one Excel.
+
+Individual Report: Download security report(s) for one or multiple selected dashboards (packs).
+
 
 Scope / Requirements:
 
-Create a new API endpoint that:
+Develop API endpoints to:
 
-Fetches security access details for all dashboards.
-
-Compiles the data into a single Excel file (similar format to existing individual dashboard reports).
-
-Returns the file for download.
+1. Fetch Generic Report (all dashboards).
 
 
-Ensure existing data validation and access checks are applied.
+2. Fetch Individual Report(s) based on selected dashboards (one or multiple).
 
-Reuse or extend existing report generation logic where possible.
 
-Optimize for performance since the data could be large.
+
+Generate Excel output using the same format as the existing individual dashboard security report.
+
+Ensure API handles multiple selections efficiently.
+
+Implement proper access control to restrict feature to Super Admins only.
+
+Ensure optimal performance for large datasets.
 
 
 Acceptance Criteria:
 
-API returns a downloadable Excel file containing security reports of all dashboards.
+API provides two endpoints: Generic and Individual report download.
 
-Data format matches the existing per-dashboard security report format.
+Excel formatting is identical to current per-dashboard reports.
 
-Proper error handling (e.g., no dashboards available, access issues, server errors).
+Supports multiple dashboard selection.
 
-API is secured and accessible only to Super Admin users.
+Proper error handling (e.g., no dashboards selected, access denied, server issues).
+
+Tested for large volume of dashboards.
 
 
 Dependencies:
 
 Existing per-dashboard report generation logic.
 
-Authentication & authorization module.
-
-
-Testing Considerations:
-
-Validate Excel format and data accuracy.
-
-Test with a large number of dashboards.
-
-Test with zero dashboards (edge case).
+Security/authorization module.
 
 
 
@@ -57,46 +57,50 @@ Test with zero dashboards (edge case).
 2. Front-End Activity Jira Ticket
 
 Title:
-UI Enhancement: Add "Download All Security Reports" Option in Super Admin Page
+UI Enhancement: Add “Report” Tab in Super Admin Page for Security Access Reports
 
 Description:
-Enhance the Super Admin page to allow downloading of all dashboards' security reports in a single click. This is similar to the existing "Security Access Report" option in the Normal Admin page, but it should fetch all dashboards at once.
+Add a new Report tab in the Super Admin page (similar to the Announcement tab) to allow Super Admins to download Security Access Reports:
+
+Generic Report: Download all dashboards’ reports in a single file.
+
+Individual Report: Download one or multiple dashboard reports based on selection.
+
 
 Scope / Requirements:
 
-Add a new button/link in the Super Admin page under RAP Metric Management → Security Access Report section.
+Add a new Report tab next to existing Action, Announcement, and Update tabs.
 
-On click, trigger the newly created backend API to generate and download the consolidated security report.
+Within Report tab, add two options:
 
-Show a loading spinner/progress indicator while the file is being generated.
+Generic Report (button to download full consolidated report).
 
-Handle error scenarios gracefully (e.g., show a user-friendly error message if download fails).
+Individual Report (with multi-select dropdown and checkboxes for each RMM/dashboard).
+
+
+Integrate with backend APIs for fetching the respective reports.
+
+Show progress/loading indicator during file generation.
+
+Display user-friendly messages for errors (e.g., “Please select at least one dashboard”).
+
+Ensure design consistency with Announcement tab UI (spacing, buttons, checkboxes).
 
 
 Acceptance Criteria:
 
-New "Download All Security Reports" option is visible to Super Admins.
+Report tab is visible and functional for Super Admins.
 
-Clicking the option triggers file download of the consolidated report.
+Generic report downloads correctly on button click.
 
-Proper loading and error messages are displayed.
+Individual report downloads correctly for one or multiple selected dashboards.
 
-UI matches existing look and feel of other download options.
+UI behaves gracefully on errors and matches existing style standards.
 
 
 Dependencies:
 
-Backend API providing consolidated report.
+Backend API for fetching reports.
 
+UI framework consistency with existing Announcement tab.
 
-Testing Considerations:
-
-Verify file downloads correctly and contains accurate data.
-
-Verify error handling (e.g., API failure, network issues).
-
-Verify button is only visible to Super Admins.
-
-
-
----
