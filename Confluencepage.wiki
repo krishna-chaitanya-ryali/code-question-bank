@@ -1,9 +1,59 @@
-SELECT 
-    TRIM(UPPER(MASTER_METRIC_NAME)) AS METRIC_NAME,
-    RISK_TYPE_ID,
-    COUNT(DISTINCT MASTER_METRIC_ID) AS METRIC_ID_COUNT,
-    LISTAGG(MASTER_METRIC_ID, ', ') WITHIN GROUP (ORDER BY MASTER_METRIC_ID) AS METRIC_IDS
-FROM RAP_MASTER_METRIC_DETAILS
-GROUP BY TRIM(UPPER(MASTER_METRIC_NAME)), RISK_TYPE_ID
-HAVING COUNT(DISTINCT MASTER_METRIC_ID) > 1
-ORDER BY METRIC_NAME, RISK_TYPE_ID;
+Project: [Your Project Name]
+Issue Type: Task / Story (depending on your Jira workflow)
+Summary: Code Changes & Deployment for Master Metric ID Alignment
+
+Description:
+As part of the recently completed backend change (CRT ID: [Insert CRT ID]), we successfully updated MASTER_METRIC_ID in RAP_METRICS_DETAILS.
+Now, corresponding code changes are required to ensure:
+
+1. The application fetches and displays MASTER_METRIC_ID correctly across all impacted modules.
+
+
+2. Validation logic aligns with the updated data structure (including METRICS_DISPLAY handling from RAP_METRICS_PACK_MAPPING).
+
+
+3. Any redundant or duplicate metric handling logic is cleaned up.
+
+
+
+Scope:
+
+Update DAO/Repository layers to ensure correct retrieval of metrics.
+
+Modify service/business logic to handle updated MASTER_METRIC_ID mappings.
+
+Update UI/API layer if impacted by the new MASTER_METRIC_ID references.
+
+Add/Update unit and integration tests for impacted components.
+
+
+Deployment Plan:
+
+1. Code changes will be developed in UAT branch.
+
+
+2. Deployment to UAT environment for testing.
+
+
+3. Post successful UAT sign-off, deploy to PROD during the next approved release window.
+
+
+
+Acceptance Criteria:
+
+All impacted modules fetch and display metrics correctly using the updated MASTER_METRIC_ID.
+
+No functional or regression issues in UAT.
+
+All test cases pass successfully.
+
+
+Attachments/References:
+
+CRT ID: [Insert CRT ID] – Backend Change Details
+
+Pre and Post Change Verification Reports
+
+
+Priority: High
+Assignee: [Assign to appropriate developer/yourself]
