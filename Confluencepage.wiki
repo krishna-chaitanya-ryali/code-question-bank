@@ -1,106 +1,49 @@
-Back-End Activity Jira Ticket
-
-Title:
-Enhancement: API for Generic & Individual Security Reports in Super Admin Page
+Back-End Implementation: Query, Python Service, and API Development for Security Reports
 
 Description:
-Enhance backend services to support the download of Security Access Reports in the Super Admin page, similar to how announcements are managed. This includes:
+Carry out all backend development for the Super Admin Security Reports feature:
 
-Generic Report: Download all dashboards’ security reports combined in one Excel.
+1. Database Query Preparation
 
-Individual Report: Download security report(s) for one or multiple selected dashboards (packs).
+Prepare optimized SQL queries for fetching security data for all dashboards and selected dashboards.
 
-
-Scope / Requirements:
-
-Develop API endpoints to:
-
-1. Fetch Generic Report (all dashboards).
-
-
-2. Fetch Individual Report(s) based on selected dashboards (one or multiple).
+Validate queries on test data.
 
 
 
-Generate Excel output using the same format as the existing individual dashboard security report.
+2. Python Service Development
 
-Ensure API handles multiple selections efficiently.
+Build Python services to execute queries, transform data, and generate Excel reports.
 
-Implement proper access control to restrict feature to Super Admins only.
+Ensure output matches existing format.
 
-Ensure optimal performance for large datasets.
+
+
+3. API Development & Integration
+
+Develop REST API endpoints for Generic and Individual report download.
+
+Integrate with Python services and enforce Super Admin access control.
+
+
+
+4. Testing & Deployment
+
+Perform unit testing of queries, Python logic, and APIs.
+
+Conduct integration testing with UI.
+
+Deploy to QA/UAT and verify with front-end team.
+
+
 
 
 Acceptance Criteria:
 
-API provides two endpoints: Generic and Individual report download.
+Queries return accurate and complete data.
 
-Excel formatting is identical to current per-dashboard reports.
+APIs generate Excel reports identical to current per-dashboard reports.
 
-Supports multiple dashboard selection.
+Endpoints secured and tested successfully.
 
-Proper error handling (e.g., no dashboards selected, access denied, server issues).
-
-Tested for large volume of dashboards.
-
-
-Dependencies:
-
-Existing per-dashboard report generation logic.
-
-Security/authorization module.
-
-
-
----
-
-2. Front-End Activity Jira Ticket
-
-Title:
-UI Enhancement: Add “Report” Tab in Super Admin Page for Security Access Reports
-
-Description:
-Add a new Report tab in the Super Admin page (similar to the Announcement tab) to allow Super Admins to download Security Access Reports:
-
-Generic Report: Download all dashboards’ reports in a single file.
-
-Individual Report: Download one or multiple dashboard reports based on selection.
-
-
-Scope / Requirements:
-
-Add a new Report tab next to existing Action, Announcement, and Update tabs.
-
-Within Report tab, add two options:
-
-Generic Report (button to download full consolidated report).
-
-Individual Report (with multi-select dropdown and checkboxes for each RMM/dashboard).
-
-
-Integrate with backend APIs for fetching the respective reports.
-
-Show progress/loading indicator during file generation.
-
-Display user-friendly messages for errors (e.g., “Please select at least one dashboard”).
-
-Ensure design consistency with Announcement tab UI (spacing, buttons, checkboxes).
-
-
-Acceptance Criteria:
-
-Report tab is visible and functional for Super Admins.
-
-Generic report downloads correctly on button click.
-
-Individual report downloads correctly for one or multiple selected dashboards.
-
-UI behaves gracefully on errors and matches existing style standards.
-
-
-Dependencies:
-
-Backend API for fetching reports.
-
-UI framework consistency with existing Announcement tab.
-
+Backend changes signed off after UAT testing.
