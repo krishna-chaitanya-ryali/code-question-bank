@@ -1,24 +1,34 @@
-Subject: Change Implementation Completed – CRT Closed Successfully
-
-Dear Team,
-
-The change request (CRT ID: [Insert CRT ID]) has been successfully implemented on 25th August 2025 at 1:00 PM as per the approved plan.
-
-Key highlights of the activity:
-
-Successfully updated 1,54,000 records in RAP_METRICS_DETAILS with the correct MASTER_METRIC_ID.
-
-Pre-change backup was taken to ensure data safety.
-
-Post-change validations confirmed data accuracy in both the database and application front-end.
-
-No errors, performance issues, or business impact were reported during or after the change window.
-
-
-The CRT has now been closed and marked as successful.
-
-Thank you all for your support during this activity.
-
-Regards,
-R Krishna Chaitanya
-
+SELECT 
+    UT.USER_NAME,
+    UR.USER_ROLE_NAME,
+    RRG.RMM_DISPLAY_NAME,
+    CASE 
+        WHEN RM.METRICS_DISPLAY IS NULL 
+        THEN RMPM.METRICS_DISPLAY 
+        ELSE RM.METRICS_DISPLAY 
+    END AS METRICS_DISPLAY
+FROM USER_TAB UT
+JOIN MAP_RAP_USER_ROLE MRUR 
+    ON UT.USER_ID = MRUR.USER_ID
+JOIN USER_ROLE UR 
+    ON MRUR.USER_ROLE_ID = UR.USER_ROLE_ID
+JOIN RAP_METRICS_DETAILS RMD 
+    ON MRUR.RMM_ID = RMD.RMM_ID
+JOIN RAP_METRICS_PACK_MPP RMPM 
+    ON RMD.METRIC_DETAIL_ID = RMPM.METRIC_DETAIL_ID
+JOIN RAP_METRICS_MAPPING RMM 
+    ON RMPM.METRICS_MAPPING_ID = RMM.METRICS_MAPPING_ID
+JOIN RAP_RISK_TYPE RRT 
+    ON RMM.RISK_TYPE_ID = RRT.RISK_TYPE_ID
+JOIN RAP_RISK_GROUP RRG 
+    ON RRT.RISK_GROUP_ID = RRG.RISK_GROUP_ID
+JOIN MEET_INSTC MI 
+    ON MI.RMM_ID = RMD.RMM_ID
+WHERE MI.MO_DT_ID = (
+        SELECT MAX(MO.MO_DT_ID)
+        FROM MEET_INSTC MO
+        WHERE MO.MEET_INSTC_ID = MI.MEET_INSTC_ID
+          AND MO.MEET_STAT_ID IN (1, 2)   -- active statuses
+    )
+  AND RMD.METRIC_FLAG <> 'F'
+ORDER BY UT.USER_NAME;
