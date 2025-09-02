@@ -1,35 +1,29 @@
-Subject: Sprint 40 Ticket Assignment Request
+Subject: Request for Latest PyCharm Installation or Debugger Patch
 
-Hi Nitin,
+Description:
+While working on my Python projects, I am facing an issue with PyCharm debugger. Normal run works fine, but when I try to run in debug mode, it fails with the following error:
 
-As part of Sprint 40 planning, I would like to request the following ticket assignments since I will be on leave tomorrow and may not be available during the Sprint call:
+ModuleNotFoundError: No module named 'imp'
 
-1. KMIT-1249 – Code changes and deployments for Master Metric ID alignment
+Details:
 
-The data fixes were completed in the current Sprint, and I would like to continue with the code changes and deployments in Sprint 40.
+Current PyCharm version available in HSBC Software Center: PyCharm Community Edition 2020.x
 
-Request: Assign this ticket to me.
+Current Python version in use: Python 3.12
 
+The issue occurs because PyCharm 2020 uses the deprecated imp module, which has been removed from Python 3.12.
 
-
-2. KMIT-1251 – Backend implementation: Query, Python service, and API development for Security Report
-
-This is a continuation of the work done in KMIT-308.
-
-Request: Assign this ticket to me.
+This makes debugging impossible in the current setup.
 
 
+Request:
 
-3. KMIT-1250 – UI enhancements: Add Report tab in Super Admin page for Security Access Report
+Kindly provide the latest version of PyCharm (2024.x or higher) that is compatible with Python 3.12.
+OR
 
-This ticket covers the front-end changes required for my backend ticket (KMIT-1251).
-
-Request: Assign this ticket to Prasad.
-
-
+If upgrade is not possible, please apply a patch to the current PyCharm installation by replacing deprecated imp references with importlib in the PyCharm debugger helper files.
 
 
-Please ensure these are considered during tomorrow’s Sprint call so that we have the right assignments in place for Sprint 40.
+Impact:
 
-Thanks,
-Krishna Chaitanya
+I am unable to debug Python applications, which is critical for development and troubleshooting.
