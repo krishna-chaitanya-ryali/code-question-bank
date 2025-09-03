@@ -1,10 +1,11 @@
-Subject: Sign-off & Testing Reminder – Python Version Migration (3.6 → 3.12.8)
-
 Dear Team,
 
 As part of the evergreening activity, we have successfully migrated our codebase from Python 3.6 to Python 3.12.8. All relevant packages, functionalities, and most of the code have been updated and verified. The release has been planned for deployment shortly.
 
-Before we move this to production, each of you is requested to perform one round of testing on your respective functionalities/applications and validate that everything is working as expected.
+Before we move this to production, each team member is required to perform one round of testing on their respective functionalities/applications and validate that everything is working as expected.
+
+🔹 Mandatory Testing:
+Sanket, Tushar, Krishna, Prasad, and Deepali – please ensure that you complete at least one round of testing on your areas without fail and confirm.
 
 ⚠️ Important:
 Any findings/issues must be shared before deployment. As highlighted by the DevOps team, post-deployment issues will not be considered for fixes in this release. Please ensure you report any observations now, not after go-live.
