@@ -1,29 +1,19 @@
-Subject: Request for Latest PyCharm Installation or Debugger Patch
+Subject: Sign-off & Testing Reminder – Python Version Migration (3.6 → 3.12.8)
 
-Description:
-While working on my Python projects, I am facing an issue with PyCharm debugger. Normal run works fine, but when I try to run in debug mode, it fails with the following error:
+Dear Team,
 
-ModuleNotFoundError: No module named 'imp'
+As part of the evergreening activity, we have successfully migrated our codebase from Python 3.6 to Python 3.12.8. All relevant packages, functionalities, and most of the code have been updated and verified. The release has been planned for deployment shortly.
 
-Details:
+Before we move this to production, each of you is requested to perform one round of testing on your respective functionalities/applications and validate that everything is working as expected.
 
-Current PyCharm version available in HSBC Software Center: PyCharm Community Edition 2020.x
+⚠️ Important:
+Any findings/issues must be shared before deployment. As highlighted by the DevOps team, post-deployment issues will not be considered for fixes in this release. Please ensure you report any observations now, not after go-live.
 
-Current Python version in use: Python 3.12
+This is the final sign-off stage, and your confirmation/testing is critical to ensure a smooth transition.
 
-The issue occurs because PyCharm 2020 uses the deprecated imp module, which has been removed from Python 3.12.
+Kindly complete the validations and share any feedback at the earliest.
 
-This makes debugging impossible in the current setup.
+Thanks for your cooperation.
 
-
-Request:
-
-Kindly provide the latest version of PyCharm (2024.x or higher) that is compatible with Python 3.12.
-OR
-
-If upgrade is not possible, please apply a patch to the current PyCharm installation by replacing deprecated imp references with importlib in the PyCharm debugger helper files.
-
-
-Impact:
-
-I am unable to debug Python applications, which is critical for development and troubleshooting.
+Best regards,
+Krishna
