@@ -1,42 +1,40 @@
 SELECT
-    ut.user_name                            AS user_name,
-    mrur.emp_id                             AS emp_id,
-    rrg.rmm_display_name                    AS rmm_name,
-    rrt.risk_type                           AS risk_type,
-    ur.role_name                            AS user_role,
-    mrur.access_rational                    AS access_rational,
-    CASE
-        WHEN rmpm.metrics_display IS NULL
-        THEN rmd.metrics_display
-        ELSE rmpm.metrics_display
-    END                                     AS metrics_name
-FROM user_tab ut
-JOIN map_rap_user_role mrur
-      ON mrur.user_id = ut.user_id
-     AND NVL(mrur.is_active, 1) = 1
-JOIN user_role ur
-      ON ur.user_role_id = mrur.user_role_id
-JOIN metric_access ma
-      ON ma.user_id = mrur.user_id
-     AND ma.user_role_id = mrur.user_role_id
-     AND NVL(ma.is_active, 1) = 1
-JOIN rap_metrics_details rmd
-      ON rmd.metric_detail_id = ma.metric_detail_id
-JOIN rap_risk_type rrt
-      ON rrt.risk_type_id = rmd.risk_type_id
-JOIN rap_rmm_group rrg
-      ON rrg.rmm_id = mrur.rmm_id
-LEFT JOIN rap_metrics_mapping rmpm
-      ON rmpm.metric_detail_id = rmd.metric_detail_id
-     AND rmpm.rmm_id          = mrur.rmm_id
-JOIN meet_instc mi
-      ON mi.rmm_id = mrur.rmm_id
-WHERE mi.dt_id = (
-        SELECT MAX(mo.dt_id)
-        FROM meet_instc mo
-        WHERE mo.rmm_id = mrur.rmm_id
-          AND mo.meet_stat_id IN (1, 2)
-      )
--- If you have a flag on metrics to exclude, keep this:
---  AND rmd.metric_flag <> 'F'
-ORDER BY rrg.rmm_display_name, ut.user_name, ur.role_name, metrics_name;
+    RRG.RMM_ID,
+    RAP.RAP_INSTANCE_ID,
+    UT.USER_NAME,
+    UT.EMP_ID,
+    RRG.RMM_DISPLAY_NAME,
+    RRT.RISK_HEADER,
+    UR.USER_ROLE_NAME,
+    MRUR.ROLE_DESC,
+    MRUR.RATIONAL AS "ACCESS_RATIONAL",
+    CASE WHEN RMD.METRICS_DISPLAY IS NULL
+         THEN RPMP.METRICS_DISP
+         ELSE RMD.METRICS_DISPLAY
+    END AS METRICS_DISP
+FROM USER_TAB UT
+JOIN MAP_RAP_USER_ROLE MRUR ON UT.USER_ID = MRUR.USER_ID
+JOIN METRIC_ACCESS MIA ON MRUR.USER_ID = MIA.USER_ID
+JOIN USER_ROLES UR ON MRUR.ROLE_ID = UR.USER_ROLE_ID
+JOIN RAP_METRICS_DETAIL RMD ON MIA.METRIC_DETAIL_ID = RMD.METRIC_DETAIL_ID
+JOIN RAP_RISK_TYPE RRT ON RMD.RISK_TYPE_ID = RRT.RISK_TYPE_ID
+JOIN RAP_RMM_GROUP RRG ON RRT.RMM_ID = RRG.RMM_ID
+JOIN RAP_METRICS_PACK_MAPPING RPMP ON RMD.RAP_METRICS_MAPPING_ID = RPMP.RAP_METRICS_MAPPING_ID
+JOIN RAP RAP ON RAP.RAP_INSTANCE_ID = RMD.RAP_INSTANCE_ID
+WHERE MRUR.RMM_ID = RRG.RMM_ID
+  AND RRG.RMM_ID IN ({placeholders})
+  AND RAP.RAP_INSTANCE_ID = (
+        SELECT MO.MEET_INSTC_ID
+          FROM MEET_INSTC MO
+         WHERE MO.RMM_ID = MRUR.RMM_ID
+           AND MO.DT_ID = (
+                 SELECT MAX(MI.DT_ID)
+                   FROM MEET_INSTC MI
+                        JOIN MEET_STAT MS
+                          ON MI.MEET_STAT_ID = MS.MEET_STAT_ID
+                  WHERE MI.RMM_ID = MRUR.RMM_ID
+                    AND MI.MEET_STAT_ID IN (2,1)
+           )
+     )
+  AND RMD.METRIC_FLAG <> 'removed'
+ORDER BY UT.USER_NAME
