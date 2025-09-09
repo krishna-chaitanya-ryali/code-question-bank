@@ -1,10 +1,12 @@
-Subject: Functional Testing Sign-off – ARAP Application Python Migration (3.6 → 3.12.8)
+Subject: Request for UAT Sign-off – Code Fixes for Master Metric Updates
 
-Dear Team,
+Hi Sandeep / Bishmai,
 
-We have completed functional testing of the ARAP (Risk-Appetite Profile) application post-migration from Python 3.6 to Python 3.12.8. All functionalities have been verified and are working as expected.
+Good afternoon.
 
-Accordingly, we are providing our functional testing sign-off, and the DevOps team may proceed with planning the deployment.
+As part of the recent activity, the code fixes have been completed and deployed in the UAT environment. I have tested the changes, and everything is working as expected.
 
-Thanks,
+I request you to kindly validate the changes from your side and provide your UAT sign-off so that we can proceed with the production deployment.
+
+Thanks & Regards,
 Krishna
