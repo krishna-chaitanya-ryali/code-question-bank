@@ -1,12 +1,61 @@
-Subject: Request for UAT Sign-off – Code Fixes for Master Metric Updates
+Jira Ticket: DBA Support for Production Deployment – Datetime Migration
 
-Hi Sandeep / Bishmai,
+Summary:
+Requesting DBA assistance for executing SQL scripts related to datetime conversion and timestamp migration during the PROD deployment scheduled on Saturday, 20th [Month, Year].
 
-Good afternoon.
+Description:
+As part of our initiative to standardize datetime handling across the application, we have performed the following in Dev and UAT:
 
-As part of the recent activity, the code fixes have been completed and deployed in the UAT environment. I have tested the changes, and everything is working as expected.
+Database changes (Dev & UAT completed):
 
-I request you to kindly validate the changes from your side and provide your UAT sign-off so that we can proceed with the production deployment.
+Added new timestamp columns (*_TMP) for datetime migration.
 
-Thanks & Regards,
-Krishna
+Backfilled data by converting multiple datetime string formats into proper TIMESTAMP.
+
+Handled exceptions for inconsistent formats (e.g., DD-MON-YY, DD-MM-YYYY HH24:MI:SS, YYYYMMDD).
+
+Updated relevant business tables (e.g., MAP_RAP_USER_ROLE, MEET_INSTC, RAP_METRICS_DETAILS, etc.).
+
+Implemented default CREAT_DT and UPDT_DT triggers to avoid null values.
+
+Verified data consistency and completed code changes in UAT.
+
+Code changes (UAT completed):
+
+Updated queries and logic to use new timestamp columns.
+
+Validated all functionalities successfully in UAT.
+
+Production Deployment Requirement:
+On 20th, we need DBA support to:
+
+Execute all approved SQL migration scripts on PROD.
+
+Validate data migration for key tables.
+
+Ensure triggers for CREAT_DT and UPDT_DT are created correctly in PROD.
+
+Support the application team during smoke testing post-deployment.
+
+Action Required from DBA:
+
+Confirm availability on Saturday, 20th [Month, Year] for deployment window.
+
+Execute the provided SQL scripts in sequence (scripts will be shared prior to release).
+
+Validate execution logs and confirm successful run.
+
+Provide rollback support in case of any issues.
+
+Deployment Date/Time:
+📅 Saturday, 20th [Month, Year]
+🕑 Tentative window: [Add your planned downtime/start time].
+
+Assignee: [DBA – Naga / DBA Team]
+Reporter: [You / Your team lead]
+
+Attachments:
+
+SQL Scripts (to be added before PROD release).
+
+UAT Sign-off Mail / Confluence Page link.
