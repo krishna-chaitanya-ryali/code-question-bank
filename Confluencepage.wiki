@@ -1,61 +1,174 @@
-Jira Ticket: DBA Support for Production Deployment – Datetime Migration
+Conference Page: Security Report – Query & Backend Implementation
 
-Summary:
-Requesting DBA assistance for executing SQL scripts related to datetime conversion and timestamp migration during the PROD deployment scheduled on Saturday, 20th [Month, Year].
+1. Background
 
-Description:
-As part of our initiative to standardize datetime handling across the application, we have performed the following in Dev and UAT:
+We have been working on the Security Report feature, which provides detailed insights about user roles, metric access, and dashboards. Initially, the existing query was restricted to fetching results for a single dashboard (based on a hard-coded RMM_ID).
 
-Database changes (Dev & UAT completed):
+As part of the enhancement, we extended the logic to:
 
-Added new timestamp columns (*_TMP) for datetime migration.
+Fetch all dashboards (all RMM_IDs).
 
-Backfilled data by converting multiple datetime string formats into proper TIMESTAMP.
+Allow filtering by specific RMM_ID(s) dynamically (single, multiple).
 
-Handled exceptions for inconsistent formats (e.g., DD-MON-YY, DD-MM-YYYY HH24:MI:SS, YYYYMMDD).
+Prepare this query for integration with the backend Python service.
 
-Updated relevant business tables (e.g., MAP_RAP_USER_ROLE, MEET_INSTC, RAP_METRICS_DETAILS, etc.).
 
-Implemented default CREAT_DT and UPDT_DT triggers to avoid null values.
 
-Verified data consistency and completed code changes in UAT.
+---
 
-Code changes (UAT completed):
+2. Existing Issue
 
-Updated queries and logic to use new timestamp columns.
+Original query required explicitly passing RMM_ID = <value> (e.g., RMM_ID = 2).
 
-Validated all functionalities successfully in UAT.
+This limited the report output to one dashboard only.
 
-Production Deployment Requirement:
-On 20th, we need DBA support to:
+Not reusable for multiple dashboards or dynamic filtering.
 
-Execute all approved SQL migration scripts on PROD.
 
-Validate data migration for key tables.
 
-Ensure triggers for CREAT_DT and UPDT_DT are created correctly in PROD.
+---
 
-Support the application team during smoke testing post-deployment.
+3. Query Enhancements
 
-Action Required from DBA:
+✅ Updated SQL for all dashboards
 
-Confirm availability on Saturday, 20th [Month, Year] for deployment window.
+SELECT
+    RRG.RMM_ID,
+    RAP.RAP_INSTANCE_ID,
+    UT.USER_NAME,
+    UT.EMP_ID,
+    RRG.RMM_DISPLAY_NAME,
+    RRT.RISK_HEADER,
+    UR.USER_ROLE_NAME,
+    MRUR.ROLE_DESC,
+    MRUR.RATIONAL AS "ACCESS_RATIONAL",
+    CASE WHEN RMD.METRICS_DISPLAY IS NULL
+         THEN RPMP.METRICS_DISP
+         ELSE RMD.METRICS_DISPLAY
+    END AS METRICS_DISP
+FROM USER_TAB UT
+JOIN MAP_RAP_USER_ROLE MRUR ON UT.USER_ID = MRUR.USER_ID
+JOIN METRIC_ACCESS MIA ON MRUR.USER_ID = MIA.USER_ID
+JOIN USER_ROLES UR ON MRUR.ROLE_ID = UR.USER_ROLE_ID
+JOIN RAP_METRICS_DETAIL RMD ON MIA.METRIC_DETAIL_ID = RMD.METRIC_DETAIL_ID
+JOIN RAP_RISK_TYPE RRT ON RMD.RISK_TYPE_ID = RRT.RISK_TYPE_ID
+JOIN RAP_RMM_GROUP RRG ON RRT.RMM_ID = RRG.RMM_ID
+JOIN RAP_METRICS_PACK_MAPPING RPMP ON RMD.RAP_METRICS_MAPPING_ID = RPMP.RAP_METRICS_MAPPING_ID
+JOIN RAP RAP ON RAP.RAP_INSTANCE_ID = RMD.RAP_INSTANCE_ID
+WHERE MRUR.RMM_ID = RRG.RMM_ID
+  AND RAP.RAP_INSTANCE_ID = (
+        SELECT MO.MEET_INSTC_ID
+          FROM MEET_INSTC MO
+         WHERE MO.RMM_ID = MRUR.RMM_ID
+           AND MO.DT_ID = (
+                 SELECT MAX(MI.DT_ID)
+                   FROM MEET_INSTC MI
+                        JOIN MEET_STAT MS
+                          ON MI.MEET_STAT_ID = MS.MEET_STAT_ID
+                  WHERE MI.RMM_ID = MRUR.RMM_ID
+                    AND MI.MEET_STAT_ID IN (2,1)
+           )
+     )
+  AND RMD.METRIC_FLAG <> 'removed'
+ORDER BY UT.USER_NAME;
 
-Execute the provided SQL scripts in sequence (scripts will be shared prior to release).
+This version fetches all dashboards (all RMM_IDs).
 
-Validate execution logs and confirm successful run.
+It no longer restricts results to a hard-coded ID.
 
-Provide rollback support in case of any issues.
 
-Deployment Date/Time:
-📅 Saturday, 20th [Month, Year]
-🕑 Tentative window: [Add your planned downtime/start time].
 
-Assignee: [DBA – Naga / DBA Team]
-Reporter: [You / Your team lead]
+---
 
-Attachments:
+✅ Customizable Query (Specific RMM_IDs)
 
-SQL Scripts (to be added before PROD release).
+If we want to fetch only selected dashboards, we add a filter:
 
-UAT Sign-off Mail / Confluence Page link.
+AND RRG.RMM_ID IN (:1, :2, :3, ...)
+
+Here :1, :2, :3 are bind variables to be provided by the backend service.
+
+Supports one ID (e.g., 5) or multiple IDs (e.g., 5, 7, 9).
+
+
+
+---
+
+4. Python Backend Integration
+
+We prepared Python code (using cx_Oracle) to handle dynamic RMM_ID filtering:
+
+import cx_Oracle
+
+# Connection
+conn = cx_Oracle.connect("username", "password", "host:port/service_name")
+cursor = conn.cursor()
+
+# Example: dynamically pass one or multiple RMM_IDs
+rmm_ids = [5, 7, 9]
+
+# Build placeholders dynamically
+placeholders = ",".join([f":{i+1}" for i in range(len(rmm_ids))])
+
+query = f"""
+SELECT RRG.RMM_ID, RAP.RAP_INSTANCE_ID, UT.USER_NAME, UT.EMP_ID,
+       RRG.RMM_DISPLAY_NAME, RRT.RISK_HEADER, UR.USER_ROLE_NAME,
+       MRUR.ROLE_DESC, MRUR.RATIONAL AS "ACCESS_RATIONAL",
+       CASE WHEN RMD.METRICS_DISPLAY IS NULL
+            THEN RPMP.METRICS_DISP
+            ELSE RMD.METRICS_DISPLAY
+       END AS METRICS_DISP
+FROM USER_TAB UT
+JOIN MAP_RAP_USER_ROLE MRUR ON UT.USER_ID = MRUR.USER_ID
+JOIN METRIC_ACCESS MIA ON MRUR.USER_ID = MIA.USER_ID
+JOIN USER_ROLES UR ON MRUR.ROLE_ID = UR.USER_ROLE_ID
+JOIN RAP_METRICS_DETAIL RMD ON MIA.METRIC_DETAIL_ID = RMD.METRIC_DETAIL_ID
+JOIN RAP_RISK_TYPE RRT ON RMD.RISK_TYPE_ID = RRT.RISK_TYPE_ID
+JOIN RAP_RMM_GROUP RRG ON RRT.RMM_ID = RRG.RMM_ID
+JOIN RAP_METRICS_PACK_MAPPING RPMP ON RMD.RAP_METRICS_MAPPING_ID = RPMP.RAP_METRICS_MAPPING_ID
+JOIN RAP RAP ON RAP.RAP_INSTANCE_ID = RMD.RAP_INSTANCE_ID
+WHERE MRUR.RMM_ID = RRG.RMM_ID
+  AND RRG.RMM_ID IN ({placeholders})
+  AND RAP.RAP_INSTANCE_ID = (
+        SELECT MO.MEET_INSTC_ID
+          FROM MEET_INSTC MO
+         WHERE MO.RMM_ID = MRUR.RMM_ID
+           AND MO.DT_ID = (
+                 SELECT MAX(MI.DT_ID)
+                   FROM MEET_INSTC MI
+                        JOIN MEET_STAT MS
+                          ON MI.MEET_STAT_ID = MS.MEET_STAT_ID
+                  WHERE MI.RMM_ID = MRUR.RMM_ID
+                    AND MI.MEET_STAT_ID IN (2,1)
+           )
+     )
+  AND RMD.METRIC_FLAG <> 'removed'
+ORDER BY UT.USER_NAME
+"""
+
+cursor.execute(query, rmm_ids)
+rows = cursor.fetchall()
+for row in rows:
+    print(row)
+
+cursor.close()
+conn.close()
+
+
+---
+
+5. Next Steps
+
+✅ Query validated for all dashboards.
+
+✅ Support for custom RMM_ID filters implemented.
+
+✅ Python integration ready for backend service.
+
+⏳ Pending: UI Enhancements (separate ticket) for report access.
+
+
+
+---
+
+👉 This page will serve as the reference for
