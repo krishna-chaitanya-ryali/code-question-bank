@@ -1,43 +1,38 @@
-Title: Incorrect error message displayed when mandatory fields are missing during metric submission
+Jira Sub-Task: Large Excel Data Download Issue (504 Gateway Timeout)
+
+Summary:
+Investigate and fix 504 Gateway Timeout error while downloading large Security Access Reports.
 
 Description:
-When submitting a metric (either using Save as Draft or Submit as Final) without filling in the mandatory fields (e.g., As on Date, Actuals, Aging), the system currently shows an incorrect error message:
+During UAT, we observed that downloading Security Access Reports with very large datasets (approx. 1.6 lakh+ records) results in a 504 Gateway Timeout error.
 
-"Error in saving information to the database."
+Smaller datasets (up to ~5,000 records) work fine.
 
-This message is misleading and does not guide the user to resolve the issue.
+Larger datasets fail due to long processing and response time.
 
-Expected Behavior:
-The system should display a clear and user-friendly validation message, such as:
+Root Cause (Initial Analysis):
 
-“Please enter As on Date.”
+Current implementation generates Excel synchronously within the request cycle.
 
-“Actuals are required.”
+For huge data sets, backend processing exceeds server timeout (6 minutes) leading to 504 error.
 
-“Aging is mandatory.”
+Proposed Fix:
 
-Steps to Reproduce:
+Implement an asynchronous Excel generation process (background job).
 
-Go to the metric submission screen.
+Return a download link once the file is ready.
 
-Select a metric.
+Store generated files in FOLDER_EXCEL directory with proper cleanup policy.
 
-Leave mandatory fields (e.g., As on Date) empty.
+Acceptance Criteria:
 
-Click Save as Draft or Submit as Final.
+User can trigger download for large datasets without timeout.
 
-Actual Result:
-Error message displayed: "Error in saving information to the database."
+User receives notification / download link once file is ready.
 
-Expected Result:
-Specific validation message indicating which mandatory field(s) are missing.
+Excel download works for both small and large datasets consistently.
 
-Impact:
+Priority: High (as business needs full data export).
 
-Users are confused by the technical error message.
-
-They are unable to identify which mandatory field is missing.
-
-Leads to failed submissions and poor user experience.
-
-Priority: High (affects core functionality and usability).
+Requested By:
+R Krishna Chaitanya
