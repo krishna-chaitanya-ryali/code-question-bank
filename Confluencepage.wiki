@@ -1,61 +1,43 @@
-Jira Ticket: Production Deployment – Security Access Report Enhancement
-
-Summary:
-Deployment of Security Access Report Excel download functionality (Back-end + Front-end changes).
+Title: Incorrect error message displayed when mandatory fields are missing during metric submission
 
 Description:
-We have implemented a new enhancement to allow generation and download of Security Access Reports in Excel format. The changes include:
+When submitting a metric (either using Save as Draft or Submit as Final) without filling in the mandatory fields (e.g., As on Date, Actuals, Aging), the system currently shows an incorrect error message:
 
-Backend (Flask)
+"Error in saving information to the database."
 
-Added API endpoint /get_security_access_report for Excel report preparation.
+This message is misleading and does not guide the user to resolve the issue.
 
-Added API endpoint /download_excel/<filename> for secure file streaming.
+Expected Behavior:
+The system should display a clear and user-friendly validation message, such as:
 
-Enhanced existing functions download_excel_report and load_data to support dynamic rmm_id inputs.
+“Please enter As on Date.”
 
+“Actuals are required.”
 
-Frontend (JavaScript)
+“Aging is mandatory.”
 
-Integrated AJAX call to /get_security_access_report.
+Steps to Reproduce:
 
-Implemented Excel download logic using /download_excel/<filename>.
+Go to the metric submission screen.
 
-User now gets a seamless download of reports with success/failure messages.
+Select a metric.
 
+Leave mandatory fields (e.g., As on Date) empty.
 
+Click Save as Draft or Submit as Final.
 
-Tasks for Deployment Team (DBA/DevOps):
+Actual Result:
+Error message displayed: "Error in saving information to the database."
 
-1. Deploy updated Python Flask backend code to production server.
+Expected Result:
+Specific validation message indicating which mandatory field(s) are missing.
 
+Impact:
 
-2. Deploy updated JavaScript front-end changes.
+Users are confused by the technical error message.
 
+They are unable to identify which mandatory field is missing.
 
-3. Ensure FOLDER_EXCEL directory exists and has proper write permissions.
+Leads to failed submissions and poor user experience.
 
-
-4. Validate database connectivity for query execution.
-
-
-5. Perform smoke test:
-
-Trigger Security Access Report download for a sample rmm_id.
-
-Verify Excel file is generated and downloaded successfully.
-
-
-
-
-Rollback Plan:
-Revert to previous Flask and JavaScript versions from last stable release.
-
-Deployment Date:
-[Insert planned date & time here]
-
-Requested By:
-R Krishna Chaitanya
-
-
----
+Priority: High (affects core functionality and usability).
