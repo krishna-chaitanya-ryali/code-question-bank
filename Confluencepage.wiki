@@ -1,13 +1,22 @@
-Subject: Request for Production Update – RAP Metric Details (ERRSD-2256)
+Summary: DBA Support Required – Execute Queries on RAP_METRIC_DETAILS (ERRSD-2256)
 
-Hi Sanket,
+Description:
+As part of Jira Ticket ERRSD-2256, a user reported missing metrics in the HB-EG dashboard for the month of July, related to the Risk Type “Financial Reporting and Tax Risk.”
 
-Good Afternoon.
+I have identified the issue and prepared the required SQL queries to update the RAP_METRIC_DETAILS table. Since I don’t have access to run queries on the production database, we require DBA assistance to execute these queries.
 
-One of the RAP users raised a concern (Ticket ID: ERRSD-2256) regarding missing metrics in the HB-EG dashboard for the month of July. After investigating, I identified the root cause and prepared the required SQL queries to update the RAP_METRIC_DETAILS table. The issue is related to the Risk Type “Financial Reporting and Tax Risk.”
+Action Required:
 
-Since I don’t have access to execute queries on the production environment, I request your help in running these queries in production. I will share the prepared queries with you for reference.
+Execute the attached SQL queries in the production database.
 
-Please let me know once the updates are completed or if you need any additional clarifications from my side.
+Confirm once the queries are successfully executed.
 
-Thanks for your support.
+
+Additional Notes:
+
+The queries have been tested in the lower environment and are working as expected.
+
+Please let me know if you need further details or clarifications.
+
+
+Assignee/Team: [DBA Team Name
