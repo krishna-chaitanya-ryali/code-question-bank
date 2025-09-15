@@ -1,38 +1,16 @@
-Jira Sub-Task: Large Excel Data Download Issue (504 Gateway Timeout)
+Subject: Request for Production Update – RAP Metric Details
 
-Summary:
-Investigate and fix 504 Gateway Timeout error while downloading large Security Access Reports.
+Hi Sanket,
 
-Description:
-During UAT, we observed that downloading Security Access Reports with very large datasets (approx. 1.6 lakh+ records) results in a 504 Gateway Timeout error.
+Good Afternoon.
 
-Smaller datasets (up to ~5,000 records) work fine.
+One of the RAP users has raised a concern regarding missing metrics. I investigated the issue and identified the root cause. I have prepared the required SQL queries to update the RAP_METRIC_DETAILS table.
 
-Larger datasets fail due to long processing and response time.
+Since I don’t have the necessary access to run queries on the production environment, I request your support in executing these queries on production. I will share the prepared queries with you for reference.
 
-Root Cause (Initial Analysis):
+Please let me know once the updates are done, or if you need any clarification from my side.
 
-Current implementation generates Excel synchronously within the request cycle.
+Thanks for your help.
 
-For huge data sets, backend processing exceeds server timeout (6 minutes) leading to 504 error.
-
-Proposed Fix:
-
-Implement an asynchronous Excel generation process (background job).
-
-Return a download link once the file is ready.
-
-Store generated files in FOLDER_EXCEL directory with proper cleanup policy.
-
-Acceptance Criteria:
-
-User can trigger download for large datasets without timeout.
-
-User receives notification / download link once file is ready.
-
-Excel download works for both small and large datasets consistently.
-
-Priority: High (as business needs full data export).
-
-Requested By:
-R Krishna Chaitanya
+Best Regards,
+Krishna Chaitanya
