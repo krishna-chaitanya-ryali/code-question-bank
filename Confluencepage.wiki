@@ -1,16 +1,13 @@
-Subject: Request for Production Update – RAP Metric Details
+Subject: Request for Production Update – RAP Metric Details (ERRSD-2256)
 
 Hi Sanket,
 
 Good Afternoon.
 
-One of the RAP users has raised a concern regarding missing metrics. I investigated the issue and identified the root cause. I have prepared the required SQL queries to update the RAP_METRIC_DETAILS table.
+One of the RAP users raised a concern (Ticket ID: ERRSD-2256) regarding missing metrics in the HB-EG dashboard for the month of July. After investigating, I identified the root cause and prepared the required SQL queries to update the RAP_METRIC_DETAILS table. The issue is related to the Risk Type “Financial Reporting and Tax Risk.”
 
-Since I don’t have the necessary access to run queries on the production environment, I request your support in executing these queries on production. I will share the prepared queries with you for reference.
+Since I don’t have access to execute queries on the production environment, I request your help in running these queries in production. I will share the prepared queries with you for reference.
 
-Please let me know once the updates are done, or if you need any clarification from my side.
+Please let me know once the updates are completed or if you need any additional clarifications from my side.
 
-Thanks for your help.
-
-Best Regards,
-Krishna Chaitanya
+Thanks for your support.
