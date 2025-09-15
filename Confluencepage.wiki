@@ -1,22 +1,16 @@
-Summary: DBA Support Required – Execute Queries on RAP_METRIC_DETAILS (ERRSD-2256)
+Subject: Request for TPAM/Paraccess on New Evergreening Servers
 
-Description:
-As part of Jira Ticket ERRSD-2256, a user reported missing metrics in the HB-EG dashboard for the month of July, related to the Risk Type “Financial Reporting and Tax Risk.”
+Hi Sudeep,
 
-I have identified the issue and prepared the required SQL queries to update the RAP_METRIC_DETAILS table. Since I don’t have access to run queries on the production database, we require DBA assistance to execute these queries.
+Good Afternoon.
 
-Action Required:
+Earlier, I used to have root access on both the DBA and application servers for production, and I also completed the required DBA and Linux certifications to support those activities.
 
-Execute the attached SQL queries in the production database.
+As part of the recent evergreening activity, new servers have been added. I am not requesting root access on these new servers (application or database). Instead, I would like to request TPAM/Paraccess for the specific accounts under which our applications are hosted. This will allow me to generate the required passwords and carry out our day-to-day activities smoothly.
 
-Confirm once the queries are successfully executed.
+Could you please provide the required TPAM/Paraccess for both the application and database servers for the respective accounts associated with our applications?
 
+Your support on this will be very helpful. Please let me know if you need any further details from my side.
 
-Additional Notes:
-
-The queries have been tested in the lower environment and are working as expected.
-
-Please let me know if you need further details or clarifications.
-
-
-Assignee/Team: [DBA Team Name
+Thanks & Regards,
+Krishna Chaitanya
