@@ -1,3 +1,20 @@
-I understand. This activity is actually a repeated effort for us as well — we had to run the same DB scripts earlier on old Dev/UAT and then again on the new servers. Since it’s a purely manual process with large queries, there is always a higher chance of small misses.
+Hi Sandeep,
 
-That said, we’ll tighten the checks going forward and work together to close these quickly, so it doesn’t affect timelines.
+The backend and frontend changes for the Security Access Report have been completed and deployed in UAT. We have validated the functionality, including downloading reports with large datasets (1.5 lakh+ records), and everything is working as expected.
+
+Summary of Changes Implemented:
+
+Optimized backend logic to handle large Excel report generation without timeout or memory issues.
+
+Implemented background processing with polling to ensure smooth user experience.
+
+Added file readiness check before download to avoid incomplete/zero-byte files.
+
+Successfully tested report downloads for both All Packs and Selected Packs scenarios.
+
+
+We are planning to release this to Production on 18th September.
+Requesting your UAT sign-off to proceed with the release.
+
+Thanks & Regards,
+Krishna Chaitanya
