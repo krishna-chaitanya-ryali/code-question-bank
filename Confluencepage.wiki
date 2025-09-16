@@ -1,16 +1,3 @@
-Subject: Request for TPAM/Paraccess on New Evergreening Servers
+Thanks for highlighting this. These changes were updated on the new evergreening server last Friday, and we had to execute around 600 lines of manual SQL, so a few misses can happen. I didn’t see nulls in the risk management meet table, but there is one in rapidity testing, which might have been overlooked while handling multiple parallel tasks.
 
-Hi Sudeep,
-
-Good Afternoon.
-
-Earlier, I used to have root access on both the DBA and application servers for production, and I also completed the required DBA and Linux certifications to support those activities.
-
-As part of the recent evergreening activity, new servers have been added. I am not requesting root access on these new servers (application or database). Instead, I would like to request TPAM/Paraccess for the specific accounts under which our applications are hosted. This will allow me to generate the required passwords and carry out our day-to-day activities smoothly.
-
-Could you please provide the required TPAM/Paraccess for both the application and database servers for the respective accounts associated with our applications?
-
-Your support on this will be very helpful. Please let me know if you need any further details from my side.
-
-Thanks & Regards,
-Krishna Chaitanya
+Since DB null checks are still manual on 25.2 tables, let’s keep collaborating on such findings — we’ll fix them as they come up. Appreciate your support.
