@@ -1,3 +1,1 @@
-Thanks for highlighting this. These changes were updated on the new evergreening server last Friday, and we had to execute around 600 lines of manual SQL, so a few misses can happen. I didn’t see nulls in the risk management meet table, but there is one in rapidity testing, which might have been overlooked while handling multiple parallel tasks.
-
-Since DB null checks are still manual on 25.2 tables, let’s keep collaborating on such findings — we’ll fix them as they come up. Appreciate your support.
+Understood. The changes in Dev/UAT were done in a hurry last Friday since you wanted them quickly, and we were also handling multiple tasks in parallel. Production, however, is a planned activity — we’ll go step by step and verify all the tables thoroughly, so I don’t think this issue will occur in prod.
