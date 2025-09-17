@@ -1,3 +1,34 @@
+Production Deployment – Checklist
+
 Hi Team,
 
-Just a quick reminder — for every release, it’s mandatory to raise a ticket with the DBA / P&I team for a database schema backup. Please ensure this is done so we have proper backups before any changes go in.
+Since everyone will now be involved in production deployments, please follow the below checklist to ensure smooth and error-free deployments:
+
+✅ Pre-Deployment Steps
+
+1. UAT Sign-off – Raise a UAT sign-off request at least 3 days before the planned deployment date.
+
+
+2. GitHub Branches – Once UAT sign-off is received, prepare the required GitHub branches for deployment.
+
+
+3. DB Schema Backup – Raise a ticket in the PNDA JIRA board requesting a schema backup from the DBA team.
+
+
+4. RAP JIRA Notifications – Turn on notifications in the RAP JIRA board to monitor any issues during/after deployment.
+
+
+5. TPAM Approvals – If TPAM links are required, get them approved 24 hours before the scheduled deployment start time.
+
+
+
+✅ Post-Deployment Steps
+
+1. Close the CR – Immediately close the Change Request (CR) after successful deployment.
+
+
+2. Send Confirmation Mail – Inform stakeholders that the deployment was successful.
+
+
+3. Turn Off Notifications – Disable the notifications in the web application after deployment.
+
