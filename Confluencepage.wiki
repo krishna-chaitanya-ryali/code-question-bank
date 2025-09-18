@@ -1,32 +1,43 @@
-Production Deployment – Checklist
+Email Draft:
+
+Subject: Production Deployment – Pre & Post Deployment Checklist
 
 Hi Team,
 
-Since everyone will now be involved in production deployments, please follow the below checklist to ensure smooth and error-free deployments. The person who raises the CR will be responsible for monitoring that all steps are completed.
+As we will all be involved in production deployments going forward, please find below the checklist to be followed. The CR raiser will be responsible for monitoring that all steps are completed.
+
+If I’ve missed any point, please feel free to add on top of this list so we can make it more comprehensive.
+
+
+---
 
 ✅ Pre-Deployment Steps
 
-Step	Task	Responsibility
+Step	Task	Responsibility	Timeline
 
-1	UAT Sign-off (at least 3 days before deployment)	Business Team
-2	Prepare GitHub branches after UAT sign-off	Developer
-3	Run SAST-SCAN / SOLAR-SCAN reports and review	Developer
-4	Raise ticket in PNDA JIRA for DB schema backup	DBA
-5	Enable RAP banner notification	Developer
-6	TPAM Approvals (24 hrs before deployment)	Business + ITSO
-
-
-✅ Post-Deployment Steps
-
-Step	Task	Responsibility
-
-1	Close the Change Request (CR)	Developer
-2	Send deployment success email	Developer
-3	Turn off RAP banner notification	Developer
-4	Perform quick smoke testing (recommended)	Developer
+1	UAT Sign-off request	Business Team	At least 3 days before deployment
+2	Prepare GitHub branches after UAT sign-off	Developer	After UAT sign-off
+3	Run SAST-SCAN / SOLAR-SCAN reports and review	Developer	Before schema backup
+4	Raise ticket in PNDA JIRA for DB schema backup	DBA	Before deployment
+5	Enable RAP banner notification	Developer	Before deployment
+6	TPAM Approvals	Business + ITSO	At least 24 hrs before deployment
 
 
 
 ---
 
-👉 This way, everyone knows who owns what + the CR raiser is the overall monitor.
+✅ Post-Deployment Steps
+
+Step	Task	Responsibility	Timeline
+
+1	Close the Change Request (CR)	Developer	Immediately after deployment
+2	Send deployment success email	Developer	Immediately after deployment
+3	Turn off RAP banner notification	Developer	Immediately after deployment
+4	Perform quick smoke testing (recommended)	Developer	Immediately after deployment
+
+
+
+---
+
+Thanks,
+Krishna
