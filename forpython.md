@@ -1,23 +1,14 @@
-from flask import Response
+import numpy as np
+from flask.json.provider import DefaultJSONProvider
 
-@views.route('/download_excel_report/<filename>', methods=["GET"])
-def download_excel_report_route(filename):
-    try:
-        file_path = os.path.join(FOLDER_EXCEL, filename)
+class NumpyJSONProvider(DefaultJSONProvider):
+    def default(self, obj):
+        if isinstance(obj, (np.integer,)):
+            return int(obj)
+        if isinstance(obj, (np.floating,)):
+            return float(obj)
+        if isinstance(obj, (np.ndarray,)):
+            return obj.tolist()
+        return super().default(obj)
 
-        def generate():
-            with open(file_path, "rb") as f:
-                while True:
-                    chunk = f.read(8192)  # 8 KB at a time
-                    if not chunk:
-                        break
-                    yield chunk
-
-        response = Response(generate(), mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-        response.headers["Content-Disposition"] = f"attachment; filename={filename}"
-        response.headers["Content-Length"] = os.path.getsize(file_path)
-        return response
-
-    except Exception as e:
-        log_error.error('Error | download_excel_report | ' + str(e))
-        return "Error"
+app.json = NumpyJSONProvider(app)
