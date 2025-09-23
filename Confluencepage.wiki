@@ -1,43 +1,22 @@
-Email Draft:
+Subject: Planned Release: Incremental Data Load – Scheduled Downtime on 27th
 
-Subject: Production Deployment – Pre & Post Deployment Checklist
+Dear Team,
 
-Hi Team,
+This is to inform you that we are planning to release the Incremental Data Load feature on Saturday, 27th [Month].
 
-As we will all be involved in production deployments going forward, please find below the checklist to be followed. The CR raiser will be responsible for monitoring that all steps are completed.
+As part of this deployment:
 
-If I’ve missed any point, please feel free to add on top of this list so we can make it more comprehensive.
+Major database changes will be implemented.
 
+There will be a planned downtime of approximately 6 hours.
 
----
+Both Production and DR servers will be stopped during this window.
 
-✅ Pre-Deployment Steps
+This downtime is required to ensure smooth migration and successful deployment of the new feature. We kindly request you to plan your activities accordingly.
 
-Step	Task	Responsibility	Timeline
+We will keep you informed once the deployment is completed and systems are back online.
 
-1	UAT Sign-off request	Business Team	At least 3 days before deployment
-2	Prepare GitHub branches after UAT sign-off	Developer	After UAT sign-off
-3	Run SAST-SCAN / SOLAR-SCAN reports and review	Developer	Before schema backup
-4	Raise ticket in PNDA JIRA for DB schema backup	DBA	Before deployment
-5	Enable RAP banner notification	Developer	Before deployment
-6	TPAM Approvals	Business + ITSO	At least 24 hrs before deployment
+Please reach out if you have any questions or need additional details.
 
-
-
----
-
-✅ Post-Deployment Steps
-
-Step	Task	Responsibility	Timeline
-
-1	Close the Change Request (CR)	Developer	Immediately after deployment
-2	Send deployment success email	Developer	Immediately after deployment
-3	Turn off RAP banner notification	Developer	Immediately after deployment
-4	Perform quick smoke testing (recommended)	Developer	Immediately after deployment
-
-
-
----
-
-Thanks,
-Krishna
+Thanks & Regards,
+Krishna Chaitanya
