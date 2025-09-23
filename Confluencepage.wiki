@@ -1,5 +1,12 @@
 Hi Team,
 
-RAP UAT has been pointed to the incremental data load changes. For the next 3 days, business and QA teams will be testing the current RAP functionality with these changes.
+We have the Incremental Data Load implementation for RAP scheduled on Saturday, 27th Sept, with CR start time at 10:00 AM. Please find the plan and timings:
 
-Please note: other functionalities not dependent on incremental data load may not work as expected during this period. Our focus will be only on incremental data load testing until the next release.
+10:00 – 10:45 AM → DB schema backup (approx. 30–45 mins)
+
+10:45 AM – 01:00 PM → Execute all required DB queries (approx. 2–3 hours)
+
+After 01:00 PM → Restart RAP server & run the pipelines (services will come up automatically after pipelines run)
+
+
+👉 Requesting DBA support during the backup and DB changes window.
