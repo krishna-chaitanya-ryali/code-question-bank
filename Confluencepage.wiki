@@ -1,22 +1,5 @@
-Subject: Planned Release: Incremental Data Load – Scheduled Downtime on 27th
+Hi Team,
 
-Dear Team,
+RAP UAT has been pointed to the incremental data load changes. For the next 3 days, business and QA teams will be testing the current RAP functionality with these changes.
 
-This is to inform you that we are planning to release the Incremental Data Load feature on Saturday, 27th [Month].
-
-As part of this deployment:
-
-Major database changes will be implemented.
-
-There will be a planned downtime of approximately 6 hours.
-
-Both Production and DR servers will be stopped during this window.
-
-This downtime is required to ensure smooth migration and successful deployment of the new feature. We kindly request you to plan your activities accordingly.
-
-We will keep you informed once the deployment is completed and systems are back online.
-
-Please reach out if you have any questions or need additional details.
-
-Thanks & Regards,
-Krishna Chaitanya
+Please note: other functionalities not dependent on incremental data load may not work as expected during this period. Our focus will be only on incremental data load testing until the next release.
