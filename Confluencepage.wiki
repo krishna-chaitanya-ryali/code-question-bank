@@ -1,4 +1,44 @@
-All,
-The changes for timestamp conversion and incremental data load are now deployed in UAT.
-Request each developer to do at least one round of testing for your recent developments and confirm.
-Individual sign-off will be required before we move ahead. Please validate your respective modules and share confirmation here once done.
+Jira Ticket: Request for Schema Backup and Server Details
+
+Summary:
+Backup required for RAP schemas and confirmation of server details before production deployment.
+
+Description:
+As part of the RAP Incremental Dataload release, we are planning major DB changes (timestamp conversion and related updates). Before proceeding, we need DBA support for the following:
+
+1. Schema Backup:
+
+Take a full backup of the below schemas:
+
+GRDR_ADMIN_DEV
+
+GRDR_ADMIN_UAT
+
+GRDR_ADMIN_PROD (before deployment)
+
+
+Ensure the backup is restorable in case of rollback.
+
+
+
+2. Server Details:
+
+Share DB server names, connection strings, and instance details for DEV, UAT, PROD.
+
+Confirm downtime requirements from the DB perspective.
+
+
+
+
+Acceptance Criteria:
+
+Backups are confirmed and stored safely.
+
+DBA shares server details and confirms availability during the release window.
+
+
+Priority: High (as this is a pre-requisite for PROD release).
+
+Assignee: DBA Team (Naga)
+
+Labels: RAP, DBA, IncrementalDataload, Release
