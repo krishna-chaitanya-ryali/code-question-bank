@@ -1,7 +1,23 @@
-Hi Sandeep,
+Subject: Request for Business Validation in UAT – RAP Incremental Dataload
 
-We have tested the entire functionalities with our tester (Pratik), and everything looks good. From the business side, it would be great if you/your team could perform a high-level testing in the next 3 days.
+Hi Team,
 
-If you notice anything not working as expected, please let us know so that we can fix it before moving the code.
+As informed earlier, as part of the Incremental Dataload project, we have carried out the following major changes:
 
-Thanks!
+Converted all date/time columns (e.g., CREAT_DT, UPDT_DT, etc.) from VARCHAR/DATE to TIMESTAMP(6) format for consistency and accuracy.
+
+Updated the respective Python application code and database objects to align with this datatype change.
+
+Handled data clean-up and backfilling for inconsistent records (ensuring no null/invalid values).
+
+Ensured that common tables used by both RAP and Pack Builder are updated, with respective teams informed to align their code.
+
+
+These changes are now deployed in the UAT environment (both code and DB).
+
+We kindly request the Business team to validate all impacted functionalities in RAP on UAT and provide your sign-off. This will help us proceed smoothly with the production deployment.
+
+Please let us know if you face any issues during testing.
+
+Thanks & Regards,
+Krishna
