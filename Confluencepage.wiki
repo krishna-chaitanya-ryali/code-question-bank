@@ -1,44 +1,71 @@
-Jira Ticket: Request for Schema Backup and Server Details
+1. Short Description
 
-Summary:
-Backup required for RAP schemas and confirmation of server details before production deployment.
+Deployment of RAP Incremental Dataload changes – Timestamp conversion and related DB/application updates.
 
-Description:
-As part of the RAP Incremental Dataload release, we are planning major DB changes (timestamp conversion and related updates). Before proceeding, we need DBA support for the following:
+2. Description
 
-1. Schema Backup:
+As part of the RAP Incremental Dataload project, we have implemented changes to convert existing date columns (CREAT_DT, UPDT_DT, etc.) from VARCHAR/DATE to TIMESTAMP(6) format across multiple RAP application tables.
+This required both database changes and application code updates to ensure consistency and prevent data issues.
+Changes have already been tested in DEV and UAT environments with successful sign-off.
 
-Take a full backup of the below schemas:
+3. Why is this change being done?
 
-GRDR_ADMIN_DEV
+To standardize date handling across the RAP application.
 
-GRDR_ADMIN_UAT
+To avoid inconsistent formats and null values in date columns.
 
-GRDR_ADMIN_PROD (before deployment)
+To support incremental data load functionality with accurate timestamps.
 
+To ensure smoother integration with Pack Builder and other dependent applications.
 
-Ensure the backup is restorable in case of rollback.
+4. Implementation Plan
 
+Stop RAP and Pack Builder application services on PROD and DR servers.
 
+DBA to take schema backup (GRDR_ADMIN_PROD).
 
-2. Server Details:
+Apply database scripts for timestamp conversion and data cleanup.
 
-Share DB server names, connection strings, and instance details for DEV, UAT, PROD.
+Deploy updated Python code from GitHub to application servers.
 
-Confirm downtime requirements from the DB perspective.
+Restart all services.
 
+Perform smoke testing with developers/business to validate.
 
+5. Customer and Business Impact during the implementation
 
+RAP application and Pack Builder will be unavailable during deployment.
 
-Acceptance Criteria:
+Estimated downtime: 6 hours.
 
-Backups are confirmed and stored safely.
+No transactions or updates can be performed during this window.
 
-DBA shares server details and confirms availability during the release window.
+6. Technical Impact during the implementation
 
+DB schema changes (column type conversions to TIMESTAMP).
 
-Priority: High (as this is a pre-requisite for PROD release).
+Data migration/cleanup for inconsistent date formats.
 
-Assignee: DBA Team (Naga)
+Application services restart required.
 
-Labels: RAP, DBA, IncrementalDataload, Release
+Potential integration impact on Pack Builder during downtime.
+
+7. Backout Plan
+
+In case of failure, restore the PROD schema from backup.
+
+Roll back to previous stable version of application code.
+
+Validate rollback with quick smoke tests before reopening access.
+
+8. Post Implementation Verification Plan
+
+Verify schema changes are correctly applied.
+
+Validate RAP application is up and running.
+
+Business team to test key functionalities (create/update metric, onboarding, reporting).
+
+Confirm Pack Builder integration is working fine.
+
+Send final confirmation mail to stakeholders after validation.
