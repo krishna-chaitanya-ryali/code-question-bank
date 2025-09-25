@@ -1,57 +1,63 @@
-Change Task 1 – DBA Task (Schema Backup)
+Implementation Plan (CR – Jenkins Pipelines Execution)
 
-Summary: Take backup of RAP schema before production deployment.
-Assigned to: DBA Team
+Pre-Checks:
 
-Steps:
+Ensure all DB changes (as per CR#1) have been successfully applied in Production.
 
-Log in to DB server using T-PAM credentials.
+Verify Jenkins pipeline configurations are updated and pointing to correct Git branch.
 
-Take full export of RAP schema (expdp dump file with timestamp).
+Confirm with application and DBA teams that the environment is ready for deployment.
 
-Store backup in secure location (/dba/backups/rap/27Sep/).
+Steps to Implement:
 
-Confirm backup completion with checksum validation.
+Trigger DR Pipeline
 
-Share confirmation with Change Manager.
+Log in to Jenkins with authorized credentials.
+
+Run the Disaster Recovery (DR) pipeline.
+
+Validate successful build and deployment with no errors.
+
+Trigger Production Pipeline
+
+Once DR pipeline completes, execute the Production pipeline.
+
+Monitor build logs and deployment status in Jenkins.
+
+Verify DB Changes with Latest Code
+
+Validate that the application is picking up the newly applied DB changes.
+
+Run basic sanity checks on the application UI and APIs.
+
+Confirm schema-level changes are correctly reflected in code execution.
+
+Post-Deployment Testing
+
+Coordinate with QA/Business team to run functional validations.
+
+Confirm incremental data load feature is working as expected.
+
+Closure
+
+If testing is successful, mark CR as Implemented and update status.
+
+Share final confirmation email with stakeholders.
 
 Success Criteria:
 
-RAP schema backup available and verified.
+Both DR and Production pipelines execute successfully.
 
-Failure / Backout:
+Application runs without errors and reflects the latest DB + code changes.
 
-If backup fails, stop release and notify Change Manager immediately.
+Backout Plan:
 
-Change Task 2 – Application & SQL Execution Task
+If DR pipeline fails, do not proceed with Production pipeline.
 
-Summary: Execute production SQL changes and restart application services.
-Assigned to: Krishna & Sanket
+If Production pipeline fails or app issues are found:
 
-Steps:
+Stop application services.
 
-Log in to DB servers with T-PAM credentials.
+Roll back to last successful Jenkins build (previous stable version).
 
-Execute the approved SQL scripts (timestamp conversion + incremental data load changes).
-
-Validate execution (no invalid objects, no errors in logs).
-
-Stop RAP services on application servers.
-
-Execute schema changes & data backfill.
-
-Restart RAP services and Pack Builder services.
-
-Validate service startup through health checks.
-
-Success Criteria:
-
-SQL scripts executed successfully.
-
-Application services restarted without issues.
-
-Failure / Backout:
-
-If any issue, coordinate with DBA to restore schema backup.
-
-Restart application with old configuration.
+Notify stakeholders and DBA team immediately.
