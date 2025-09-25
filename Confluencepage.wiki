@@ -1,63 +1,24 @@
-Implementation Plan (CR – Jenkins Pipelines Execution)
+Subject: Prioritization of Production Issues
 
-Pre-Checks:
+Hi Team,
 
-Ensure all DB changes (as per CR#1) have been successfully applied in Production.
+We would like to bring clarity on handling production issues. Not all issues can be categorized or prioritized in the same way. Broadly, there are two types:
 
-Verify Jenkins pipeline configurations are updated and pointing to correct Git branch.
+System/Functional Issues (Bugs):
 
-Confirm with application and DBA teams that the environment is ready for deployment.
+These are genuine issues where functionality is impacted for users (e.g., inability to save or update a metric).
 
-Steps to Implement:
+Such issues will be treated with high priority and resolved on priority basis.
 
-Trigger DR Pipeline
+User Errors / Data Correction Requests:
 
-Log in to Jenkins with authorized credentials.
+These occur when incorrect data is entered/submitted by users, and later requests are made to reopen or modify already captured data.
 
-Run the Disaster Recovery (DR) pipeline.
+These requests are not categorized as urgent production issues, since they are not caused by application defects. They will be planned and addressed in alignment with ongoing development work.
 
-Validate successful build and deployment with no errors.
+Given the parallel workload on development and production support, we cannot treat both categories with the same urgency. Critical bugs will always remain our top priority, while data correction requests will be taken up in a planned manner.
 
-Trigger Production Pipeline
+We kindly request your cooperation in distinguishing between these types of issues and aligning expectations accordingly.
 
-Once DR pipeline completes, execute the Production pipeline.
-
-Monitor build logs and deployment status in Jenkins.
-
-Verify DB Changes with Latest Code
-
-Validate that the application is picking up the newly applied DB changes.
-
-Run basic sanity checks on the application UI and APIs.
-
-Confirm schema-level changes are correctly reflected in code execution.
-
-Post-Deployment Testing
-
-Coordinate with QA/Business team to run functional validations.
-
-Confirm incremental data load feature is working as expected.
-
-Closure
-
-If testing is successful, mark CR as Implemented and update status.
-
-Share final confirmation email with stakeholders.
-
-Success Criteria:
-
-Both DR and Production pipelines execute successfully.
-
-Application runs without errors and reflects the latest DB + code changes.
-
-Backout Plan:
-
-If DR pipeline fails, do not proceed with Production pipeline.
-
-If Production pipeline fails or app issues are found:
-
-Stop application services.
-
-Roll back to last successful Jenkins build (previous stable version).
-
-Notify stakeholders and DBA team immediately.
+Thanks & Regards,
+[Your Name]
