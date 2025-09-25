@@ -1,71 +1,80 @@
-1. Short Description
+Runbook – RAP Incremental Dataload Release
 
-Deployment of RAP Incremental Dataload changes – Timestamp conversion and related DB/application updates.
+Release Date: 27th (Saturday)
+Planned Downtime: ~6 hours
+Change Request ID: <CR_ID>
 
-2. Description
+1. Pre-Implementation Checks
 
-As part of the RAP Incremental Dataload project, we have implemented changes to convert existing date columns (CREAT_DT, UPDT_DT, etc.) from VARCHAR/DATE to TIMESTAMP(6) format across multiple RAP application tables.
-This required both database changes and application code updates to ensure consistency and prevent data issues.
-Changes have already been tested in DEV and UAT environments with successful sign-off.
+ Confirm UAT sign-off from all developers/business users.
 
-3. Why is this change being done?
+ Validate backup of production schema and application binaries.
 
-To standardize date handling across the RAP application.
+ Ensure T-PAM credentials are generated for App + DB servers.
 
-To avoid inconsistent formats and null values in date columns.
+ Notify all stakeholders about planned downtime (mail/chat).
 
-To support incremental data load functionality with accurate timestamps.
+ Stop any scheduled jobs/batch processes related to RAP.
 
-To ensure smoother integration with Pack Builder and other dependent applications.
+2. Implementation Steps
+2.1 Application Servers
 
-4. Implementation Plan
+Log in to application servers using T-PAM credentials.
 
-Stop RAP and Pack Builder application services on PROD and DR servers.
+Gracefully stop RAP services and Pack Builder services.
 
-DBA to take schema backup (GRDR_ADMIN_PROD).
+Verify no active sessions remain (check logs/monitoring).
 
-Apply database scripts for timestamp conversion and data cleanup.
+2.2 Database Servers
 
-Deploy updated Python code from GitHub to application servers.
+Log in to DB servers with DBA credentials (via T-PAM).
 
-Restart all services.
+Take a schema backup of RAP schema (export dump).
 
-Perform smoke testing with developers/business to validate.
+Execute the approved SQL scripts for:
 
-5. Customer and Business Impact during the implementation
+Timestamp conversion (CREAT_DT, UPDT_DT columns).
 
-RAP application and Pack Builder will be unavailable during deployment.
+Incremental data load schema changes.
 
-Estimated downtime: 6 hours.
+Data backfill scripts.
 
-No transactions or updates can be performed during this window.
+Validate successful execution (check logs for errors).
 
-6. Technical Impact during the implementation
+2.3 Application Restart
 
-DB schema changes (column type conversions to TIMESTAMP).
+Start RAP services on App servers.
 
-Data migration/cleanup for inconsistent date formats.
+Start Pack Builder services.
 
-Application services restart required.
+Confirm services are running (via health check URLs / logs).
 
-Potential integration impact on Pack Builder during downtime.
+3. Post-Implementation Verification
 
-7. Backout Plan
+ Business smoke testing: login, metric submission, report generation.
 
-In case of failure, restore the PROD schema from backup.
+ Developer verification: recent features are still working.
 
-Roll back to previous stable version of application code.
+ DBA verification: confirm data consistency (row counts, timestamps).
 
-Validate rollback with quick smoke tests before reopening access.
+ Application monitoring: CPU, memory, error logs clean.
 
-8. Post Implementation Verification Plan
+4. Backout Plan
 
-Verify schema changes are correctly applied.
+If any major issue occurs:
 
-Validate RAP application is up and running.
+Stop RAP services.
 
-Business team to test key functionalities (create/update metric, onboarding, reporting).
+Restore RAP schema from backup dump.
 
-Confirm Pack Builder integration is working fine.
+Restart RAP services.
 
-Send final confirmation mail to stakeholders after validation.
+Notify stakeholders of rollback completion.
+
+5. Communication Plan
+
+Pre-deployment: notify business + dev teams of downtime.
+
+During deployment: send hourly progress updates in release bridge/Teams.
+
+Post-deployment: confirm release completion and share verification status.
