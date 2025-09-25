@@ -1,80 +1,57 @@
-Runbook – RAP Incremental Dataload Release
+Change Task 1 – DBA Task (Schema Backup)
 
-Release Date: 27th (Saturday)
-Planned Downtime: ~6 hours
-Change Request ID: <CR_ID>
+Summary: Take backup of RAP schema before production deployment.
+Assigned to: DBA Team
 
-1. Pre-Implementation Checks
+Steps:
 
- Confirm UAT sign-off from all developers/business users.
+Log in to DB server using T-PAM credentials.
 
- Validate backup of production schema and application binaries.
+Take full export of RAP schema (expdp dump file with timestamp).
 
- Ensure T-PAM credentials are generated for App + DB servers.
+Store backup in secure location (/dba/backups/rap/27Sep/).
 
- Notify all stakeholders about planned downtime (mail/chat).
+Confirm backup completion with checksum validation.
 
- Stop any scheduled jobs/batch processes related to RAP.
+Share confirmation with Change Manager.
 
-2. Implementation Steps
-2.1 Application Servers
+Success Criteria:
 
-Log in to application servers using T-PAM credentials.
+RAP schema backup available and verified.
 
-Gracefully stop RAP services and Pack Builder services.
+Failure / Backout:
 
-Verify no active sessions remain (check logs/monitoring).
+If backup fails, stop release and notify Change Manager immediately.
 
-2.2 Database Servers
+Change Task 2 – Application & SQL Execution Task
 
-Log in to DB servers with DBA credentials (via T-PAM).
+Summary: Execute production SQL changes and restart application services.
+Assigned to: Krishna & Sanket
 
-Take a schema backup of RAP schema (export dump).
+Steps:
 
-Execute the approved SQL scripts for:
+Log in to DB servers with T-PAM credentials.
 
-Timestamp conversion (CREAT_DT, UPDT_DT columns).
+Execute the approved SQL scripts (timestamp conversion + incremental data load changes).
 
-Incremental data load schema changes.
+Validate execution (no invalid objects, no errors in logs).
 
-Data backfill scripts.
+Stop RAP services on application servers.
 
-Validate successful execution (check logs for errors).
+Execute schema changes & data backfill.
 
-2.3 Application Restart
+Restart RAP services and Pack Builder services.
 
-Start RAP services on App servers.
+Validate service startup through health checks.
 
-Start Pack Builder services.
+Success Criteria:
 
-Confirm services are running (via health check URLs / logs).
+SQL scripts executed successfully.
 
-3. Post-Implementation Verification
+Application services restarted without issues.
 
- Business smoke testing: login, metric submission, report generation.
+Failure / Backout:
 
- Developer verification: recent features are still working.
+If any issue, coordinate with DBA to restore schema backup.
 
- DBA verification: confirm data consistency (row counts, timestamps).
-
- Application monitoring: CPU, memory, error logs clean.
-
-4. Backout Plan
-
-If any major issue occurs:
-
-Stop RAP services.
-
-Restore RAP schema from backup dump.
-
-Restart RAP services.
-
-Notify stakeholders of rollback completion.
-
-5. Communication Plan
-
-Pre-deployment: notify business + dev teams of downtime.
-
-During deployment: send hourly progress updates in release bridge/Teams.
-
-Post-deployment: confirm release completion and share verification status.
+Restart application with old configuration.
