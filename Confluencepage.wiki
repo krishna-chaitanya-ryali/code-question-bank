@@ -7,20 +7,22 @@ I would like to clarify how we handle production issues, as not all issues can b
 1. System / Functional Issues (Bugs)
 
 These are genuine issues where functionality or performance is impacted for users (e.g., inability to save or update a metric).
-
 Such issues will be treated with highest priority and addressed immediately.
 
 2. User Errors / Data Correction Requests
 
 These arise when users have entered or submitted incorrect data (for example, entering actual values and later requesting a change in text type or data).
-
 Handling these requires preparing manual queries, raising and approving a CR, and following the full deployment cycle. With over 100+ packs and frequent requests, this consumes significant time and effort.
-
 These requests cannot be treated as urgent production issues, as they do not affect system functionality. They will be taken up as low priority and planned accordingly, depending on bandwidth.
 
 3. Formula / Customization Support
 
 Requests for formula corrections or customizations are also not production defects. While we will provide support, it can only be taken up when the team has availability, since our primary focus remains on core development and critical issues.
+
+4. Production Data Access (Boomerang)
+
+Earlier, we had a read-only account (Boomerang) to verify production data directly. After the evergreening activity, this provision is no longer available.
+Now, if an issue is reported, we need to raise one CR just to check and identify the problem, and another CR to fix it. This process makes even small data corrections time-consuming and effort-intensive.
 
 👉 We kindly request everyone’s cooperation in prioritizing issues correctly. With limited resources balancing both development and production, it is not possible to address every user mistake or customization request on urgent basis. Critical bugs will always remain our top focus, while user data corrections and non-technical requests will be handled as per availability.
 
