@@ -1,74 +1,30 @@
-🔹 Change Request Draft (Pipelines Related)
+Subject: Prioritization of Production Issues & User Requests
 
-1. Short Description:
-Deployment of Incremental Data Load changes through Jenkins pipelines (DR and Production environments).
+Hi Team,
 
-2. Description:
-This CR is raised for executing Jenkins pipelines to deploy the Incremental Data Load changes into Production.
+I would like to clarify how we handle production issues, as not all issues can be treated with the same urgency.
 
-DR pipeline will be executed first for validation.
+1. System / Functional Issues (Bugs)
 
-Production pipeline will be executed after successful DR run.
+These are genuine issues where functionality or performance is impacted for users (e.g., inability to save or update a metric).
 
-This activity ensures that all database changes and corresponding application code changes are synchronized and deployed seamlessly.
+Such issues will be treated with highest priority and addressed immediately.
 
-3. Why is this change being done?
-To enable the Incremental Data Load feature in RAP application by deploying updated database structures, timestamp conversions, and code changes that have already been tested in DEV and UAT. The pipelines will ensure controlled, automated, and repeatable deployments to DR and Production environments.
+2. User Errors / Data Correction Requests
 
-4. Implementation Plan:
+These arise when users have entered or submitted incorrect data (for example, entering actual values and later requesting a change in text type or data).
 
-Trigger the DR Jenkins pipeline.
+Handling these requires preparing manual queries, raising and approving a CR, and following the full deployment cycle. With over 100+ packs and frequent requests, this consumes significant time and effort.
 
-Deploy database changes and code to DR environment.
+These requests cannot be treated as urgent production issues, as they do not affect system functionality. They will be taken up as low priority and planned accordingly, depending on bandwidth.
 
-Validate application startup and smoke test key functionalities.
+3. Formula / Customization Support
 
-Once DR pipeline is successful, trigger the Production Jenkins pipeline.
+Requests for formula corrections or customizations are also not production defects. While we will provide support, it can only be taken up when the team has availability, since our primary focus remains on core development and critical issues.
 
-Deploy database changes and code to Production environment.
+👉 We kindly request everyone’s cooperation in prioritizing issues correctly. With limited resources balancing both development and production, it is not possible to address every user mistake or customization request on urgent basis. Critical bugs will always remain our top focus, while user data corrections and non-technical requests will be handled as per availability.
 
-Validate application startup, confirm services are running, and do quick health checks.
+Thanks for your understanding and support.
 
-Perform sanity testing with business/technical teams.
-
-Close CR after successful deployment and validation.
-
-5. Customer and Business Impact during the Implementation:
-
-During pipeline execution for Production, the RAP application will be unavailable due to required downtime (approx. 6 hours).
-
-Users will not be able to access RAP application until deployment is complete.
-
-6. Technical Impact during the Implementation:
-
-All RAP application services (both Production and DR) will be stopped during deployment.
-
-Database schema changes (timestamp conversions, incremental load structures) will be applied.
-
-Pipelines will deploy new code aligned with database updates.
-
-No impact on other applications outside RAP.
-
-7. Backout Plan:
-
-In case of failure during DR or Production pipeline:
-
-Stop pipeline execution immediately.
-
-Restore DB schema from pre-deployment backup.
-
-Revert application code to previous stable version via Jenkins pipeline rollback option.
-
-Start RAP services and validate rollback completion.
-
-8. Post Implementation Verification Plan:
-
-Verify RAP application services are up and running in Production.
-
-Perform sanity checks on key functionalities (login, metric creation, metric update, data load validation).
-
-Confirm DB schema changes are applied correctly.
-
-Request business team to validate UAT test cases against Production data.
-
-Confirm with developers and business users for final sign-off.
+Regards,
+[Your Name]
