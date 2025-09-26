@@ -1,13 +1,8 @@
-Subject: Approval Request for Change Requests – Incremental Data Load Deployment (27th Sept)
-
-To: [Business Approver Name(s)]
-CC: [Technical Approver Name(s)], DBA Team, Application Team, Project Team
-
 Dear Team,
 
-As part of the Incremental Data Load implementation, we have raised two Change Requests (CRs) scheduled for deployment on Saturday, 27th September. We request your review and approval for the same:
+As part of the Incremental Data Load implementation, we have raised two Change Requests (CRs) scheduled for deployment on Saturday, 27th September 2025, with an expected downtime window of 10:00 AM – 04:00 PM IST (6 hours). We request your review and approval for the same.
 
-CR #1 – TPAM & DB Activities
+CR#12345 – TPAM & DB Activities
 
 Scope:
 
@@ -19,9 +14,9 @@ Execution of SQL queries for timestamp conversion and incremental load changes
 
 Stop/start of application services
 
-Impact: Temporary downtime (~6 hours) as services will be stopped during execution
+Impact: Temporary downtime (~6 hours) as services will be stopped during execution.
 
-CR #2 – Jenkins Pipelines Execution
+CR#12346 – Jenkins Pipelines Execution
 
 Scope:
 
@@ -31,15 +26,28 @@ Execution of Production pipeline post DR validation
 
 Application testing to validate DB changes with latest code
 
-Impact: No additional downtime beyond CR #1. This CR is dependent on successful completion of CR #1.
+Impact: No additional downtime beyond CR#12345. This CR is dependent on successful completion of CR#12345.
 
-Business Impact:
+Business Impact
 
 Users will not be able to access the application during the scheduled downtime window.
 
-Once deployment completes, application will resume with the new incremental data load functionality enabled.
+Post deployment, the application will resume with Incremental Data Load functionality enabled.
+
+Schedule
+
+Planned Date: 27th September 2025 (Saturday)
+
+Start Time: 10:00 AM IST
+
+End Time: 04:00 PM IST
+
+Duration: 6 Hours
 
 Request:
-We kindly request your approval for both CRs to proceed with the planned deployment on 27th September (Saturday).
+We kindly request your approval for CR#12345 and CR#12346 to proceed with the planned deployment.
 
-Please confirm your approval at the earliest so that we can coordinate with the DBA and infrastructure teams accordingly.
+Please confirm your approval at the earliest so that we can coordinate with DBA and Infra teams accordingly.
+
+Thanks & Regards,
+R Krishna Chaitanya
