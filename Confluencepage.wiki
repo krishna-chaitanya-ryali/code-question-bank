@@ -1,53 +1,74 @@
-Dear Team,
+🔹 Change Request Draft (Pipelines Related)
 
-As part of the Incremental Data Load implementation, we have raised two Change Requests (CRs) scheduled for deployment on Saturday, 27th September 2025, with an expected downtime window of 10:00 AM – 04:00 PM IST (6 hours). We request your review and approval for the same.
+1. Short Description:
+Deployment of Incremental Data Load changes through Jenkins pipelines (DR and Production environments).
 
-CR#12345 – TPAM & DB Activities
+2. Description:
+This CR is raised for executing Jenkins pipelines to deploy the Incremental Data Load changes into Production.
 
-Scope:
+DR pipeline will be executed first for validation.
 
-TPAM login access for DB/application servers
+Production pipeline will be executed after successful DR run.
 
-Schema backup (DBA task)
+This activity ensures that all database changes and corresponding application code changes are synchronized and deployed seamlessly.
 
-Execution of SQL queries for timestamp conversion and incremental load changes
+3. Why is this change being done?
+To enable the Incremental Data Load feature in RAP application by deploying updated database structures, timestamp conversions, and code changes that have already been tested in DEV and UAT. The pipelines will ensure controlled, automated, and repeatable deployments to DR and Production environments.
 
-Stop/start of application services
+4. Implementation Plan:
 
-Impact: Temporary downtime (~6 hours) as services will be stopped during execution.
+Trigger the DR Jenkins pipeline.
 
-CR#12346 – Jenkins Pipelines Execution
+Deploy database changes and code to DR environment.
 
-Scope:
+Validate application startup and smoke test key functionalities.
 
-Execution of DR pipeline
+Once DR pipeline is successful, trigger the Production Jenkins pipeline.
 
-Execution of Production pipeline post DR validation
+Deploy database changes and code to Production environment.
 
-Application testing to validate DB changes with latest code
+Validate application startup, confirm services are running, and do quick health checks.
 
-Impact: No additional downtime beyond CR#12345. This CR is dependent on successful completion of CR#12345.
+Perform sanity testing with business/technical teams.
 
-Business Impact
+Close CR after successful deployment and validation.
 
-Users will not be able to access the application during the scheduled downtime window.
+5. Customer and Business Impact during the Implementation:
 
-Post deployment, the application will resume with Incremental Data Load functionality enabled.
+During pipeline execution for Production, the RAP application will be unavailable due to required downtime (approx. 6 hours).
 
-Schedule
+Users will not be able to access RAP application until deployment is complete.
 
-Planned Date: 27th September 2025 (Saturday)
+6. Technical Impact during the Implementation:
 
-Start Time: 10:00 AM IST
+All RAP application services (both Production and DR) will be stopped during deployment.
 
-End Time: 04:00 PM IST
+Database schema changes (timestamp conversions, incremental load structures) will be applied.
 
-Duration: 6 Hours
+Pipelines will deploy new code aligned with database updates.
 
-Request:
-We kindly request your approval for CR#12345 and CR#12346 to proceed with the planned deployment.
+No impact on other applications outside RAP.
 
-Please confirm your approval at the earliest so that we can coordinate with DBA and Infra teams accordingly.
+7. Backout Plan:
 
-Thanks & Regards,
-R Krishna Chaitanya
+In case of failure during DR or Production pipeline:
+
+Stop pipeline execution immediately.
+
+Restore DB schema from pre-deployment backup.
+
+Revert application code to previous stable version via Jenkins pipeline rollback option.
+
+Start RAP services and validate rollback completion.
+
+8. Post Implementation Verification Plan:
+
+Verify RAP application services are up and running in Production.
+
+Perform sanity checks on key functionalities (login, metric creation, metric update, data load validation).
+
+Confirm DB schema changes are applied correctly.
+
+Request business team to validate UAT test cases against Production data.
+
+Confirm with developers and business users for final sign-off.
