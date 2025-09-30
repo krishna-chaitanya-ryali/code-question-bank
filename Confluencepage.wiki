@@ -1,36 +1,57 @@
-Subject: Successful Deployment – Timestamp Data Type Conversion (Production)
+Summary: CR – Consolidated Fixes for User Access, Data Correction, and Missing Metrics
 
-Dear All,
+Description:
+This Change Request is raised to address multiple production issues that require fixes in the upcoming release.
 
-I am pleased to inform you that the Timestamp Data Type Conversion activity has been successfully deployed in Production.
+Issues Covered:
 
-All planned database schema updates and data conversions (conversion of CREAT_DT and UPDT_DT fields from VARCHAR to TIMESTAMP) were executed as per the schedule.
+1. User Access Issue (Dual PSID)
 
-Corresponding Python application code changes were also deployed.
+User unable to access RAP application due to dual PSID conflict.
 
-Post-deployment validations confirmed that data conversion and application functionalities are working as expected.
+Fix: Update user ID mapping in DP table.
 
-About the Change:
-Previously, date and time fields were stored as VARCHAR in several tables, leading to data inconsistencies and limited querying capability.
-With this deployment, these fields are now stored as proper TIMESTAMP data types, ensuring:
 
-Better accuracy and consistency in date handling.
 
-Standardized storage across all impacted tables.
+2. User Data Correction (Captured Month)
 
-Improved performance for queries and reporting.
+User mistakenly captured month with incorrect cell type and has requested correction.
 
-I would also like to thank Srikanth and Devar Bhoina for their support with schema backup and DBA activities during this release.
+Fix: Manual SQL update needed to correct cell type.
 
-Next Steps:
 
-Please validate your respective functionalities and confirm.
 
-Any issues observed should be reported immediately so they can be addressed.
+3. Missing Metrics in RAP Application
 
-This is a significant step towards improving data integrity and reliability in the RAP application.
+Certain metrics are not visible in production environment.
 
-Best Regards,
-R Krishna Chaitanya
+Fix: Investigate root cause and restore missing metrics.
 
-👉 Would you like me to also prepare a shorter business-friendly version (2–3 paragraphs) that you can forward to senior management, while keeping this detailed one for your immediate team?
+
+
+
+Business Impact:
+
+User access is blocked (critical impact).
+
+Incorrect data captured may affect reporting.
+
+Missing metrics hinder business workflows.
+
+
+Action Required:
+
+Create required SQL scripts for user ID update and cell type correction.
+
+Investigate and resolve missing metrics issue.
+
+Deploy changes to production as part of this CR.
+
+
+Approval Needed:
+
+[List of approvers, e.g., Business Owner, DBA, Application Owner]
+
+
+Assignee: [Team/Developer]
+Reporter: Krishna
