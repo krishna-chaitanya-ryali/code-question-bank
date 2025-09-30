@@ -1,57 +1,75 @@
-Summary: CR – Consolidated Fixes for User Access, Data Correction, and Missing Metrics
+Short Description
 
-Description:
-This Change Request is raised to address multiple production issues that require fixes in the upcoming release.
+CR – Fixes for User Access (Dual PSID), Data Correction (Captured Month), and Missing Metrics in RAP Application
 
-Issues Covered:
+Description
 
-1. User Access Issue (Dual PSID)
+This CR is raised to address multiple production issues in the RAP application:
 
-User unable to access RAP application due to dual PSID conflict.
+User unable to access application due to dual PSID conflict → requires DP table update.
 
-Fix: Update user ID mapping in DP table.
+User mistakenly captured month with incorrect cell type → requires manual SQL correction.
 
+Certain metrics missing in production → requires investigation and data fix.
 
+These fixes will be executed in the production environment to restore functionality and data accuracy.
 
-2. User Data Correction (Captured Month)
+Planning – Why is this change being done?
 
-User mistakenly captured month with incorrect cell type and has requested correction.
+To resolve a critical user access issue (dual PSID).
 
-Fix: Manual SQL update needed to correct cell type.
+To correct wrongly captured user data in production.
 
+To restore missing metrics required for reporting and business workflows.
 
+Without these fixes, users are blocked, and reporting accuracy is impacted.
 
-3. Missing Metrics in RAP Application
+Implementation Plan
 
-Certain metrics are not visible in production environment.
+Generate password via TPAM and log in to the respective production DB server.
 
-Fix: Investigate root cause and restore missing metrics.
+Execute the following steps:
 
+Update user ID mapping in DP table (dual PSID fix).
 
+Apply SQL update for correcting captured month cell type.
 
+Investigate and reinsert/restore missing metrics as required.
 
-Business Impact:
+Validate changes by querying the DB to ensure updates are correctly applied.
 
-User access is blocked (critical impact).
+Confirm application functionality with end users (business testers).
 
-Incorrect data captured may affect reporting.
+Customer / Business Impact During Implementation
 
-Missing metrics hinder business workflows.
+No downtime expected, but users may experience minor delays while fixes are applied.
 
+Business users will not be able to see corrections until DB scripts are fully executed.
 
-Action Required:
+User access will be restored immediately after DP update.
 
-Create required SQL scripts for user ID update and cell type correction.
+Technical Impact During Implementation
 
-Investigate and resolve missing metrics issue.
+Direct changes to the production database.
 
-Deploy changes to production as part of this CR.
+Requires TPAM session and execution of approved SQL scripts.
 
+No impact on system availability, as changes are data-level only.
 
-Approval Needed:
+Backout Plan
 
-[List of approvers, e.g., Business Owner, DBA, Application Owner]
+Revert database changes using rollback scripts prepared in advance.
 
+If rollback is not feasible, restore production data from latest backup snapshot (DBA support required).
 
-Assignee: [Team/Developer]
-Reporter: Krishna
+Disable user access temporarily if any inconsistencies occur.
+
+Post-Implementation Verification Plan
+
+Verify DP table update → confirm user can log in.
+
+Verify corrected captured month → query DB and validate with user.
+
+Verify missing metrics → confirm metrics are restored and visible in RAP.
+
+Business team to perform functional validation and sign-off.
