@@ -1,75 +1,126 @@
-Short Description
+Current Setup (as you described)
 
-CR – Fixes for User Access (Dual PSID), Data Correction (Captured Month), and Missing Metrics in RAP Application
+Table: user_tab
 
-Description
+Existing columns: user_id, user_name, email_id, rap_status, packbuilder_status
 
-This CR is raised to address multiple production issues in the RAP application:
+New columns:
 
-User unable to access application due to dual PSID conflict → requires DP table update.
+line_manager_id (PSID of Line Manager)
 
-User mistakenly captured month with incorrect cell type → requires manual SQL correction.
+line_manager_name
 
-Certain metrics missing in production → requires investigation and data fix.
+line_manager_mail
 
-These fixes will be executed in the production environment to restore functionality and data accuracy.
+You already have a working LDAP3 script that can:
 
-Planning – Why is this change being done?
+Take a single PSID
 
-To resolve a critical user access issue (dual PSID).
+Query the AD (Active Directory)
 
-To correct wrongly captured user data in production.
+Fetch attributes like name, mail, and HSBC-AD-LineManagerID
 
-To restore missing metrics required for reporting and business workflows.
+That works for one user.
 
-Without these fixes, users are blocked, and reporting accuracy is impacted.
+Now you want to automate this for 2,000–3,000 users efficiently, fetching and updating their line manager info in user_tab.
 
-Implementation Plan
+🚀 The Goal
 
-Generate password via TPAM and log in to the respective production DB server.
+Efficiently loop through all users, fetch their line manager info from AD, and update your DB table — without overloading AD or the database, and without taking hours.
 
-Execute the following steps:
+💡 Recommended Optimized Approach
 
-Update user ID mapping in DP table (dual PSID fix).
+Here’s a clean, scalable, and robust approach:
 
-Apply SQL update for correcting captured month cell type.
+Step 1: Fetch All Users From DB
 
-Investigate and reinsert/restore missing metrics as required.
+You can fetch only the PSIDs (user IDs) that need manager info:
 
-Validate changes by querying the DB to ensure updates are correctly applied.
+cursor.execute("""
+    SELECT user_id 
+    FROM user_tab 
+    WHERE line_manager_id IS NULL
+""")
+psid_list = [row[0] for row in cursor.fetchall()]
 
-Confirm application functionality with end users (business testers).
+Step 2: Use a Pooled or Batched LDAP Query
 
-Customer / Business Impact During Implementation
+Instead of querying LDAP one user at a time (which is slow), use batch processing.
 
-No downtime expected, but users may experience minor delays while fixes are applied.
+You can process 100–200 users at once to:
 
-Business users will not be able to see corrections until DB scripts are fully executed.
+Reduce round-trips to AD
 
-User access will be restored immediately after DP update.
+Avoid LDAP timeouts or throttling
 
-Technical Impact During Implementation
+Using con.extend.standard.paged_search() from ldap3 helps handle larger sets efficiently.
 
-Direct changes to the production database.
+Example:
 
-Requires TPAM session and execution of approved SQL scripts.
+from ldap3 import Server, Connection, ALL, NTLM, SUBTREE
 
-No impact on system availability, as changes are data-level only.
+server = Server("ldap://your-ldap-server", get_info=ALL)
+conn = Connection(server, user="DOMAIN\\username", password="yourpassword", authentication=NTLM, auto_bind=True)
 
-Backout Plan
+batch_size = 200
+for i in range(0, len(psid_list), batch_size):
+    batch = psid_list[i:i+batch_size]
+    search_filter = "(|(sAMAccountName=" + ")(sAMAccountName=".join(batch) + "))"
 
-Revert database changes using rollback scripts prepared in advance.
+    conn.search(
+        search_base="DC=yourdomain,DC=com",
+        search_filter=search_filter,
+        search_scope=SUBTREE,
+        attributes=["sAMAccountName", "displayName", "mail", "HSBC-AD-LineManagerID"]
+    )
 
-If rollback is not feasible, restore production data from latest backup snapshot (DBA support required).
+    for entry in conn.entries:
+        psid = str(entry.sAMAccountName)
+        manager_id = str(entry['HSBC-AD-LineManagerID']) if 'HSBC-AD-LineManagerID' in entry else None
+        manager_name = str(entry.displayName) if 'displayName' in entry else None
+        manager_mail = str(entry.mail) if 'mail' in entry else None
 
-Disable user access temporarily if any inconsistencies occur.
+        # You can prepare an update batch for DB here
 
-Post-Implementation Verification Plan
+Step 3: Batch Update the DB
 
-Verify DP table update → confirm user can log in.
+Rather than updating row by row, collect results in a list and do bulk updates (e.g., every 500 records):
 
-Verify corrected captured month → query DB and validate with user.
+update_data = []
 
-Verify missing metrics → confirm metrics are restored and visible in RAP.
+for entry in conn.entries:
+    update_data.append((manager_id, manager_name, manager_mail, psid))
 
-Business team to perform functional validation and sign-off.
+if update_data:
+    cursor.executemany("""
+        UPDATE user_tab
+        SET line_manager_id = %s,
+            line_manager_name = %s,
+            line_manager_mail = %s
+        WHERE user_id = %s
+    """, update_data)
+    connection.commit()
+
+
+This drastically improves performance vs single-row updates.
+
+⚙️ Further Optimizations
+
+Parallelization (Optional)
+If AD and DB can handle it, you can use concurrent.futures.ThreadPoolExecutor to parallelize LDAP fetches by splitting PSIDs into chunks.
+
+Error Handling & Logging
+Wrap LDAP queries in try/except blocks, and log failed PSIDs to retry later.
+
+Incremental Updates
+Store a flag or timestamp in the DB after each batch update, so if the script fails midway, you can resume from where you left off.
+
+Dry Run Mode
+Before writing to DB, print or log what updates will happen. Helpful for verification.
+
+🧩 Summary of Core Flow
+1️⃣ Get PSIDs needing update from DB  
+2️⃣ Query LDAP in batches (200 users each)  
+3️⃣ Collect line manager info for each  
+4️⃣ Bulk update DB for every 500 records  
+5️⃣ Log failed ones for re-run
