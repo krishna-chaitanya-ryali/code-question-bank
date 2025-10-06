@@ -1,71 +1,20 @@
-Current Setup (as you described)
-
-Table: user_tab
-
-Existing columns: user_id, user_name, email_id, rap_status, packbuilder_status
-
-New columns:
-
-line_manager_id (PSID of Line Manager)
-
-line_manager_name
-
-line_manager_mail
-
-You already have a working LDAP3 script that can:
-
-Take a single PSID
-
-Query the AD (Active Directory)
-
-Fetch attributes like name, mail, and HSBC-AD-LineManagerID
-
-That works for one user.
-
-Now you want to automate this for 2,000–3,000 users efficiently, fetching and updating their line manager info in user_tab.
-
-🚀 The Goal
-
-Efficiently loop through all users, fetch their line manager info from AD, and update your DB table — without overloading AD or the database, and without taking hours.
-
-💡 Recommended Optimized Approach
-
-Here’s a clean, scalable, and robust approach:
-
-Step 1: Fetch All Users From DB
-
-You can fetch only the PSIDs (user IDs) that need manager info:
-
-cursor.execute("""
-    SELECT user_id 
-    FROM user_tab 
-    WHERE line_manager_id IS NULL
-""")
-psid_list = [row[0] for row in cursor.fetchall()]
-
-Step 2: Use a Pooled or Batched LDAP Query
-
-Instead of querying LDAP one user at a time (which is slow), use batch processing.
-
-You can process 100–200 users at once to:
-
-Reduce round-trips to AD
-
-Avoid LDAP timeouts or throttling
-
-Using con.extend.standard.paged_search() from ldap3 helps handle larger sets efficiently.
-
-Example:
-
 from ldap3 import Server, Connection, ALL, NTLM, SUBTREE
 
 server = Server("ldap://your-ldap-server", get_info=ALL)
 conn = Connection(server, user="DOMAIN\\username", password="yourpassword", authentication=NTLM, auto_bind=True)
 
+psid_list = ['45122521', '45122522', '45122523', '45122524']  # example list
+search_string = "sAMAccountName"
 batch_size = 200
+
 for i in range(0, len(psid_list), batch_size):
-    batch = psid_list[i:i+batch_size]
-    search_filter = "(|(sAMAccountName=" + ")(sAMAccountName=".join(batch) + "))"
+    batch = psid_list[i:i + batch_size]
+
+    # ✅ Construct the batch search filter
+    search_filter = '(&(objectClass=UserProxy)(objectCategory=UserProxy)(|'
+    for psid in batch:
+        search_filter += f'({search_string}={psid})'
+    search_filter += '))'
 
     conn.search(
         search_base="DC=yourdomain,DC=com",
@@ -80,47 +29,4 @@ for i in range(0, len(psid_list), batch_size):
         manager_name = str(entry.displayName) if 'displayName' in entry else None
         manager_mail = str(entry.mail) if 'mail' in entry else None
 
-        # You can prepare an update batch for DB here
-
-Step 3: Batch Update the DB
-
-Rather than updating row by row, collect results in a list and do bulk updates (e.g., every 500 records):
-
-update_data = []
-
-for entry in conn.entries:
-    update_data.append((manager_id, manager_name, manager_mail, psid))
-
-if update_data:
-    cursor.executemany("""
-        UPDATE user_tab
-        SET line_manager_id = %s,
-            line_manager_name = %s,
-            line_manager_mail = %s
-        WHERE user_id = %s
-    """, update_data)
-    connection.commit()
-
-
-This drastically improves performance vs single-row updates.
-
-⚙️ Further Optimizations
-
-Parallelization (Optional)
-If AD and DB can handle it, you can use concurrent.futures.ThreadPoolExecutor to parallelize LDAP fetches by splitting PSIDs into chunks.
-
-Error Handling & Logging
-Wrap LDAP queries in try/except blocks, and log failed PSIDs to retry later.
-
-Incremental Updates
-Store a flag or timestamp in the DB after each batch update, so if the script fails midway, you can resume from where you left off.
-
-Dry Run Mode
-Before writing to DB, print or log what updates will happen. Helpful for verification.
-
-🧩 Summary of Core Flow
-1️⃣ Get PSIDs needing update from DB  
-2️⃣ Query LDAP in batches (200 users each)  
-3️⃣ Collect line manager info for each  
-4️⃣ Bulk update DB for every 500 records  
-5️⃣ Log failed ones for re-run
+        print(psid, manager_id, manager_name, manager_mail)
