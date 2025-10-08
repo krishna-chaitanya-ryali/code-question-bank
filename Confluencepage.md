@@ -1,22 +1,25 @@
-import re
-
-input_file = "update_user_tab.sql"      # your input file
-output_file = "update_user_tab_fixed.sql"  # corrected file
-
-def escape_quotes_in_sql_line(line):
-    # This regex finds anything inside single quotes
-    def replacer(match):
-        content = match.group(1)
-        # Escape single quotes inside the string content
-        content = content.replace("'", "''")
-        return f"'{content}'"
-    
-    # Replace all text inside quotes safely
-    return re.sub(r"'(.*?)'", replacer, line)
+input_file = "update_user_tab.sql"         # your existing file
+output_file = "update_user_tab_fixed.sql"  # fixed file
 
 with open(input_file, "r", encoding="utf-8") as fin, \
      open(output_file, "w", encoding="utf-8") as fout:
     
     for line in fin:
-        fixed_line = escape_quotes_in_sql_line(line)
-        fout.write(fixed_line)
+        # Only process lines that have 'linemanager_name' in them
+        if "linemanager_name" in line:
+            # Find the part inside line_manager_name = '...'
+            try:
+                start = line.index("linemanager_name = '") + len("linemanager_name = '")
+                end = line.index("'", start)
+                
+                name_part = line[start:end]
+                # Escape single apostrophes inside the name
+                fixed_name = name_part.replace("'", "''")
+                
+                # Rebuild the line
+                line = line[:start] + fixed_name + line[end:]
+            except ValueError:
+                # If indexes not found properly, just leave the line unchanged
+                pass
+        
+        fout.write(line)
