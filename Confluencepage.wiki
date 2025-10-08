@@ -1,34 +1,22 @@
-# Sample data you already fetched from AD or somewhere
-records = [
-    {
-        "employee_id": "123456",
-        "line_manager_id": "LM001",
-        "line_manager_name": "John Doe",
-        "line_manager_mail": "john.doe@hsbc.com"
-    },
-    {
-        "employee_id": "123457",
-        "line_manager_id": "LM002",
-        "line_manager_name": "Jane Smith",
-        "line_manager_mail": "jane.smith@hsbc.com"
-    }
-]
+import re
 
-output_file = "update_user_tab.sql"
+input_file = "update_user_tab.sql"      # your input file
+output_file = "update_user_tab_fixed.sql"  # corrected file
 
-with open(output_file, "w", encoding="utf-8") as f:
-    for r in records:
-        emp_id = r["employee_id"]
-        mgr_id = r["line_manager_id"].replace("'", "''") if r["line_manager_id"] else ""
-        mgr_name = r["line_manager_name"].replace("'", "''") if r["line_manager_name"] else ""
-        mgr_mail = r["line_manager_mail"].replace("'", "''") if r["line_manager_mail"] else ""
+def escape_quotes_in_sql_line(line):
+    # This regex finds anything inside single quotes
+    def replacer(match):
+        content = match.group(1)
+        # Escape single quotes inside the string content
+        content = content.replace("'", "''")
+        return f"'{content}'"
+    
+    # Replace all text inside quotes safely
+    return re.sub(r"'(.*?)'", replacer, line)
 
-        sql = (
-            f"UPDATE user_tab SET "
-            f"line_manager_id = '{mgr_id}', "
-            f"line_manager_name = '{mgr_name}', "
-            f"line_manager_mail = '{mgr_mail}' "
-            f"WHERE employee_id = '{emp_id}';\n"
-        )
-
-        f.write(sql)
+with open(input_file, "r", encoding="utf-8") as fin, \
+     open(output_file, "w", encoding="utf-8") as fout:
+    
+    for line in fin:
+        fixed_line = escape_quotes_in_sql_line(line)
+        fout.write(fixed_line)
