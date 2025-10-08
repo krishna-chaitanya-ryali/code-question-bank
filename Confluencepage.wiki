@@ -1,94 +1,34 @@
-Title: Change Request – Update L1 Taxonomy Dropdown with New Fields
+# Sample data you already fetched from AD or somewhere
+records = [
+    {
+        "employee_id": "123456",
+        "line_manager_id": "LM001",
+        "line_manager_name": "John Doe",
+        "line_manager_mail": "john.doe@hsbc.com"
+    },
+    {
+        "employee_id": "123457",
+        "line_manager_id": "LM002",
+        "line_manager_name": "Jane Smith",
+        "line_manager_mail": "jane.smith@hsbc.com"
+    }
+]
 
-Description:
-A change is requested to update the L1 Taxonomy section to include additional taxonomy fields as per user request.
+output_file = "update_user_tab.sql"
 
-Details:
-The following new fields have been added to the L1 taxonomy and are now available in the database. This change will make them visible on the frontend dropdown list.
+with open(output_file, "w", encoding="utf-8") as f:
+    for r in records:
+        emp_id = r["employee_id"]
+        mgr_id = r["line_manager_id"].replace("'", "''") if r["line_manager_id"] else ""
+        mgr_name = r["line_manager_name"].replace("'", "''") if r["line_manager_name"] else ""
+        mgr_mail = r["line_manager_mail"].replace("'", "''") if r["line_manager_mail"] else ""
 
-New Fields to be Added:
+        sql = (
+            f"UPDATE user_tab SET "
+            f"line_manager_id = '{mgr_id}', "
+            f"line_manager_name = '{mgr_name}', "
+            f"line_manager_mail = '{mgr_mail}' "
+            f"WHERE employee_id = '{emp_id}';\n"
+        )
 
-Regulatory Risk
-
-Reporting Risk
-
-Conduct Risk
-
-Climate Risk
-
-Artificial Intelligence Risk
-
-Digital Assets and Currency Risks
-
-Change Summary:
-
-Updated taxonomy reference table in the database to include the above new risk types.
-
-Verified that the values are properly reflected on the frontend dropdown in UAT.
-
-No UI or API code change is required — only deployment of the updated taxonomy data to Production.
-
-Deployment Details:
-
-Target Deployment Date: Thursday, 9th October 2025
-
-Environment: Production
-
-Change Type: Configuration / Data Update
-
-Testing Status: Verified in UAT
-
-Requested By: R. Krishna Chaitanya
-Change Owner: [Your Team / Application Name]
-
-
-
-Short Description:
-
-Update L1 Taxonomy dropdown by adding new risk type fields in the RAP_APPLICABLE_RISK_TYPE table.
-
-Why is this change being done?
-
-Users have requested inclusion of additional risk categories in the L1 Taxonomy dropdown to align with the latest business classification and reporting needs.
-
-Implementation Plan:
-
-Generate a PAM request and obtain DB access credentials.
-
-Log in to the database server using the PAM-provided credentials.
-
-Insert the following new fields into the RAP_APPLICABLE_RISK_TYPE table:
-
-Regulatory Risk
-
-Reporting Risk
-
-Conduct Risk
-
-Climate Risk
-
-Artificial Intelligence Risk
-
-Digital Assets and Currency Risks
-
-Validate that the new values appear correctly in the front-end dropdown.
-
-Customer / Business Impact During Implementation:
-
-No customer or business impact expected. The change is limited to backend data configuration and will not affect ongoing operations.
-
-Technical Impact During Implementation:
-
-Minimal. Only database table update; no code or service restart required. UI automatically reflects updated taxonomy fields.
-
-Backward Plan:
-
-If any issue occurs, remove the newly added entries from the RAP_APPLICABLE_RISK_TYPE table to restore the previous state.
-
-Post-Implementation Verification:
-
-Validate that all six new taxonomy fields appear correctly in the L1 dropdown.
-
-Cross-check data integrity in the RAP_APPLICABLE_RISK_TYPE table.
-
-Confirm successful display and selection on the UI in UAT/Prod.
+        f.write(sql)
