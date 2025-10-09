@@ -1,0 +1,33 @@
+import re
+
+input_file = "update_user_tab.sql"
+output_file = "update_user_tab_fixed.sql"
+
+# Patterns for both NAME and MAIL_ID
+patterns = [
+    re.compile(r"(LINEMANAGER_NAME=')(.+?)(?=',)"),
+    re.compile(r"(LINEMANAGER_MAIL_ID=')(.+?)(?='(?:,| WHERE))", re.IGNORECASE),
+]
+
+count_fixed = 0
+
+def fix_value(match):
+    global count_fixed
+    value = match.group(2)
+    # Double apostrophes for SQL safety
+    fixed_value = value.replace("'", "''")
+    if fixed_value != value:
+        count_fixed += 1
+    return match.group(1) + fixed_value
+
+with open(input_file, "r", encoding="utf-8") as fin, \
+     open(output_file, "w", encoding="utf-8") as fout:
+
+    for line in fin:
+        if "LINEMANAGER_NAME=" in line.upper() or "LINEMANAGER_MAIL_ID=" in line.upper():
+            for pattern in patterns:
+                line = pattern.sub(fix_value, line)
+        fout.write(line)
+
+print(f"✅ Done! Escaped apostrophes in {count_fixed} line(s).")
+print(f"👉 Output file: {output_file}")
