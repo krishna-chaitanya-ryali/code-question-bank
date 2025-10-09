@@ -1,15 +1,12 @@
-🔹 Weekly Production Update – [Week / Date Range]
+Additional Points
 
-🧩 Production Tickets Resolved
+Each developer should take up at least one production request parallel to current development tasks every week.
 
-Developer	Ticket ID / Reference	Description / Remarks
-Prasad	PROD-1245	User unable to access RAP app – Dual PSID updated in DB
-Krishna	PROD-1278	Updated actual cell type for captured month
-Sanket	PROD-1292	Missing metrics issue – DB correction done
+Based on your bandwidth and issue priority (blocker / critical / normal), you may take up more.
 
-📦 Change Requests Raised
+Each developer should also raise at least one Change Request (CR) per week.
 
-Developer	CR ID	Date Raised	Purpose
-Prasad	CR-4589	03-Oct-2025	Fix for user access (Dual PSID)
-Krishna	CR-4590	04-Oct-2025	Data correction for captured month
-Sanket	CR-4591	05-Oct-2025	Missing metrics fix
+As a team, this will help us consistently achieve a minimum of 3 CRs per week and ensure smooth production support alongside ongoing development.
+
+
+👏 Great work team! Let’s continue this momentum and ensure both development and production requests are balanced effectively.
