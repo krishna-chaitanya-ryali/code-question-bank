@@ -1,12 +1,3 @@
-Additional Points
+If you have any ongoing tickets in the current sprint that are partially completed (for example, development is half done or pending UAT), please close the current ticket with the completed details and create a new ticket for the remaining work.
 
-Each developer should take up at least one production request parallel to current development tasks every week.
-
-Based on your bandwidth and issue priority (blocker / critical / normal), you may take up more.
-
-Each developer should also raise at least one Change Request (CR) per week.
-
-As a team, this will help us consistently achieve a minimum of 3 CRs per week and ensure smooth production support alongside ongoing development.
-
-
-👏 Great work team! Let’s continue this momentum and ensure both development and production requests are balanced effectively.
+This will help us maintain proper sprint tracking and ensure the pending tasks are carried forward cleanly to the next sprint without mixing old and new progress.
