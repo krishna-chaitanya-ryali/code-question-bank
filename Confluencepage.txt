@@ -1,100 +1,71 @@
-JIRA Ticket 1: Implement Scheduler for User Recertification Updates
+JIRA Ticket 3: Release Task for User Recertification Automation (Scheduler + Static Script Deployment)
 
 Title:
-Implement Scheduler to Update User Access Status Based on Line Manager Approval
+Release Task – Deploy User Recertification Enhancements and Scheduler Automation
 
-Type: Story / Task
+Type: Release Task / Technical Task
 
 Description:
-As part of the user recertification process for RAP and PackBuilder applications, we need to automate the update of user access statuses based on line manager approvals.
+This task covers the release activities associated with the User Recertification automation module, which includes the scheduler job, static scripts, and related database updates for both RAP and PackBuilder applications.
 
-Currently, approvals are manually processed and updated in the USER_TAB table. The goal is to create a scheduler job that periodically checks for approved/rejected users and updates their access accordingly.
+The release will ensure that the new automation logic for updating user access based on line manager approvals is deployed, verified, and validated in the production environment.
 
 Scope:
 
-Develop a scheduler that runs at predefined intervals (e.g., daily at midnight).
+Deploy the scheduler script to the target environment (e.g., UAT/PROD).
 
-Fetch user approval data from the recertification approval table.
+Execute static scripts to update initial user/line manager mappings.
 
-Update access flags (RAP_ACCESS_FLAG, PACKBUILDER_ACCESS_FLAG) in the USER_TAB table based on approval outcome.
+Validate database connections and scheduler trigger timing post-deployment.
 
-Maintain audit trail with timestamps and processed status.
+Verify that the user access updates (RAP and PackBuilder) are reflected correctly after approval sync.
 
-Add basic logging for success/failure tracking.
+Capture deployment logs and post-deployment verification results.
 
+Coordinate with Infra/DBA teams for job scheduling setup and permission checks.
 
-Acceptance Criteria:
-
-✅ Scheduler runs automatically at configured interval.
-
-✅ Approved users are updated with the correct access flags.
-
-✅ Logs are generated for each run with a summary of total users processed.
-
-✅ Manual trigger option available for testing or on-demand runs.
+Handle rollback plan if scheduler or data update fails during deployment.
 
 
-Sprint:
-Target for Sprint XX (2-week) completion.
+Activities Planned:
 
-Dependencies:
-
-Availability of approval data in the recertification table.
-
-Confirmation of database credentials for scheduler job execution.
+1. Pre-deployment validation (DB connectivity, backup, access check).
 
 
-
----
-
-🧩 JIRA Ticket 2: PackBuilder User Recertification Workflow Integration
-
-Title:
-Integrate PackBuilder User Recertification Logic with Scheduler and Access Management
-
-Type: Story / Task
-
-Description:
-Enhance the existing user recertification process for the PackBuilder application to ensure that access rights are aligned with the approved status from line managers.
-
-Once the line manager responds to the recertification request (Approve/Reject), the scheduler should pick up these updates and synchronize them with the corresponding user records.
-
-Scope:
-
-Implement logic to read user recertification approvals for PackBuilder.
-
-Map approved users to correct USER_TAB entries.
-
-Update the relevant fields such as:
-
-PACKBUILDER_ACCESS_FLAG
-
-LAST_REVIEWED_DATE
-
-APPROVED_BY (Line Manager PSID)
+2. Deploy scheduler job and verify cron/DBMS_SCHEDULER setup.
 
 
-Ensure rejected users’ access is revoked immediately during the next scheduler run.
+3. Execute static data scripts for line manager and user data updates.
 
-Validate that email notifications or audit entries are generated after updates.
 
+4. Validate job execution and confirm updates in the USER_TAB table.
+
+
+5. Prepare release notes and mark JIRA tickets for closure.
+
+
+
+Effort Estimate:
+~1 full working day (including validation and coordination).
 
 Acceptance Criteria:
 
-✅ Approved users retain PackBuilder access.
+✅ Scheduler successfully deployed and running as per the configured interval.
 
-✅ Rejected users lose PackBuilder access within one scheduler cycle.
+✅ Static script executed successfully with no failed statements.
 
-✅ Scheduler logs show PackBuilder user sync results clearly.
+✅ User access updates verified in the database.
 
-✅ QA validation confirms updates are reflected correctly in DB.
+✅ No post-deployment data or access issues reported.
+
+✅ Release sign-off from QA and functional owners.
 
 
 Sprint:
-To be completed within the same 2-week sprint as the scheduler development.
+Target for Sprint XX (2-week), scheduled for the final release day of the sprint.
 
 Dependencies:
 
-Completion of Scheduler (Ticket 1).
+Completion of development tasks (Scheduler Implementation and PackBuilder Recertification Logic).
 
-Approval table structure and field mappings confirmed.
+Approval from application owner and DB admin for deployment window.
