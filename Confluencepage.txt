@@ -1,8 +1,100 @@
-Subject: Weekly Production Update and Change Requests – [Week / Date Range]
+JIRA Ticket 1: Implement Scheduler for User Recertification Updates
 
-Hi Team,
+Title:
+Implement Scheduler to Update User Access Status Based on Line Manager Approval
 
-Apart from our regular sprint activities, the team has also been actively involved in resolving critical production tickets and raising change requests (CRs) as part of production support.
-Some of these activities were not part of the sprint plan but were taken up on a priority basis due to urgent business requirements.
+Type: Story / Task
 
-Please find below the summary of production-related activities completed this week:
+Description:
+As part of the user recertification process for RAP and PackBuilder applications, we need to automate the update of user access statuses based on line manager approvals.
+
+Currently, approvals are manually processed and updated in the USER_TAB table. The goal is to create a scheduler job that periodically checks for approved/rejected users and updates their access accordingly.
+
+Scope:
+
+Develop a scheduler that runs at predefined intervals (e.g., daily at midnight).
+
+Fetch user approval data from the recertification approval table.
+
+Update access flags (RAP_ACCESS_FLAG, PACKBUILDER_ACCESS_FLAG) in the USER_TAB table based on approval outcome.
+
+Maintain audit trail with timestamps and processed status.
+
+Add basic logging for success/failure tracking.
+
+
+Acceptance Criteria:
+
+✅ Scheduler runs automatically at configured interval.
+
+✅ Approved users are updated with the correct access flags.
+
+✅ Logs are generated for each run with a summary of total users processed.
+
+✅ Manual trigger option available for testing or on-demand runs.
+
+
+Sprint:
+Target for Sprint XX (2-week) completion.
+
+Dependencies:
+
+Availability of approval data in the recertification table.
+
+Confirmation of database credentials for scheduler job execution.
+
+
+
+---
+
+🧩 JIRA Ticket 2: PackBuilder User Recertification Workflow Integration
+
+Title:
+Integrate PackBuilder User Recertification Logic with Scheduler and Access Management
+
+Type: Story / Task
+
+Description:
+Enhance the existing user recertification process for the PackBuilder application to ensure that access rights are aligned with the approved status from line managers.
+
+Once the line manager responds to the recertification request (Approve/Reject), the scheduler should pick up these updates and synchronize them with the corresponding user records.
+
+Scope:
+
+Implement logic to read user recertification approvals for PackBuilder.
+
+Map approved users to correct USER_TAB entries.
+
+Update the relevant fields such as:
+
+PACKBUILDER_ACCESS_FLAG
+
+LAST_REVIEWED_DATE
+
+APPROVED_BY (Line Manager PSID)
+
+
+Ensure rejected users’ access is revoked immediately during the next scheduler run.
+
+Validate that email notifications or audit entries are generated after updates.
+
+
+Acceptance Criteria:
+
+✅ Approved users retain PackBuilder access.
+
+✅ Rejected users lose PackBuilder access within one scheduler cycle.
+
+✅ Scheduler logs show PackBuilder user sync results clearly.
+
+✅ QA validation confirms updates are reflected correctly in DB.
+
+
+Sprint:
+To be completed within the same 2-week sprint as the scheduler development.
+
+Dependencies:
+
+Completion of Scheduler (Ticket 1).
+
+Approval table structure and field mappings confirmed.
