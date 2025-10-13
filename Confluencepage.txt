@@ -1,71 +1,11 @@
-JIRA Ticket 3: Release Task for User Recertification Automation (Scheduler + Static Script Deployment)
+Hi Sandeep,
 
-Title:
-Release Task – Deploy User Recertification Enhancements and Scheduler Automation
+I wanted to bring to your notice that currently, only three developers are actively working on the RAP application, handling both enhancements and production issues.
 
-Type: Release Task / Technical Task
+At present, the team’s bandwidth is already fully occupied with ongoing sprint tasks and additional changes suggested during this sprint. Moreover, most of the team members will be on leave next week due to Diwali, which will further reduce our available capacity.
 
-Description:
-This task covers the release activities associated with the User Recertification automation module, which includes the scheduler job, static scripts, and related database updates for both RAP and PackBuilder applications.
+Whenever I try to assign any additional tasks — whether production tickets or other requests — the common feedback from everyone is that they are already fully engaged. Considering this, it might be difficult to take up new activities alongside current sprint commitments.
 
-The release will ensure that the new automation logic for updating user access based on line manager approvals is deployed, verified, and validated in the production environment.
+It would be good to either plan for additional support or defer some of these new changes to the next sprint. This will help us maintain both timely delivery and quality.
 
-Scope:
-
-Deploy the scheduler script to the target environment (e.g., UAT/PROD).
-
-Execute static scripts to update initial user/line manager mappings.
-
-Validate database connections and scheduler trigger timing post-deployment.
-
-Verify that the user access updates (RAP and PackBuilder) are reflected correctly after approval sync.
-
-Capture deployment logs and post-deployment verification results.
-
-Coordinate with Infra/DBA teams for job scheduling setup and permission checks.
-
-Handle rollback plan if scheduler or data update fails during deployment.
-
-
-Activities Planned:
-
-1. Pre-deployment validation (DB connectivity, backup, access check).
-
-
-2. Deploy scheduler job and verify cron/DBMS_SCHEDULER setup.
-
-
-3. Execute static data scripts for line manager and user data updates.
-
-
-4. Validate job execution and confirm updates in the USER_TAB table.
-
-
-5. Prepare release notes and mark JIRA tickets for closure.
-
-
-
-Effort Estimate:
-~1 full working day (including validation and coordination).
-
-Acceptance Criteria:
-
-✅ Scheduler successfully deployed and running as per the configured interval.
-
-✅ Static script executed successfully with no failed statements.
-
-✅ User access updates verified in the database.
-
-✅ No post-deployment data or access issues reported.
-
-✅ Release sign-off from QA and functional owners.
-
-
-Sprint:
-Target for Sprint XX (2-week), scheduled for the final release day of the sprint.
-
-Dependencies:
-
-Completion of development tasks (Scheduler Implementation and PackBuilder Recertification Logic).
-
-Approval from application owner and DB admin for deployment window.
+Thanks for your understanding and support.
