@@ -1,3 +1,8 @@
-If you have any ongoing tickets in the current sprint that are partially completed (for example, development is half done or pending UAT), please close the current ticket with the completed details and create a new ticket for the remaining work.
+Subject: Weekly Production Update and Change Requests – [Week / Date Range]
 
-This will help us maintain proper sprint tracking and ensure the pending tasks are carried forward cleanly to the next sprint without mixing old and new progress.
+Hi Team,
+
+Apart from our regular sprint activities, the team has also been actively involved in resolving critical production tickets and raising change requests (CRs) as part of production support.
+Some of these activities were not part of the sprint plan but were taken up on a priority basis due to urgent business requirements.
+
+Please find below the summary of production-related activities completed this week:
