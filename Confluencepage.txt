@@ -1,15 +1,12 @@
-Subject: Discussion on High-Level Solution Options for Global RAP Metric Automation
+Subject: Reschedule: Discussion on High-Level Solution Options for Global RAP Metric Automation
 
-Hi Srikaran,
+Hi All,
 
-Hope you’re doing well.
+Karan has requested to postpone today’s meeting to tomorrow (same time: 3:00 PM – 3:30 PM) to discuss the high-level solution options for Global RAP Metric Automation.
 
-As part of the action items from the recent RAP Tool Automation discussion, I’d like to schedule a short meeting with you to go over the high-level architectural approach and feasibility for the Global RAP Metric Automation.
+Please note the updated schedule and join the call tomorrow.
 
-The idea is to review possible solution options and get your inputs on the best-fit approach from an architectural standpoint.
+Thanks for your understanding.
 
-Please let me know your availability this week so I can schedule the discussion accordingly.
-
-Thanks & Regards,
-R. Krishna Chaitanya
-IT – RAP Application
+Best regards,
+Krishna Chaitanya
