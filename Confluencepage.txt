@@ -1,12 +1,15 @@
-Subject: Follow-up on Action Items – Global RAP Metric Automation
+Good evening. I’m R. Krishna Chaitanya, a Python full stack developer from Hyderabad with around 10 years of experience in backend and web development.
 
-Hi Srikaran,
+My primary expertise is in Python, Flask, and FastAPI, where I’ve built and managed REST APIs and data-driven applications.
 
-As discussed, I have provided the required background details, data inputs, and infrastructure information to help with the preparation of the data model and approach for the upcoming Architecture Forum scheduled on Friday, 24th November.
+I also work with SQL, JavaScript, and have hands-on experience in AWS services like Lambda and S3.
 
-Please let me know if you need any additional information or clarifications from my side.
+For the last few years, I’ve been contributing to a long-term project focused on backend optimization and API integration.
 
-Kindly ensure to flag any potential delays or dependencies at the earliest, as we have just a couple of days to finalize the initial draft for the review.
+I’m now looking for an opportunity at TCS to contribute my full stack skills and grow in a technically challenging environment.
 
-Regards,
-R. Krishna Chaitanya
+My core expertise lies in Python, Flask, and FastAPI, where I’ve been involved in building scalable REST APIs, backend services, and data-driven applications.
+
+I’ve been working on my current project for about four years, where I handle API design, database modeling, and integration with front-end components. On the front-end side, I’ve worked with HTML, CSS, JavaScript, and basic React, primarily focusing on creating clean and efficient interfaces that connect seamlessly with the backend.
+
+I have also worked on SQL, including writing complex queries, optimizing performance, and managing data migrations. Additionally, I’m experienced in AWS services such as Lambda, S3, and KMS, and have exposure to CI/CD pipelines for deployments.
