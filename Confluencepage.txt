@@ -1,25 +1,238 @@
-Subject: Release Communication – Enhancements Planned for November 3rd
+User Recertification — Chat Summary (step-by-step)
 
-Hi All,
+Context / starting point
 
-We are planning to roll out a few enhancements and fixes as part of the upcoming release scheduled for November 3rd. These changes focus on improving usability, addressing key business requirements, and optimizing performance.
+You have a Python + Flask application and an Oracle DB.
 
-The following items are planned as part of this release:
+There is a USER_TAB table storing user records (PSID/employee id, name, email, created/updated dates, and app flags like RAP / PackBuilder).
 
-Enhancement to the Reverse Logic Implementation based on business request.
+You added three new columns to USER_TAB to store line manager info:
 
-Minor UI improvements and label updates in the RAP Metrics module.
+LINEMANAGER_ID (PSID)
 
-Optimization of backend data fetch logic for faster response time.
+LINEMANAGER_NAME
 
-Bug fixes related to risk type mapping and display inconsistencies.
+LINEMANAGER_MAIL_ID
 
-As part of this release, I would like to take a moment to appreciate the efforts of Prasad and Sanket.
-Despite being engaged with their regular sprint deliverables, they proactively took up the additional Reverse Logic enhancement requested by business and ensured timely completion.
+Frontend (another team) sends recertification emails to line managers and stores responses in RECREATE_RESPONSE (the “source” table). Important columns in that table: REPORTEES_ID, ACCESS_STATUS, ACCESS_LEVEL, IS_ACTIVE, RMM_ID, etc.
 
-A special mention to Prasad for taking the initiative and leading the development, while also balancing ongoing sprint tasks. Sanket supported the activity by validating and ensuring a smooth closure of the changes.
+Problem statement(s) discovered during the chat
 
-Their dedication and teamwork have contributed significantly to ensuring that the release remains on track.
+You needed to fetch line manager details from AD (LDAP) for thousands of users and update USER_TAB. Your current LDAP-based script worked for single PSIDs but was slow for 7–8k users.
 
-Regards,
-R. Krishna Chaitanya
+You wanted to generate UPDATE SQL statements to apply changes later (not directly from Python), saved in a .sql file.
+
+Many LINEMANAGER_NAME and LINEMANAGER_MAIL_ID values contained apostrophes (e.g. O'Brien) which broke SQL when the .sql file was executed.
+
+You wanted a scheduler to process recertification responses and apply updates; preferred a Flask-based scheduler plus a standalone script for Control-M.
+
+Business correction: instead of setting a user flag to remove ALL access, deletion must happen only at the location/RMM-level using MAP_RAP_USER_ROLE deletes joined with RECREATE_RESPONSE (so access is revoked only for specific RMM_IDs).
+
+What we delivered / worked through (chronological steps)
+A. LDAP / batching & performance discussion
+
+Confirmed your user_tab schema and LDAP approach (ldap3).
+
+Advised moving from single-PSID queries to batched LDAP queries using OR filter ( | (sAMAccountName=...) ... ) and suggested batch_size tuning (50–200).
+
+Suggested connection timeouts, paging, and retries to avoid hangs. Example batch filter construction provided.
+
+Suggested optional parallelization via concurrent.futures.ThreadPoolExecutor and how to bulk update the DB using cursor.executemany().
+
+B. Handling Python SQL generation (writing .sql file)
+
+Provided a robust Python snippet to generate UPDATE user_tab SET ... WHERE employee_id = '...' statements and write them to a file (e.g. update_user_tab.sql).
+
+Included advice to escape single quotes via value.replace("'", "''") and to write files in encoding='utf-8'.
+
+C. Running .sql in Oracle SQL Developer
+
+Explained how to open the generated .sql in SQL Developer and run the script with F5 (Run Script).
+
+Recommended testing with a small sample, committing, and checkpointing (e.g., commit every 500 updates) for safety.
+
+D. Real-world problem: apostrophes in names break SQL
+
+Diagnosed the issue: single apostrophes inside LINEMANAGER_NAME (and later in LINEMANAGER_MAIL_ID) caused SQL command not properly ended.
+
+Presented several solutions:
+
+Normal escaping approach: replace("'", "''").
+
+Oracle q'[...]' quoting syntax as an alternative.
+
+Best practical fix for your case: fix the generated .sql file directly using a small Python post-processor rather than regenerating everything.
+
+E. Iterative improvement of the fix-script (multiple versions)
+
+We iterated many versions of the file-fixer until it became robust. Files & scripts created/suggested:
+
+Initial concept — simple re.sub(r"'(.*?)'", replacer, line) — too fragile when SQL already malformed.
+
+Robust streaming script fix_sql_quotes.py — character-by-character scanner; normalized curly quotes; preserved existing escaped pairs; wrote output_fixed.sql. (We provided a full script.)
+
+Simpler targeted fixes — because only LINEMANAGER_NAME had the problem, we built progressively simpler, safe scripts to only touch that field:
+
+fix_linemanager_name_quotes.py (handles LINEMANAGER_NAME in various caps/styles).
+
+fix_quotes_final.py (tuned for no-space format LINEMANAGER_NAME='...').
+
+Handling commas — final working approach matched everything up to next comma (so names with apostrophes are captured fully): (.+?)(?=',) pattern.
+
+Extended to LINEMANAGER_MAIL_ID — added another pattern that matches values up to comma or WHERE to handle mail field being last in the SET clause. The final combined script fixes both fields.
+
+Files referenced:
+
+update_user_tab.sql — original generated update statements.
+
+update_user_tab_fixed.sql — corrected output file.
+
+fix_sql_quotes.py, fix_linemanager_name_quotes.py, fix_quotes_final.py — versions of the fixer scripts (we iterated until robust).
+
+How to run the fixer (example):
+
+python fix_quotes_final.py
+# Output: update_user_tab_fixed.sql
+
+
+Safety step: run a small SELECT from file or copy a few lines to test in SQL Developer before running the full file.
+
+F. Creating JIRA tickets
+
+You asked for Jira tickets; I provided drafts for three tickets (ready to copy-paste):
+
+Ticket 1 — Implement Scheduler to Update User Access Status Based on Line Manager Approval (Story / Task).
+
+Ticket 2 — PackBuilder User Recertification Workflow Integration (Story / Task).
+
+Ticket 3 — Release Task – Deploy User Recertification Enhancements and Scheduler Automation (Release Task).
+
+Each ticket included Title, Description, Scope, Acceptance Criteria, Sprint info, and Dependencies.
+
+G. Scheduler design & scripts (Flask + standalone)
+
+You wanted both a Flask scheduler (priority) and a standalone script for Control-M. I provided both:
+
+Flask-based scheduler (app.py) using APScheduler:
+
+Runs daily (interval days=1) and exposes a manual endpoint: /run_user_recertification.
+
+Connects to Oracle via cx_Oracle.
+
+Fetches RECREATE_RESPONSE with ACCESS_STATUS = 'REVOKED', updates the source flag and updates USER_TAB accordingly.
+
+Example manual trigger: http://localhost:5001/run_user_recertification.
+
+Standalone script (same logic, no Flask) — suitable to be invoked by Control-M.
+
+Dependencies:
+
+pip install flask apscheduler cx_Oracle
+
+Oracle client or Instant Client configured for cx_Oracle.
+
+H. Business correction: delete at RMM-level (map table) instead of toggling global user flag
+
+You corrected the business logic — setting RAP = 0 on USER_TAB would remove access in all locations. Instead, we must remove only the specific mapping row(s) from MAP_RAP_USER_ROLE for the given USER_ID + RMM_ID.
+
+The deletion must be conditional on:
+
+RECREATE_RESPONSE.ACCESS_STATUS = 'REVOKED'
+
+RECREATE_RESPONSE.IS_ACTIVE = 1
+
+RECREATE_RESPONSE.ACCESS_LEVEL in the desired set (capturer/inputter/viewer) — you can include this condition where needed.
+
+I provided the final delete query to remove only those map rows.
+
+Final delete query (Oracle SQL)
+
+DELETE FROM MAP_RAP_USER_ROLE M
+WHERE EXISTS (
+    SELECT 1
+    FROM RECREATE_RESPONSE R
+    WHERE R.REPORTEES_ID = M.USER_ID
+      AND R.RMM_ID = M.RMM_ID
+      AND UPPER(R.ACCESS_STATUS) = 'REVOKED'
+      AND R.IS_ACTIVE = 1
+);
+
+
+Safety check (preview before delete):
+
+SELECT M.*
+FROM MAP_RAP_USER_ROLE M
+WHERE EXISTS (
+    SELECT 1
+    FROM RECREATE_RESPONSE R
+    WHERE R.REPORTEES_ID = M.USER_ID
+      AND R.RMM_ID = M.RMM_ID
+      AND UPPER(R.ACCESS_STATUS) = 'REVOKED'
+      AND R.IS_ACTIVE = 1
+);
+
+
+I also suggested optionally updating RECREATE_RESPONSE to mark the record as processed (so it won’t be reprocessed), e.g. UPDATE RECREATE_RESPONSE SET IS_ACTIVE = 0 WHERE ... (or a separate PROCESSED_FLAG).
+
+Final scripts / code references to keep in your repo
+
+app.py — Flask app with APScheduler and manual trigger endpoint (primary solution).
+
+standalone_recert.py — standalone script for Control-M (same logic).
+
+fix_quotes_final.py — final post-processor to fix apostrophes in LINEMANAGER_NAME and LINEMANAGER_MAIL_ID. Produces update_user_tab_fixed.sql.
+
+generate_updates.py — (if you used it) script that generated update_user_tab.sql from the LDAP/DB output.
+
+SQL files: update_user_tab.sql, update_user_tab_fixed.sql.
+
+Recommended test & deployment checklist (practical steps)
+
+Backup: Always take a DB backup or at least export affected rows (or create a restore point) before running delete/update statements in PROD.
+
+Preview: Run the SELECT ... WHERE EXISTS(...) preview to review rows that will be deleted. Confirm with owners.
+
+UAT run: Run the Flask/manual trigger or standalone script in UAT. Verify:
+
+Correct rows updated in RECREATE_RESPONSE (IS_ACTIVE or processed flag).
+
+Correct rows deleted from MAP_RAP_USER_ROLE (only expected RMM_IDs).
+
+USER_TAB unchanged for non-targeted cases.
+
+Logging: Add file logging to scheduler for audit (I can provide a logging-enabled version).
+
+Scheduling: For production run, use the Flask scheduler or let Control-M run the standalone script. Keep a manual trigger for emergency.
+
+Rollback plan: If unintended deletions happen, restore using a pre-run dump or undo via backup; keep a copy of deleted rows (e.g., insert into audit table before delete).
+
+Sign-off: Get sign-off from business owners after UAT validations.
+
+Quick copy-paste block (for conference page)
+
+(Short version you can paste into a meeting page)
+
+Added three new columns to USER_TAB: LINEMANAGER_ID, LINEMANAGER_NAME, LINEMANAGER_MAIL_ID.
+
+Created scripts to generate update SQL (update_user_tab.sql).
+
+Fixed apostrophe issues in generated SQL using fix_quotes_final.py which targets LINEMANAGER_NAME and LINEMANAGER_MAIL_ID and writes update_user_tab_fixed.sql.
+
+Implemented (designed) scheduler in Flask (app.py) with manual endpoint /run_user_recertification and provided a standalone script for Control-M.
+
+Business rule corrected: remove access at RMM/location level by deleting rows from MAP_RAP_USER_ROLE matched by USER_ID / RMM_ID using data from RECREATE_RESPONSE.
+
+Final delete query provided:
+
+DELETE FROM MAP_RAP_USER_ROLE M
+WHERE EXISTS (
+    SELECT 1
+    FROM RECREATE_RESPONSE R
+    WHERE R.REPORTEES_ID = M.USER_ID
+      AND R.RMM_ID = M.RMM_ID
+      AND UPPER(R.ACCESS_STATUS) = 'REVOKED'
+      AND R.IS_ACTIVE = 1
+);
+
+
+Recommended: run SELECT preview first, take DB backups, test in UAT, add logging, schedule in Control-M or via Flask scheduler.
