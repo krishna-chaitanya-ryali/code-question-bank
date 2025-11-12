@@ -1,31 +1,38 @@
-Subject: UAT Sign-Off Request – User Recertification and Inactive User Revocation Feature
+Subject: UAT Sign-Off Request – User Recertification & Super Admin Enhancements
 
 Hi Sandeep,
 
-Hope you’re doing well.
+Good Morning.
 
-This is to inform you that the User Recertification module — including the scheduler logic and related enhancements — has been successfully deployed in the UAT environment.
+The User Recertification feature and related components have been successfully deployed to the UAT environment for validation.
+This enhancement ensures that inactive or revoked users are automatically managed within the system based on the line manager’s response.
 
-As part of this feature, we have implemented the following key functionalities:
+Below is a summary of the key changes included in this UAT deployment:
 
-User Recertification workflow: Automatically validates whether each user still requires access to RAP or Pack Builder, based on line manager responses.
+User Recertification Scheduler
 
-Scheduler implementation: Periodically checks the RECREATE_RESPONSE table for line manager feedback.
+A scheduler job is configured to run periodically to identify users whose access is revoked by their respective line managers.
 
-If the Access Status is Revoked, the scheduler updates the respective records by setting:
+The scheduler updates corresponding user records in both the USER_TAB and RECREATE_RESPONSE tables.
 
-isActive = 1 in the source table (RECREATE_RESPONSE)
+Additionally, a manual trigger option is provided to initiate the scheduler instantly during UAT testing (without waiting for the scheduled job run).
 
-for_rap = 1 in the destination table (USER_TAB)
+Super Admin Portal Enhancements
 
-Data consistency enhancements: Additional logic and validations to ensure synchronization between the response and user tables.
+Introduced a Super Admin dashboard accessible to designated users (e.g., you and selected business users).
 
-Support for both Flask-based backend scheduling and standalone script execution (for Control-M integration).
+Added a report download option for the User Recertification data from the RECREATE_RESPONSE table.
 
-Request you to please perform the necessary validations and provide your UAT sign-off confirmation.
-Kindly let us know if any issues are observed during your testing or if further clarifications are needed.
+Super Admins can now generate yearly reports (e.g., 2024, 2025, etc.) to review all user access decisions—approved, revoked, or pending—without developer dependency.
 
-Thank you for your time and support.
+Stability & Backend Improvements
 
-Best regards,
+Integrated the scheduler into the Flask backend for smoother automation.
+
+Provided a standalone script version compatible with Control-M for future production automation.
+
+Kindly review the functionality and confirm the UAT sign-off so we can proceed with the production deployment.
+
+Thanks & Regards,
 R. Krishna Chaitanya
+Backend Developer – Flask / Python
