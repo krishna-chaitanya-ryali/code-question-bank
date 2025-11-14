@@ -29,3 +29,9 @@ Mapping logic
 Formula validations
 
 So it’s not just an Excel change; it is a complete end-to-end redesign of the onboarding process.
+
+
+Hi Nitin, quick note before the 3:30 call —
+The onboarding template (from 2020) was built only for the basic pack layer and is tightly coupled with all 7 onboarding steps. So adding/renaming columns isn’t a simple Excel change; it requires full end-to-end updates across macros, UI validations, staging tables, and mappings.
+Additionally, the MASTER_METRIC_ID logic for new metrics will also need adjustments as part of this change.
+I’ll walk through this on the call.
