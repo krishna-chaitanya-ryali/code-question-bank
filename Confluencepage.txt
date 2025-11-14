@@ -1,38 +1,31 @@
-Subject: UAT Sign-Off Request – User Recertification & Super Admin Enhancements
+Hi Nitin, just a quick update before the 3:30 call.
+The onboarding template was originally designed in 2020 only to capture the basic layer of a pack, not the full detailed RAP structure. The entire 7-step onboarding process (Excel macros, UI validations, staging tables, inserts, mappings) is tightly coupled to the current 12-column format.
 
-Hi Sandeep,
+So adding new columns or renaming existing ones is not a plug-and-play Excel change — it will require end-to-end modifications across all onboarding steps. I will explain this in the call.**
 
-Good Morning.
 
-The User Recertification feature and related components have been successfully deployed to the UAT environment for validation.
-This enhancement ensures that inactive or revoked users are automatically managed within the system based on the line manager’s response.
+One more important point I want to highlight is the original intention behind the onboarding template.
+When this template was designed in 2020, the idea was not to capture the full end-to-end detailed RAP design.
+It was created only to capture the basic foundational layer of the pack — meaning: basic metric information, basic risk type mapping, and the minimal columns required to onboard a country.
 
-Below is a summary of the key changes included in this UAT deployment:
+It was never designed as a dynamic or expandable template where new fields can be frequently added.
+This is why the structure is very rigid and tightly coupled with the 7-step onboarding logic.
 
-User Recertification Scheduler
+Because of that original design philosophy, the template is not naturally suitable for quick enhancements.
+If we touch or expand this structure now — whether by adding 3 new columns or renaming existing columns — it will require modifications across all 7 steps:
 
-A scheduler job is configured to run periodically to identify users whose access is revoked by their respective line managers.
+Excel macro validations
 
-The scheduler updates corresponding user records in both the USER_TAB and RECREATE_RESPONSE tables.
+UI validations
 
-Additionally, a manual trigger option is provided to initiate the scheduler instantly during UAT testing (without waiting for the scheduled job run).
+Risk type tagging
 
-Super Admin Portal Enhancements
+Staging tables
 
-Introduced a Super Admin dashboard accessible to designated users (e.g., you and selected business users).
+Backend inserts into RAP tables
 
-Added a report download option for the User Recertification data from the RECREATE_RESPONSE table.
+Mapping logic
 
-Super Admins can now generate yearly reports (e.g., 2024, 2025, etc.) to review all user access decisions—approved, revoked, or pending—without developer dependency.
+Formula validations
 
-Stability & Backend Improvements
-
-Integrated the scheduler into the Flask backend for smoother automation.
-
-Provided a standalone script version compatible with Control-M for future production automation.
-
-Kindly review the functionality and confirm the UAT sign-off so we can proceed with the production deployment.
-
-Thanks & Regards,
-R. Krishna Chaitanya
-Backend Developer – Flask / Python
+So it’s not just an Excel change; it is a complete end-to-end redesign of the onboarding process.
