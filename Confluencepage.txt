@@ -1,25 +1,48 @@
-Subject: Release Communication – Enhancements Planned for November 3rd
+User Recertification – Add Future-Dated Revocation Support (Backend + Scheduler Changes)
 
-Hi All,
+As part of the User Recertification Phase 3, we need to enhance the scheduler logic to support future-dated revocation based on line manager input. Currently, users are revoked immediately when the access status is set to Revoked. With this enhancement, line managers can specify a future “Revoke On Date”, and the backend scheduler will revoke access only on that date.
 
-We are planning to roll out a few enhancements and fixes as part of the upcoming release scheduled for November 3rd. These changes focus on improving usability, addressing key business requirements, and optimizing performance.
+Enable the scheduler to automatically revoke user access on a specified future date, without immediate deletion, ensuring accurate and controlled access management.
 
-The following items are planned as part of this release:
+1. Database Changes
 
-Enhancement to the Reverse Logic Implementation based on business request.
+Add new column in RECREATE_RESPONSE table:
+REVOKE_ON_DATE DATE NULL
+2. Scheduler Logic Enhancement (Python Flask Backend)
 
-Minor UI improvements and label updates in the RAP Metrics module.
+When scheduler runs:
 
-Optimization of backend data fetch logic for faster response time.
+For every record in RECREATE_RESPONSE where:
+ACCESS_STATUS = 'REVOKE'
+IS_ACTIVE = 0
+REVOKE_ON_DATE IS NOT NULL
 
-Bug fixes related to risk type mapping and display inconsistencies.
+Apply logic:
+Case 1 — Today < RevokeOnDate
+Do NOT revoke.
+Do NOT delete from MAP_RAP_USER_ROLE.
+Do NOT update USER_TAB.
+Scheduler just skips and waits for the correct date.
 
-As part of this release, I would like to take a moment to appreciate the efforts of Prasad and Sanket.
-Despite being engaged with their regular sprint deliverables, they proactively took up the additional Reverse Logic enhancement requested by business and ensured timely completion.
+Case 2 — Today >= RevokeOnDate
+Perform full revocation:
+Update recreate response table
+UPDATE RECREATE_RESPONSE
+SET IS_ACTIVE = 1
+WHERE REPORTEES_ID = :user_id
+  AND RMM_ID = :rmm_id;
+ ======================
+DELETE FROM MAP_RAP_USER_ROLE
+WHERE USER_ID = :user_id
+  AND RMM_ID = :rmm_id
+  AND ACCESS_LEVEL IN ('CAPTURER', 'INPUTTER', 'VIEWER');
+  
 
-A special mention to Prasad for taking the initiative and leading the development, while also balancing ongoing sprint tasks. Sanket supported the activity by validating and ensuring a smooth closure of the changes.
+3. Manual Trigger Enhancement
 
-Their dedication and teamwork have contributed significantly to ensuring that the release remains on track.
+Super admin portal already has a Manual Trigger button.
+Enhancement required:
 
-Regards,
-R. Krishna Chaitanya
+Manual trigger must also evaluate future-dated revocations.
+
+UI does not need change except passing the new date column.
