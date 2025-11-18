@@ -1,48 +1,23 @@
-User Recertification – Add Future-Dated Revocation Support (Backend + Scheduler Changes)
+Subject: Reminder: Validate RAP Onboarding Flow During Enhancements
 
-As part of the User Recertification Phase 3, we need to enhance the scheduler logic to support future-dated revocation based on line manager input. Currently, users are revoked immediately when the access status is set to Revoked. With this enhancement, line managers can specify a future “Revoke On Date”, and the backend scheduler will revoke access only on that date.
+Hi Team,
 
-Enable the scheduler to automatically revoke user access on a specified future date, without immediate deletion, ensuring accurate and controlled access management.
+As we continue to roll out new enhancements and improvements in the RAP application, I wanted to share a quick reminder regarding our development and testing process.
 
-1. Database Changes
+With every enhancement—whether it’s a change to access logic, dashboard components, or core functionalities—it’s important that we also validate the end-to-end RAP onboarding process.
+Since onboarding is tightly integrated with multiple modules, even small improvements can sometimes influence the flow in unexpected ways.
 
-Add new column in RECREATE_RESPONSE table:
-REVOKE_ON_DATE DATE NULL
-2. Scheduler Logic Enhancement (Python Flask Backend)
+To avoid last-minute issues when an onboarding request arrives, let’s ensure that:
 
-When scheduler runs:
+Every new feature or update includes a basic onboarding sanity check.
 
-For every record in RECREATE_RESPONSE where:
-ACCESS_STATUS = 'REVOKE'
-IS_ACTIVE = 0
-REVOKE_ON_DATE IS NOT NULL
+Any changes affecting roles, access mappings, or user flow are cross-verified with onboarding.
 
-Apply logic:
-Case 1 — Today < RevokeOnDate
-Do NOT revoke.
-Do NOT delete from MAP_RAP_USER_ROLE.
-Do NOT update USER_TAB.
-Scheduler just skips and waits for the correct date.
+Potential impacts are flagged early so we can address them proactively.
 
-Case 2 — Today >= RevokeOnDate
-Perform full revocation:
-Update recreate response table
-UPDATE RECREATE_RESPONSE
-SET IS_ACTIVE = 1
-WHERE REPORTEES_ID = :user_id
-  AND RMM_ID = :rmm_id;
- ======================
-DELETE FROM MAP_RAP_USER_ROLE
-WHERE USER_ID = :user_id
-  AND RMM_ID = :rmm_id
-  AND ACCESS_LEVEL IN ('CAPTURER', 'INPUTTER', 'VIEWER');
-  
+This helps us maintain a stable and reliable onboarding experience while continuing to deliver enhancements at speed.
 
-3. Manual Trigger Enhancement
+Thanks for your support and cooperation.
+Please feel free to reach out if you have any questions.
 
-Super admin portal already has a Manual Trigger button.
-Enhancement required:
-
-Manual trigger must also evaluate future-dated revocations.
-
-UI does not need change except passing the new date column.
+Regards,
