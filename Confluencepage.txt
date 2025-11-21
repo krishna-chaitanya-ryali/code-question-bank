@@ -1,23 +1,150 @@
-Subject: Reminder: Validate RAP Onboarding Flow During Enhancements
+Jira Ticket 1 — Excel Template Redesign for New Onboarding Columns
 
-Hi Team,
+Title: Redesign RAP Onboarding Excel Template to Support New Columns
 
-As we continue to roll out new enhancements and improvements in the RAP application, I wanted to share a quick reminder regarding our development and testing process.
+Description:
+The current RAP onboarding Excel template (created in 2020) supports only 12 fixed columns and was designed only to capture basic pack details. Business has requested additional fields such as Dashboard Section, L1 Risk Taxonomy, Metric Category, and Frequency.
+Since this template is tied to macro-based validations and Python/Pandas processing logic, any new fields require a structured redesign.
 
-With every enhancement—whether it’s a change to access logic, dashboard components, or core functionalities—it’s important that we also validate the end-to-end RAP onboarding process.
-Since onboarding is tightly integrated with multiple modules, even small improvements can sometimes influence the flow in unexpected ways.
+Scope / Requirements:
 
-To avoid last-minute issues when an onboarding request arrives, let’s ensure that:
+Add 3–5 new columns as per requirement.
 
-Every new feature or update includes a basic onboarding sanity check.
+Keep the existing 12 columns intact without renaming or format changes.
 
-Any changes affecting roles, access mappings, or user flow are cross-verified with onboarding.
+Update Excel macro validations to align with new columns.
 
-Potential impacts are flagged early so we can address them proactively.
+Update mandatory/optional fields, dropdowns, formats, and dependent logic.
 
-This helps us maintain a stable and reliable onboarding experience while continuing to deliver enhancements at speed.
+Share updated template with backend team for integration with Python validation layer.
 
-Thanks for your support and cooperation.
-Please feel free to reach out if you have any questions.
+Impact Areas:
 
-Regards,
+Excel macro logic
+
+Column naming conventions and ordering
+
+Basic template formatting
+
+Data types used during onboarding
+
+Acceptance Criteria:
+
+Final template contains all required new fields.
+
+All Excel macro validations work without failure.
+
+Template is compatible with Python/Pandas ingestion logic.
+
+Documented list of changes (column order, naming, validations).
+
+==========================================
+
+Jira Ticket 2 — Python/Pandas Backend Changes for New Template Fields
+
+Title: Update Python/Pandas Onboarding Pipeline to Support New Template Fields
+
+Description:
+The onboarding engine uses Python (Pandas) for reading the Excel file, performing validations, transforming the data, and populating the RAP database tables. The current pipeline assumes a fixed 12-column structure.
+To accommodate new fields, all parsing, validation, and mapping logic must be updated.
+
+Scope / Requirements:
+
+Modify Pandas-based ingestion logic to read new columns.
+
+Update validations in Python (data type checks, mandatory fields, mapping rules).
+
+Update transformation logic for the 7-step onboarding flow.
+
+Update staging table processing logic for new fields.
+
+Modify insert/update logic for RAP tables:
+
+REP_RAP
+
+RAP_METRIC_DETAILS
+
+RAP_METRIC_MAPPING
+
+MASTER_METRIC_DETAILS
+
+Update logic for MASTER_METRIC_ID generation & linking for new metrics.
+
+Ensure old template data (if any) is either supported or clearly retired.
+
+Impact Areas:
+
+Pandas dataframe schemas
+
+Column-level validation rules
+
+Staging table interactions
+
+Database insert/update logic
+
+MASTER_METRIC_ID workflow
+
+Error handling and onboarding logs
+
+Acceptance Criteria:
+
+Python code successfully reads and processes new columns end-to-end.
+
+New fields appear correctly in all relevant RAP tables.
+
+MASTER_METRIC_ID is generated/linked correctly.
+
+Regression test with an existing pack to confirm no breakage.
+
+All changes documented (updated JSON/configs, column specs, etc.).
+==========================
+
+Jira Ticket 3 — MASTER_METRIC_NAME Not Getting Created During Onboarding
+
+Title: Fix MASTER_METRIC_NAME Creation Logic During Metric Onboarding via Onboarding Portal
+
+Description:
+During the onboarding process, when a new metric is added through the onboarding portal, the value for MASTER_METRIC_NAME is not being created or inserted into the MASTER_METRIC_DETAILS table.
+However, when the same metric is added manually from the dashboard, the logic works correctly — both MASTER_METRIC_ID and MASTER_METRIC_NAME are generated and stored as expected.
+
+This indicates that the MASTER_METRIC generation logic implemented for dashboard-side metric creation was not applied to the onboarding flow.
+
+Scope / Requirements:
+
+Analyze the existing MASTER_METRIC creation logic implemented on the dashboard path.
+
+Identify missing or incomplete logic in the onboarding (Python/Pandas) flow.
+
+Implement the same MASTER_METRIC_NAME creation logic in the onboarding pipeline.
+
+Ensure MASTER_METRIC_ID and MASTER_METRIC_NAME are generated consistently for:
+
+New metrics onboarded via template
+
+Metrics added manually through dashboard
+
+Update database insertion logic for MASTER_METRIC_DETAILS.
+
+Impact Areas:
+
+Python/Pandas onboarding code
+
+MASTER_METRIC_DETAILS table insertion/update logic
+
+Metric creation section of onboarding steps
+
+RAP_METRIC_DETAILS and RAP_METRIC_MAPPING linkage
+
+Error handling/log messages during onboarding
+
+Acceptance Criteria:
+
+MASTER_METRIC_NAME is correctly generated for every new metric added from the onboarding portal.
+
+MASTER_METRIC_ID and MASTER_METRIC_NAME must match the behavior of dashboard-driven metric creation.
+
+Backfilled/linked properly in RAP_METRIC_DETAILS and RAP_METRIC_MAPPING.
+
+No impact on existing metrics or previously onboarded packs.
+
+Verified with at least 2–3 test templates.
