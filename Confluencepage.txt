@@ -1,25 +1,16 @@
-Hi Team,
+Subject: Re: RAP Onboarding – HB-UK Pack Under HB-EU
 
-Quick heads-up on today’s deployment plan (high-level):
+Hi <Name>,
 
-1. 08:30 AM — DBA (Srikanth) will start the production DB schema backup (expected ~30–45 mins).
+The requested pack has been successfully onboarded in the Unity environment.
+You can access the pack using the link below:
 
+<Insert Pack Link>
 
-2. Before / During backup — Stop DRN production server to ensure consistency.
+As discussed, we have also enabled Capturer access for the mentioned users in the onboarding template.
 
+Please feel free to reach out if you need any additional details or further support.
+Happy to assist.
 
-3. After backup completes — Krishna / Prasad will execute the approved DB scripts and apply required configuration changes on application & database servers (estimated ~2–3 hrs).
-
-
-4. Post DB changes — Run the DR pipelines followed by the Production pipeline.
-
-
-5. Validation — Perform functional validations and health checks to confirm all changes are successful.
-
-
-
-Notes:
-
-This is a high-level plan — will share detailed checklist if needed.
-
-Please flag immediately if you anticipate any blockers or delays.
+Thanks & Regards,
+Krishna
