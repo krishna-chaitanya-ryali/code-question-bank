@@ -1,23 +1,25 @@
-Subject: Request for DBA Support – Production Backup Tomorrow at 8:30 AM
-
 Hi Team,
 
-Requesting DBA support for taking the production database backup as part of the scheduled change request activity.
+Quick heads-up on today’s deployment plan (high-level):
 
-Details:
+1. 08:30 AM — DBA (Srikanth) will start the production DB schema backup (expected ~30–45 mins).
 
-Backup Date: Tomorrow
 
-Time: 8:30 AM
+2. Before / During backup — Stop DRN production server to ensure consistency.
 
-Environment: Production
 
-Purpose: Pre-implementation backup as per the approved Change Request
+3. After backup completes — Krishna / Prasad will execute the approved DB scripts and apply required configuration changes on application & database servers (estimated ~2–3 hrs).
 
-CR Details: [Attach the Change Request PDF / link here]
 
-Please confirm your availability for this activity.
-Let me know if any additional information is required.
+4. Post DB changes — Run the DR pipelines followed by the Production pipeline.
 
-Thanks & Regards,
-Krishna
+
+5. Validation — Perform functional validations and health checks to confirm all changes are successful.
+
+
+
+Notes:
+
+This is a high-level plan — will share detailed checklist if needed.
+
+Please flag immediately if you anticipate any blockers or delays.
