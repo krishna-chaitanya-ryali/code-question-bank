@@ -1,16 +1,29 @@
-Subject: Re: RAP Onboarding – HB-UK Pack Under HB-EU
+Subject: Issue: Monthly Risk Culture File Not Transferring to Destination Server
 
-Hi <Name>,
+Hi Team,
 
-The requested pack has been successfully onboarded in the Unity environment.
-You can access the pack using the link below:
+Good afternoon.
 
-<Insert Pack Link>
+We have identified an issue with the monthly file transfer process from the RAP Production Server to the Risk Culture Production Server.
 
-As discussed, we have also enabled Capturer access for the mentioned users in the onboarding template.
+As per the standard schedule, the file is generated and downloaded on our RAP Production server on the 1st of every month at 10:00 AM. This process has been working consistently for the past two years.
+However, this month, while the file was successfully downloaded on our server, it did not get transferred to the Risk Culture server.
 
-Please feel free to reach out if you need any additional details or further support.
-Happy to assist.
+I attempted to run the transfer manually as well, but the connection is prompting for a password, which indicates a possible trust / SSH key issue between the two servers.
+This trust was earlier configured and working, so it appears to have been removed or broken in the recent past.
+
+I am attaching the screenshot of the error message for reference.
+
+Request:
+Kindly check the server-level trust configuration between:
+
+Source: RAP Production Server
+
+Destination: Risk Culture Production Server
+and help re-establish the required access so that the automated monthly transfer can proceed as expected.
+
+Please let me know if any additional details or logs are required.
 
 Thanks & Regards,
-Krishna
+R. Krishna Chaitanya
+RAP Application Team
