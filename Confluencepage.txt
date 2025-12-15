@@ -27,3 +27,63 @@ Please let me know if any additional details or logs are required.
 Thanks & Regards,
 R. Krishna Chaitanya
 RAP Application Team
+Issue Type: Incident / Support
+
+(Use “Incident” if available; otherwise “Task” or “Bug” as per your Jira setup)
+
+Summary:
+
+Monthly Risk Culture file transfer failing from RAP Prod to Risk Culture Prod server
+
+Description:
+
+We are facing an issue with the monthly file transfer from the RAP Production server to the Risk Culture Production server.
+
+This job runs on the 1st of every month at 10:00 AM and has been working consistently for the past ~2 years.
+However, for the current month:
+
+The file is successfully generated and downloaded on the RAP Production server.
+
+The file is not transferred to the Risk Culture Production server.
+
+When attempting to transfer the file manually, the connection prompts for a password, indicating a possible SSH trust / key-based authentication issue between the two servers.
+
+This trust was previously configured and working, so it may have been broken or removed recently.
+
+Expected Behavior:
+
+The file should be transferred automatically from RAP Prod to Risk Culture Prod without password prompts, using existing SSH trust.
+
+Actual Behavior:
+
+File transfer fails and prompts for password when attempted manually.
+
+Impact:
+
+Monthly Risk Culture data is not delivered to the downstream system.
+
+Manual intervention required until trust is restored.
+
+Action Requested:
+
+Verify SSH trust / key-based authentication between:
+
+Source: RAP Production Server
+
+Destination: Risk Culture Production Server
+
+Re-establish trust if missing.
+
+Validate file transfer post-fix.
+
+Attachments:
+
+Screenshot of password prompt / error message (attached)
+
+Priority:
+
+High (Monthly production process impacted)
+
+Environment:
+
+Production
