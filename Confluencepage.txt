@@ -1,89 +1,123 @@
-Subject: Issue: Monthly Risk Culture File Not Transferring to Destination Server
+from datetime import datetime
+import cx_Oracle
+from flask import Blueprint, jsonify
+from apscheduler.schedulers.background import BackgroundScheduler
 
-Hi Team,
+recert_bp = Blueprint('recertification', __name__)
 
-Good afternoon.
+# ---------------------------------
+# 1. Oracle DB Connection Function
+# ---------------------------------
+def get_db_connection():
+    return cx_Oracle.connect(
+        user="YOUR_USERNAME",
+        password="YOUR_PASSWORD",
+        dsn="YOUR_DSN"
+    )
 
-We have identified an issue with the monthly file transfer process from the RAP Production Server to the Risk Culture Production Server.
+# ---------------------------------
+# 2. Core Recertification Worker
+# ---------------------------------
+def process_user_recertification():
+    print("Scheduler started at:", datetime.now())
 
-As per the standard schedule, the file is generated and downloaded on our RAP Production server on the 1st of every month at 10:00 AM. This process has been working consistently for the past two years.
-However, this month, while the file was successfully downloaded on our server, it did not get transferred to the Risk Culture server.
+    conn = get_db_connection()
+    cursor = conn.cursor()
 
-I attempted to run the transfer manually as well, but the connection is prompting for a password, which indicates a possible trust / SSH key issue between the two servers.
-This trust was earlier configured and working, so it appears to have been removed or broken in the recent past.
+    today = datetime.now().date()
 
-I am attaching the screenshot of the error message for reference.
+    # Fetch all records that are REVOKE but future-dated
+    fetch_query = """
+        SELECT REPORTEES_ID,
+               RMM_ID,
+               ACCESS_STATUS,
+               IS_ACTIVE,
+               ACCESS_LEVEL,
+               REVOKE_ON_DATE
+        FROM RECREATE_RESPONSE
+        WHERE ACCESS_STATUS = 'REVOKE'
+          AND IS_ACTIVE = 0
+          AND RMM_ID IS NOT NULL
+    """
 
-Request:
-Kindly check the server-level trust configuration between:
+    cursor.execute(fetch_query)
+    rows = cursor.fetchall()
 
-Source: RAP Production Server
+    for row in rows:
+        user_id      = row[0]
+        rmm_id       = row[1]
+        access_status = row[2]
+        is_active     = row[3]
+        access_level  = row[4]
+        revoke_on_date = row[5]
 
-Destination: Risk Culture Production Server
-and help re-establish the required access so that the automated monthly transfer can proceed as expected.
+        # --- 1. If no date provided, treat as immediate revoke ---
+        if revoke_on_date is None:
+            print(f"[INFO] No revoke date for {user_id}/{rmm_id}. Revoking immediately.")
+            revoke_user_access(cursor, user_id, rmm_id)
+            continue
 
-Please let me know if any additional details or logs are required.
+        revoke_date = revoke_on_date.date()
 
-Thanks & Regards,
-R. Krishna Chaitanya
-RAP Application Team
-Issue Type: Incident / Support
+        # --- 2. If future date, skip until the date arrives ---
+        if today < revoke_date:
+            print(f"[SKIP] {user_id}/{rmm_id} scheduled for future revoke on {revoke_date}")
+            continue
 
-(Use “Incident” if available; otherwise “Task” or “Bug” as per your Jira setup)
+        # --- 3. Today >= revoke date → revoke now ---
+        print(f"[REVOKE] Revoking access for {user_id}/{rmm_id} on {today}")
+        revoke_user_access(cursor, user_id, rmm_id)
 
-Summary:
+    conn.commit()
+    cursor.close()
+    conn.close()
+    print("Scheduler completed at:", datetime.now())
 
-Monthly Risk Culture file transfer failing from RAP Prod to Risk Culture Prod server
 
-Description:
+# -------------------------------------------------------
+# 3. Actual revocation worker (Delete + Update isActive)
+# -------------------------------------------------------
+def revoke_user_access(cursor, user_id, rmm_id):
+    
+    # 1. UPDATE isActive = 1 in RECREATE_RESPONSE
+    update_query = """
+        UPDATE RECREATE_RESPONSE
+        SET IS_ACTIVE = 1
+        WHERE REPORTEES_ID = :user_id
+          AND RMM_ID = :rmm_id
+          AND ACCESS_STATUS = 'REVOKE'
+    """
 
-We are facing an issue with the monthly file transfer from the RAP Production server to the Risk Culture Production server.
+    cursor.execute(update_query, {"user_id": user_id, "rmm_id": rmm_id})
 
-This job runs on the 1st of every month at 10:00 AM and has been working consistently for the past ~2 years.
-However, for the current month:
+    # 2. DELETE specific RMM access (not all locations)
+    delete_query = """
+        DELETE FROM MAP_RAP_USER_ROLE
+        WHERE USER_ID = :user_id
+          AND RMM_ID = :rmm_id
+    """
 
-The file is successfully generated and downloaded on the RAP Production server.
+    cursor.execute(delete_query, {"user_id": user_id, "rmm_id": rmm_id})
 
-The file is not transferred to the Risk Culture Production server.
 
-When attempting to transfer the file manually, the connection prompts for a password, indicating a possible SSH trust / key-based authentication issue between the two servers.
+# ---------------------------------
+# 4. Scheduler Registration (Daily/Hourly)
+# ---------------------------------
+def init_scheduler(app):
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(func=process_user_recertification,
+                      trigger="interval",
+                      hours=1,  # RUN EVERY HOUR
+                      id="user_recertification_job",
+                      replace_existing=True)
+    scheduler.start()
+    print("Scheduler initialized successfully.")
 
-This trust was previously configured and working, so it may have been broken or removed recently.
 
-Expected Behavior:
-
-The file should be transferred automatically from RAP Prod to Risk Culture Prod without password prompts, using existing SSH trust.
-
-Actual Behavior:
-
-File transfer fails and prompts for password when attempted manually.
-
-Impact:
-
-Monthly Risk Culture data is not delivered to the downstream system.
-
-Manual intervention required until trust is restored.
-
-Action Requested:
-
-Verify SSH trust / key-based authentication between:
-
-Source: RAP Production Server
-
-Destination: Risk Culture Production Server
-
-Re-establish trust if missing.
-
-Validate file transfer post-fix.
-
-Attachments:
-
-Screenshot of password prompt / error message (attached)
-
-Priority:
-
-High (Monthly production process impacted)
-
-Environment:
-
-Production
+# ---------------------------------
+# 5. Manual Trigger Endpoint
+# ---------------------------------
+@recert_bp.route("/trigger-recertification", methods=["POST"])
+def manual_trigger():
+    process_user_recertification()
+    return jsonify({"status": "Manual trigger executed successfully"})
