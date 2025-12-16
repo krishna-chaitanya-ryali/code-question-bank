@@ -1,74 +1,313 @@
-def process_user_recertification():
-    print("Scheduler started at:", datetime.now())
+User Recertification – Backend Automation (End-to-End Implementation)
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
+1. Background & Objective
 
-    today = datetime.now().date()
+User Recertification is a periodic governance process to ensure that only active users retain access to RAP / PackBuilder systems.
+This implementation focuses on automating the revocation of inactive users based on line manager responses, with full auditability and minimal operational risk.
 
-    fetch_query = """
-        SELECT REPORTEES_ID,
-               RMM_ID,
-               ACCESS_STATUS,
-               IS_ACTIVE,
-               ACCESS_LEVEL,
-               ACCESS_REVOKE_DATE_BY_LINE_MANAGER,
-               RECERTIFICATION_DUE_DATE
-        FROM RECREATE_RESPONSE
-        WHERE ACCESS_STATUS = 'REVOKE'
-          AND IS_ACTIVE = 0
-          AND RMM_ID IS NOT NULL
-    """
 
-    cursor.execute(fetch_query)
-    rows = cursor.fetchall()
+---
 
-    for row in rows:
-        user_id   = row[0]
-        rmm_id    = row[1]
-        access_status = row[2]
-        is_active = row[3]
-        access_level = row[4]
+2. Initial Analysis & Data Preparation Phase
 
-        lm_revoke_date = row[5]   # ACCESS_REVOKE_DATE_BY_LINE_MANAGER
-        recert_due_date = row[6]  # RECERTIFICATION_DUE_DATE
+2.1 Existing Data Landscape
 
-        # -------------------------------
-        # 1. Decide FINAL revoke date
-        # -------------------------------
-        final_revoke_date = None
-        revoke_source = None
+At the beginning of the implementation:
 
-        if lm_revoke_date is not None:
-            final_revoke_date = lm_revoke_date.date()
-            revoke_source = "LINE_MANAGER_DATE"
-        elif recert_due_date is not None:
-            final_revoke_date = recert_due_date.date()
-            revoke_source = "RECERTIFICATION_DUE_DATE"
-        else:
-            print(f"[SKIP] No revoke date found for {user_id}/{rmm_id}")
-            continue
+User data was stored in USER_TAB
 
-        # -------------------------------
-        # 2. If future date → skip
-        # -------------------------------
-        if today < final_revoke_date:
-            print(
-                f"[SKIP] {user_id}/{rmm_id} scheduled for revoke on "
-                f"{final_revoke_date} (source={revoke_source})"
-            )
-            continue
+Line manager responses were stored in RECREATE_RESPONSE
 
-        # -------------------------------
-        # 3. Today >= final revoke date
-        # -------------------------------
-        print(
-            f"[REVOKE] Revoking access for {user_id}/{rmm_id} "
-            f"on {today} (source={revoke_source})"
-        )
-        revoke_user_access(cursor, user_id, rmm_id)
+Location-based access mapping existed in MAP_RAP_USER_ROLE
 
-    conn.commit()
-    cursor.close()
-    conn.close()
-    print("Scheduler completed at:", datetime.now())
+
+However:
+
+Line manager details were missing in USER_TAB
+
+Bulk data updates were required for thousands of users
+
+Direct DB updates needed to be reviewed and controlled
+
+
+
+---
+
+2.2 SQL-Driven Data Extraction & Update Preparation
+
+As the first step, SQL queries were created to extract user and line manager details from existing tables.
+
+Key activities:
+
+Identified required columns (PSID, employee name, email, application flags)
+
+Generated SQL SELECT queries to fetch eligible users
+
+Prepared UPDATE USER_TAB statements programmatically
+
+
+A Python utility script was written to:
+
+Read query output
+
+Generate thousands of UPDATE statements
+
+Write them into .sql files for controlled execution
+
+
+This ensured:
+
+No direct blind DB updates
+
+Full reviewability before execution
+
+Safe bulk operations
+
+
+
+---
+
+2.3 SQL Sanitization & Data Quality Handling
+
+During execution preparation, a critical issue was identified:
+
+Some names and emails contained apostrophes (e.g., O'Brien)
+
+These caused SQL execution failures
+
+
+Resolution:
+
+A Python post-processing script was introduced to:
+
+Scan generated .sql files
+
+Safely escape single quotes
+
+Fix only affected columns (LINEMANAGER_NAME, LINEMANAGER_MAIL_ID)
+
+
+Corrected SQL files were revalidated and executed successfully
+
+
+This phase ensured clean, executable SQL without re-running heavy extraction jobs.
+
+
+---
+
+3. Schema Enhancements
+
+To support recertification and future automation, new columns were added:
+
+USER_TAB
+
+LINEMANAGER_ID
+
+LINEMANAGER_NAME
+
+LINEMANAGER_MAIL_ID
+
+
+RECREATE_RESPONSE
+
+ACCESS_REVOKE_DATE_BY_LINE_MANAGER
+
+RECERTIFICATION_DUE_DATE
+
+IS_ACTIVE (used to mark processed records)
+
+
+
+---
+
+4. Evolution to Scheduler-Based Automation (Phase 3)
+
+4.1 Why Scheduler Was Required
+
+Manual or SQL-based revocation was not scalable because:
+
+Recertification is periodic
+
+Future-dated revocation is required
+
+Business users should not depend on developers
+
+
+Hence, a Python Flask–based scheduler was introduced.
+
+
+---
+
+5. Final Business Logic (Phase 3)
+
+5.1 Revoke Date Priority Logic
+
+Two dates are evaluated for revocation:
+
+1. ACCESS_REVOKE_DATE_BY_LINE_MANAGER
+
+Highest priority
+
+Explicit date selected by line manager
+
+
+
+2. RECERTIFICATION_DUE_DATE
+
+Used only when LM date is NULL
+
+
+
+
+Decision Rule:
+
+If today ≥ final revoke date → revoke access
+
+Else → skip and wait for next scheduler run
+
+
+
+---
+
+5.2 Hourly Scheduler Execution
+
+Scheduler runs every hour
+
+On each run:
+
+Fetches eligible records from RECREATE_RESPONSE
+
+Evaluates revoke dates
+
+Executes revocation only when due
+
+
+
+
+---
+
+5.3 Controlled Access Revocation
+
+To avoid removing access across all locations:
+
+No global flag update in USER_TAB
+
+Access is revoked only by deleting rows from:
+
+MAP_RAP_USER_ROLE
+
+
+Deletion is done using:
+
+USER_ID = REPORTEES_ID
+
+RMM_ID = RMM_ID
+
+
+
+This guarantees location-specific access removal only.
+
+
+---
+
+5.4 Source Table Update
+
+After successful revocation:
+
+RECREATE_RESPONSE.IS_ACTIVE is updated
+
+Prevents duplicate processing
+
+Maintains audit trace
+
+
+
+---
+
+6. Super Admin Portal Enhancements
+
+The following capabilities were enabled for Super Admin users:
+
+Year-wise User Recertification Report Download
+
+Based on RECREATE_RESPONSE
+
+Covers Approved / Revoked / Pending users
+
+
+Manual Scheduler Trigger
+
+Allows immediate execution during UAT or validation
+
+Avoids waiting for hourly scheduler
+
+
+
+This reduces developer dependency and improves business visibility.
+
+
+---
+
+7. Technical Summary
+
+Backend: Python (Flask)
+
+Scheduler: APScheduler (hourly)
+
+Database: Oracle
+
+Key Tables:
+
+USER_TAB
+
+RECREATE_RESPONSE
+
+MAP_RAP_USER_ROLE
+
+
+Design Principles:
+
+Idempotent execution
+
+Priority-based date handling
+
+Location-level access control
+
+Audit-friendly processing
+
+
+
+
+---
+
+8. Testing & Validation
+
+Immediate revoke scenarios validated
+
+Future-dated revoke scenarios validated
+
+Manual trigger tested
+
+Scheduler repeat execution verified
+
+Data integrity confirmed across tables
+
+
+
+---
+
+9. Outcome & Benefits
+
+Fully automated user recertification
+
+Supports planned future offboarding
+
+Prevents accidental full-access revocation
+
+Improves auditability and compliance
+
+Empowers Super Admin users
+
+Scalable and production-ready
+
+
