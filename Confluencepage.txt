@@ -1,74 +1,83 @@
-def process_user_recertification():
-    print("Scheduler started at:", datetime.now())
+def process_system_driven_revoke(cursor, today):
+    print("[SYSTEM-REVOKE] Running daily system revoke job")
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    today = datetime.now().date()
-
-    fetch_query = """
-        SELECT REPORTEES_ID,
-               RMM_ID,
-               ACCESS_STATUS,
-               IS_ACTIVE,
-               ACCESS_LEVEL,
-               ACCESS_REVOKE_DATE_BY_LINE_MANAGER,
-               RECERTIFICATION_DUE_DATE
-        FROM RECREATE_RESPONSE
-        WHERE ACCESS_STATUS = 'REVOKE'
-          AND IS_ACTIVE = 0
-          AND RMM_ID IS NOT NULL
+    # 1️⃣ Identify non-responsive line managers
+    lm_query = """
+        SELECT DISTINCT LINE_MANAGER_ID
+        FROM RECERTIFICATION_EMAIL_LIST
+        WHERE MAIL_SENT_COUNT = 3
+          AND LINE_MANAGER_ID IS NOT NULL
+          AND (
+              SELECT MIN(CREAT_DT)
+              FROM RECERTIFICATION_EMAIL_LIST e2
+              WHERE e2.LINE_MANAGER_ID = RECERTIFICATION_EMAIL_LIST.LINE_MANAGER_ID
+                AND e2.MAIL_SENT_COUNT = 1
+          ) + 31 <= TRUNC(SYSDATE)
     """
 
-    cursor.execute(fetch_query)
-    rows = cursor.fetchall()
+    cursor.execute(lm_query)
+    lm_ids = [row[0] for row in cursor.fetchall()]
 
-    for row in rows:
-        user_id   = row[0]
-        rmm_id    = row[1]
-        access_status = row[2]
-        is_active = row[3]
-        access_level = row[4]
+    for lm_id in lm_ids:
+        process_users_under_lm(cursor, lm_id)
 
-        lm_revoke_date = row[5]   # ACCESS_REVOKE_DATE_BY_LINE_MANAGER
-        recert_due_date = row[6]  # RECERTIFICATION_DUE_DATE
 
-        # -------------------------------
-        # 1. Decide FINAL revoke date
-        # -------------------------------
-        final_revoke_date = None
-        revoke_source = None
 
-        if lm_revoke_date is not None:
-            final_revoke_date = lm_revoke_date.date()
-            revoke_source = "LINE_MANAGER_DATE"
-        elif recert_due_date is not None:
-            final_revoke_date = recert_due_date.date()
-            revoke_source = "RECERTIFICATION_DUE_DATE"
-        else:
-            print(f"[SKIP] No revoke date found for {user_id}/{rmm_id}")
-            continue
+def process_users_under_lm(cursor, line_manager_id):
 
-        # -------------------------------
-        # 2. If future date → skip
-        # -------------------------------
-        if today < final_revoke_date:
-            print(
-                f"[SKIP] {user_id}/{rmm_id} scheduled for revoke on "
-                f"{final_revoke_date} (source={revoke_source})"
-            )
-            continue
+    user_query = """
+        SELECT USER_ID, RMM_ID
+        FROM USER_TAB
+        WHERE LINE_MANAGER_ID = :lm_id
+    """
 
-        # -------------------------------
-        # 3. Today >= final revoke date
-        # -------------------------------
-        print(
-            f"[REVOKE] Revoking access for {user_id}/{rmm_id} "
-            f"on {today} (source={revoke_source})"
-        )
+    cursor.execute(user_query, {"lm_id": line_manager_id})
+    users = cursor.fetchall()
+
+    for user_id, rmm_id in users:
+
+        # Check if record already exists
+        check_query = """
+            SELECT 1
+            FROM RECREATE_RESPONSE
+            WHERE REPORTEES_ID = :user_id
+              AND RMM_ID = :rmm_id
+        """
+        cursor.execute(check_query, {"user_id": user_id, "rmm_id": rmm_id})
+
+        if cursor.fetchone():
+            continue  # Already handled
+
+        print(f"[SYSTEM-REVOKE] Auto-revoking {user_id}/{rmm_id}")
+
+        insert_system_revoke(cursor, user_id, rmm_id)
         revoke_user_access(cursor, user_id, rmm_id)
 
-    conn.commit()
-    cursor.close()
-    conn.close()
-    print("Scheduler completed at:", datetime.now())
+
+def insert_system_revoke(cursor, user_id, rmm_id):
+
+    insert_query = """
+        INSERT INTO RECREATE_RESPONSE (
+            REPORTEES_ID,
+            RMM_ID,
+            ACCESS_STATUS,
+            ACCESS_REVOKED_DATE_BY_LINE_MANAGER,
+            CREATED_BY,
+            CREATED_DT,
+            IS_ACTIVE
+        )
+        VALUES (
+            :user_id,
+            :rmm_id,
+            'REVOKE',
+            NULL,
+            'SYSTEM REVOKED',
+            SYSDATE,
+            0
+        )
+    """
+
+    cursor.execute(insert_query, {
+        "user_id": user_id,
+        "rmm_id": rmm_id
+    })
