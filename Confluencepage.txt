@@ -1,83 +1,52 @@
-def process_system_driven_revoke(cursor, today):
-    print("[SYSTEM-REVOKE] Running daily system revoke job")
-
-    # 1️⃣ Identify non-responsive line managers
-    lm_query = """
-        SELECT DISTINCT LINE_MANAGER_ID
-        FROM RECERTIFICATION_EMAIL_LIST
-        WHERE MAIL_SENT_COUNT = 3
-          AND LINE_MANAGER_ID IS NOT NULL
-          AND (
-              SELECT MIN(CREAT_DT)
-              FROM RECERTIFICATION_EMAIL_LIST e2
-              WHERE e2.LINE_MANAGER_ID = RECERTIFICATION_EMAIL_LIST.LINE_MANAGER_ID
-                AND e2.MAIL_SENT_COUNT = 1
-          ) + 31 <= TRUNC(SYSDATE)
-    """
-
-    cursor.execute(lm_query)
-    lm_ids = [row[0] for row in cursor.fetchall()]
-
-    for lm_id in lm_ids:
-        process_users_under_lm(cursor, lm_id)
-
-
-
-def process_users_under_lm(cursor, line_manager_id):
-
-    user_query = """
-        SELECT USER_ID, RMM_ID
-        FROM USER_TAB
-        WHERE LINE_MANAGER_ID = :lm_id
-    """
-
-    cursor.execute(user_query, {"lm_id": line_manager_id})
-    users = cursor.fetchall()
-
-    for user_id, rmm_id in users:
-
-        # Check if record already exists
-        check_query = """
-            SELECT 1
-            FROM RECREATE_RESPONSE
-            WHERE REPORTEES_ID = :user_id
-              AND RMM_ID = :rmm_id
-        """
-        cursor.execute(check_query, {"user_id": user_id, "rmm_id": rmm_id})
-
-        if cursor.fetchone():
-            continue  # Already handled
-
-        print(f"[SYSTEM-REVOKE] Auto-revoking {user_id}/{rmm_id}")
-
-        insert_system_revoke(cursor, user_id, rmm_id)
-        revoke_user_access(cursor, user_id, rmm_id)
-
-
-def insert_system_revoke(cursor, user_id, rmm_id):
-
-    insert_query = """
-        INSERT INTO RECREATE_RESPONSE (
-            REPORTEES_ID,
-            RMM_ID,
-            ACCESS_STATUS,
-            ACCESS_REVOKED_DATE_BY_LINE_MANAGER,
-            CREATED_BY,
-            CREATED_DT,
-            IS_ACTIVE
-        )
-        VALUES (
-            :user_id,
-            :rmm_id,
-            'REVOKE',
-            NULL,
-            'SYSTEM REVOKED',
-            SYSDATE,
-            0
-        )
-    """
-
-    cursor.execute(insert_query, {
-        "user_id": user_id,
-        "rmm_id": rmm_id
-    })
+INSERT INTO RECREATE_RESPONSE (
+    RECREATE_YEAR,
+    LINE_MANAGER_ID,
+    LINE_MANAGER_NAME,
+    REPORTEES_ID,
+    REPORTEES_NAME,
+    SYSTEM_NAME,
+    ACCESS_LEVEL,
+    ACCESS_STATUS,
+    LOCATION_NAME,
+    IS_ACTIVE,
+    CREATED_USER_ID,
+    UPDATED_USER_ID,
+    CREATED_DT,
+    UPDATED_DT,
+    RMM_ID,
+    ACTIONED_BY,
+    RECERTIFICATION_DUE_DATE,
+    REVIEW_STATUS,
+    LINE_MANAGER_MAIL,
+    REPORTEES_MAIL,
+    ACCESS_REVOKED_DATE_BY_LINE_MANAGER
+)
+SELECT
+    EXTRACT(YEAR FROM SYSDATE)                              AS RECREATE_YEAR,
+    U.LINE_MANAGER_ID                                      AS LINE_MANAGER_ID,
+    U.LINE_MANAGER_NAME                                    AS LINE_MANAGER_NAME,
+    U.USER_ID                                              AS REPORTEES_ID,
+    U.USER_NAME                                            AS REPORTEES_NAME,
+    'RAP'                                                  AS SYSTEM_NAME,
+    UR.ACCESS_LEVEL                                        AS ACCESS_LEVEL,
+    'REVOKE'                                               AS ACCESS_STATUS,
+    RG.RMM_NAME                                            AS LOCATION_NAME,
+    1                                                      AS IS_ACTIVE,
+    :CREATED_BY_PSID                                       AS CREATED_USER_ID,
+    :CREATED_BY_PSID                                       AS UPDATED_USER_ID,
+    SYSDATE                                                AS CREATED_DT,
+    SYSDATE                                                AS UPDATED_DT,
+    RG.RMM_ID                                              AS RMM_ID,
+    'SYSTEM REVOKED'                                       AS ACTIONED_BY,
+    SYSDATE                                                AS RECERTIFICATION_DUE_DATE,
+    'COMPLETED'                                            AS REVIEW_STATUS,
+    U.LINE_MANAGER_MAIL_ID                                 AS LINE_MANAGER_MAIL,
+    U.USER_MAIL_ID                                         AS REPORTEES_MAIL,
+    NULL                                                   AS ACCESS_REVOKED_DATE_BY_LINE_MANAGER
+FROM USER_TAB U
+JOIN USER_ROLE UR
+    ON UR.USER_ID = U.USER_ID
+JOIN RAP_RMM_GROUP RG
+    ON RG.RMM_ID = UR.RMM_ID
+WHERE U.USER_ID = :USER_ID
+  AND U.LINE_MANAGER_ID = :LINE_MANAGER_ID;
