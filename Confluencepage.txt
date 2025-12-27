@@ -1,52 +1,186 @@
-INSERT INTO RECREATE_RESPONSE (
-    RECREATE_YEAR,
-    LINE_MANAGER_ID,
-    LINE_MANAGER_NAME,
-    REPORTEES_ID,
-    REPORTEES_NAME,
-    SYSTEM_NAME,
-    ACCESS_LEVEL,
-    ACCESS_STATUS,
-    LOCATION_NAME,
-    IS_ACTIVE,
-    CREATED_USER_ID,
-    UPDATED_USER_ID,
-    CREATED_DT,
-    UPDATED_DT,
-    RMM_ID,
-    ACTIONED_BY,
-    RECERTIFICATION_DUE_DATE,
-    REVIEW_STATUS,
-    LINE_MANAGER_MAIL,
-    REPORTEES_MAIL,
-    ACCESS_REVOKED_DATE_BY_LINE_MANAGER
-)
-SELECT
-    EXTRACT(YEAR FROM SYSDATE)                              AS RECREATE_YEAR,
-    U.LINE_MANAGER_ID                                      AS LINE_MANAGER_ID,
-    U.LINE_MANAGER_NAME                                    AS LINE_MANAGER_NAME,
-    U.USER_ID                                              AS REPORTEES_ID,
-    U.USER_NAME                                            AS REPORTEES_NAME,
-    'RAP'                                                  AS SYSTEM_NAME,
-    UR.ACCESS_LEVEL                                        AS ACCESS_LEVEL,
-    'REVOKE'                                               AS ACCESS_STATUS,
-    RG.RMM_NAME                                            AS LOCATION_NAME,
-    1                                                      AS IS_ACTIVE,
-    :CREATED_BY_PSID                                       AS CREATED_USER_ID,
-    :CREATED_BY_PSID                                       AS UPDATED_USER_ID,
-    SYSDATE                                                AS CREATED_DT,
-    SYSDATE                                                AS UPDATED_DT,
-    RG.RMM_ID                                              AS RMM_ID,
-    'SYSTEM REVOKED'                                       AS ACTIONED_BY,
-    SYSDATE                                                AS RECERTIFICATION_DUE_DATE,
-    'COMPLETED'                                            AS REVIEW_STATUS,
-    U.LINE_MANAGER_MAIL_ID                                 AS LINE_MANAGER_MAIL,
-    U.USER_MAIL_ID                                         AS REPORTEES_MAIL,
-    NULL                                                   AS ACCESS_REVOKED_DATE_BY_LINE_MANAGER
-FROM USER_TAB U
-JOIN USER_ROLE UR
-    ON UR.USER_ID = U.USER_ID
-JOIN RAP_RMM_GROUP RG
-    ON RG.RMM_ID = UR.RMM_ID
-WHERE U.USER_ID = :USER_ID
-  AND U.LINE_MANAGER_ID = :LINE_MANAGER_ID;
+from datetime import datetime
+
+def lm_revoke_job():
+    job_name = "LM_REVOKE_JOB"
+    logger.info("Job started", extra={"job": job_name})
+
+    conn = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        today = datetime.now().date()
+        process_lm_driven_revoke(cursor, today)
+
+        conn.commit()
+        logger.info("Job completed successfully", extra={"job": job_name})
+
+    except Exception as e:
+        logger.exception(f"Job failed: {e}", extra={"job": job_name})
+        if conn:
+            conn.rollback()
+
+    finally:
+        if conn:
+            cursor.close()
+            conn.close()
+
+
+
+def process_lm_driven_revoke(cursor, today):
+    fetch_query = """
+        SELECT REPORTEES_ID, RMM_ID, ACCESS_REVOKED_DATE_BY_LINE_MANAGER
+        FROM RECREATE_RESPONSE
+        WHERE ACCESS_STATUS = 'REVOKE'
+          AND IS_ACTIVE = 0
+          AND ACCESS_REVOKED_DATE_BY_LINE_MANAGER IS NOT NULL
+    """
+
+    cursor.execute(fetch_query)
+    rows = cursor.fetchall()
+
+    for user_id, rmm_id, revoke_ts in rows:
+        revoke_date = revoke_ts.date()
+
+        if today < revoke_date:
+            logger.info(
+                f"Skipping future revoke: {user_id}/{rmm_id} -> {revoke_date}",
+                extra={"job": "LM_REVOKE_JOB"}
+            )
+            continue
+
+        logger.info(
+            f"Revoking access for {user_id}/{rmm_id}",
+            extra={"job": "LM_REVOKE_JOB"}
+        )
+        revoke_user_access(cursor, user_id, rmm_id)
+
+
+
+def system_revoke_job():
+    job_name = "SYSTEM_REVOKE_JOB"
+    logger.info("Job started", extra={"job": job_name})
+
+    conn = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        today = datetime.now().date()
+        process_system_driven_revoke(cursor, today)
+
+        conn.commit()
+        logger.info("Job completed successfully", extra={"job": job_name})
+
+    except Exception as e:
+        logger.exception(f"Job failed: {e}", extra={"job": job_name})
+        if conn:
+            conn.rollback()
+
+    finally:
+        if conn:
+            cursor.close()
+            conn.close()
+
+
+
+def process_system_driven_revoke(cursor, today):
+    logger.info("Finding non-responsive line managers", extra={"job": "SYSTEM_REVOKE_JOB"})
+
+    lm_query = """
+        SELECT DISTINCT LINE_MANAGER_ID
+        FROM RECERTIFICATION_EMAIL_LIST
+        WHERE MAIL_SENT_COUNT = 3
+          AND (
+              SELECT MIN(CREAT_DT)
+              FROM RECERTIFICATION_EMAIL_LIST e2
+              WHERE e2.LINE_MANAGER_ID = RECERTIFICATION_EMAIL_LIST.LINE_MANAGER_ID
+                AND e2.MAIL_SENT_COUNT = 1
+          ) + 31 <= TRUNC(SYSDATE)
+    """
+
+    cursor.execute(lm_query)
+    lm_ids = [row[0] for row in cursor.fetchall()]
+
+    logger.info(
+        f"Non-responsive LMs found: {len(lm_ids)}",
+        extra={"job": "SYSTEM_REVOKE_JOB"}
+    )
+
+    for lm_id in lm_ids:
+        process_users_under_lm(cursor, lm_id)
+
+
+
+def process_users_under_lm(cursor, lm_id):
+    user_query = """
+        SELECT U.USER_ID, M.RMM_ID
+        FROM USER_TAB U
+        JOIN MAP_RAP_USER_ROLE M ON M.USER_ID = U.USER_ID
+        WHERE U.LINE_MANAGER_ID = :lm_id
+    """
+
+    cursor.execute(user_query, {"lm_id": lm_id})
+    users = cursor.fetchall()
+
+    for user_id, rmm_id in users:
+        cursor.execute("""
+            SELECT 1 FROM RECREATE_RESPONSE
+            WHERE REPORTEES_ID = :user_id
+              AND RMM_ID = :rmm_id
+        """, {"user_id": user_id, "rmm_id": rmm_id})
+
+        if cursor.fetchone():
+            continue
+
+        logger.info(
+            f"System revoke for {user_id}/{rmm_id}",
+            extra={"job": "SYSTEM_REVOKE_JOB"}
+        )
+
+        insert_system_revoke(cursor, user_id, rmm_id)
+        revoke_user_access(cursor, user_id, rmm_id)
+
+
+
+def revoke_user_access(cursor, user_id, rmm_id):
+    cursor.execute("""
+        UPDATE RECREATE_RESPONSE
+        SET IS_ACTIVE = 1
+        WHERE REPORTEES_ID = :user_id
+          AND RMM_ID = :rmm_id
+          AND ACCESS_STATUS = 'REVOKE'
+    """, {"user_id": user_id, "rmm_id": rmm_id})
+
+    cursor.execute("""
+        DELETE FROM MAP_RAP_USER_ROLE
+        WHERE USER_ID = :user_id
+          AND RMM_ID = :rmm_id
+    """, {"user_id": user_id, "rmm_id": rmm_id})
+
+
+
+from apscheduler.schedulers.background import BackgroundScheduler
+
+def init_scheduler(app):
+    scheduler = BackgroundScheduler()
+
+    scheduler.add_job(
+        lm_revoke_job,
+        trigger="interval",
+        hours=1,
+        id="lm_revoke_job",
+        replace_existing=True
+    )
+
+    scheduler.add_job(
+        system_revoke_job,
+        trigger="cron",
+        hour=1,
+        minute=0,
+        id="system_revoke_job",
+        replace_existing=True
+    )
+
+    scheduler.start()
+    logger.info("Scheduler started with 2 jobs", extra={"job": "SYSTEM"})
