@@ -1,86 +1,24 @@
-def insert_system_revoke(cursor, user_id, rmm_id):
-    """
-    Inserts a SYSTEM REVOKED record into RECREATE_RESPONSE
-    for users whose line manager did not respond after all reminders.
-    """
+from apscheduler.schedulers.background import BackgroundScheduler
 
-    try:
-        logger_debug(
-            f"[SYSTEM_REVOKE] Inserting recert record for USER_ID={user_id}, RMM_ID={rmm_id}"
-        )
+def init_scheduler(app):
+    scheduler = BackgroundScheduler()
 
-        insert_query = """
-            INSERT INTO RECREATE_RESPONSE (
-                RECREATE_YEAR,
-                LINE_MANAGER_ID,
-                LINE_MANAGER_NAME,
-                REPORTEES_ID,
-                REPORTEES_NAME,
-                SYSTEM_NAME,
-                ACCESS_LEVEL,
-                ACCESS_STATUS,
-                LOCATION_NAME,
-                IS_ACTIVE,
-                CREATED_USER_ID,
-                UPDATED_USER_ID,
-                CREATED_DT,
-                UPDATED_DT,
-                RMM_ID,
-                ACTIONED_BY,
-                RECERTIFICATION_DUE_DATE,
-                REVIEW_STATUS,
-                LINE_MANAGER_MAIL,
-                REPORTEES_MAIL,
-                ACCESS_REVOKED_DATE_BY_LINE_MANAGER
-            )
-            SELECT
-                EXTRACT(YEAR FROM SYSDATE),
-                U.LINE_MANAGER_ID,
-                U.LINE_MANAGER_NAME,
-                U.USER_ID,
-                U.USER_NAME,
-                'RAP',
-                UR.ACCESS_LEVEL,
-                'REVOKE',
-                RG.RMM_NAME,
-                1,
-                :created_by,
-                :created_by,
-                SYSDATE,
-                SYSDATE,
-                RG.RMM_ID,
-                'SYSTEM REVOKED',
-                SYSDATE,
-                'COMPLETED',
-                U.LINE_MANAGER_MAIL_ID,
-                U.USER_MAIL_ID,
-                NULL
-            FROM USER_TAB U
-            JOIN MAP_RAP_USER_ROLE M
-                ON M.USER_ID = U.USER_ID
-            JOIN USER_ROLE UR
-                ON UR.USER_ROLE_ID = M.USER_ROLE_ID
-            JOIN RAP_RMM_GROUP RG
-                ON RG.RMM_ID = UR.RMM_ID
-            WHERE U.USER_ID = :user_id
-              AND RG.RMM_ID = :rmm_id
-        """
+    scheduler.add_job(
+        lm_revoke_job,
+        trigger="interval",
+        hours=1,
+        id="lm_revoke_job",
+        replace_existing=True
+    )
 
-        cursor.execute(
-            insert_query,
-            {
-                "user_id": user_id,
-                "rmm_id": rmm_id,
-                "created_by": "KRISHNA_PSID"  # or SYSTEM_PSID
-            }
-        )
+    scheduler.add_job(
+        system_revoke_job,
+        trigger="cron",
+        hour=1,
+        minute=0,
+        id="system_revoke_job",
+        replace_existing=True
+    )
 
-        logger_debug(
-            f"[SYSTEM_REVOKE] Insert successful for USER_ID={user_id}, RMM_ID={rmm_id}"
-        )
-
-    except Exception as e:
-        logger_error(
-            f"[SYSTEM_REVOKE][ERROR] Insert failed for USER_ID={user_id}, RMM_ID={rmm_id} | {str(e)}"
-        )
-        raise
+    scheduler.start()
+    logger.info("Scheduler started with 2 jobs", extra={"job": "SYSTEM"})
