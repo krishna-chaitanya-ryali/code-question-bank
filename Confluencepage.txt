@@ -201,3 +201,35 @@ params = [
     }
     for metric_id in metric_detail_ids
 ]
+======================
+row count
+
+def bulk_update_data(self, sqlQry, parm):
+    try:
+        log_debug.debug("in bulk_update_data")
+        log_debug.debug(sqlQry)
+
+        total_requested = len(parm) if isinstance(parm, list) else 1
+        log_debug.debug(f"Total rows requested for update: {total_requested}")
+
+        if isinstance(parm, list):
+            self.__cursor.executemany(sqlQry, parm)
+        else:
+            self.__cursor.execute(sqlQry, parm)
+
+        affected = self.__cursor.rowcount
+        self.__con.commit()
+
+        log_debug.debug(
+            f"bulk_update_data completed | "
+            f"rows_updated={affected} | "
+            f"rows_requested={total_requested}"
+        )
+
+        return affected  # 👈 RETURN ROWCOUNT
+
+    except Exception as e:
+        log_error.error(
+            "Error | bulk_update_data | Error: %s", e, exc_info=True
+        )
+        return -1
