@@ -191,3 +191,13 @@ def bulk_update_data(self, sqlQry, parm):
     except Exception as e:
         log_error.error("Error | bulk_update_data | Error: %s", e, exc_info=True)
         return -1
+
+
+
+params = [
+    {
+        "user_id": user_id,
+        "metric_detail_id": metric_id
+    }
+    for metric_id in metric_detail_ids
+]
