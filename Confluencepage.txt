@@ -76,3 +76,64 @@ def revoke_user_access(cursor, user_id, rmm_id):
             f"RMM_ID={rmm_id} | {str(e)}"
         )
         raise
+==============================================
+def update_data(self, sqlQry, parm):
+    try:
+        print("in update_data")
+        print(sqlQry)
+        print(parm)
+
+        if isinstance(parm, list):
+            # NEW: support bulk updates
+            self.__cursor.executemany(sqlQry, parm)
+        else:
+            self.__cursor.execute(sqlQry, parm)
+
+        self.__con.commit()
+        return 0
+
+    except Exception as e:
+        log_error.error("Error | update_data | Error: %s", e, exc_info=True)
+        return -1
+
+===============================================
+
+def sqlinsertdata__ur(self, query_key, placeholder_list, param):
+    """
+    Generic INSERT / UPDATE executor
+    - Supports single row
+    - Supports bulk rows
+    - Uses existing update_data()
+    """
+
+    try:
+        # 1. Build placeholders string
+        # Example: :1,:2,:3 OR :user_id,:metric_detail_id
+        placeholders_id = ', '.join(placeholder_list)
+
+        # 2. Prepare SQL
+        sqlQry = QueryString[query_key]['QString'].format(placeholders_id)
+
+        log_debug.debug("Executing SQL:")
+        log_debug.debug(sqlQry)
+        log_debug.debug(f"Params: {param}")
+
+        # 3. Delegate execution
+        Db_Con.update_data(sqlQry, param)
+
+        return 0
+
+    except Exception as e:
+        log_error.error(
+            f"Error | sqlinsertdata__ur | {str(e)}",
+            exc_info=True
+        )
+        return -1
+
+======================================================
+
+UPDATE METRIC_ACCESS
+SET IS_ACTIVE = 0
+WHERE USER_ID = :user_id
+  AND METRIC_DETAIL_ID = :metric_detail_id
+  AND IS_ACTIVE = 1
