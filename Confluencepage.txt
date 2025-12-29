@@ -137,3 +137,57 @@ SET IS_ACTIVE = 0
 WHERE USER_ID = :user_id
   AND METRIC_DETAIL_ID = :metric_detail_id
   AND IS_ACTIVE = 1
+
+
+
+
+====================
+final
+
+def sqlupdatedata(self, query_key, param):
+    """
+    Generic UPDATE executor
+    - Supports single row
+    - Supports bulk rows
+    - Uses bulk_update_data
+    """
+
+    try:
+        # 1. Fetch SQL directly (NO formatting)
+        sqlQry = QueryString[query_key]['QString']
+
+        log_debug.debug("Executing SQL:")
+        log_debug.debug(sqlQry)
+        log_debug.debug(f"Params: {param}")
+
+        # 2. Delegate execution
+        Db_Con.bulk_update_data(sqlQry, param)
+
+        return 0
+
+    except Exception as e:
+        log_error.error(
+            f"Error | sqlupdatedata | {str(e)}",
+            exc_info=True
+        )
+        return -1
+
+
+
+def bulk_update_data(self, sqlQry, parm):
+    try:
+        print("in bulk_update_data")
+        print(sqlQry)
+        print(parm)
+
+        if isinstance(parm, list):
+            self.__cursor.executemany(sqlQry, parm)
+        else:
+            self.__cursor.execute(sqlQry, parm)
+
+        self.__con.commit()
+        return 0
+
+    except Exception as e:
+        log_error.error("Error | bulk_update_data | Error: %s", e, exc_info=True)
+        return -1
