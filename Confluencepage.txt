@@ -1,102 +1,59 @@
-def process_lm_recertification():
-    """
-    Line Manager–driven user recertification job.
+<button id="manual-trigger-btn"
+        class="btn btn-default btn-green"
+        onclick="UserRecertificationManualTrigger('LM')">
+    LM Rework Job
+</button>
 
-    This scheduler runs periodically (hourly) to process user access
-    revocation decisions made by Line Managers.
-
-    Workflow:
-    1. Fetch records from RECREATE_RESPONSE where access is marked as REVOKE.
-    2. Validate revoke date (ACCESS_REVOKED_DATE_BY_LINE_MANAGER).
-    3. If revoke date is reached or passed:
-       - Deactivate metric-level access for the user.
-       - Deactivate user–RMM role mapping.
-       - Mark the RECREATE_RESPONSE record as processed.
-    4. Skip records scheduled for future revoke dates.
-
-    This function is idempotent and safe to re-run.
-    """
+<button id="manual-trigger-btn2"
+        class="btn btn-default btn-green"
+        onclick="UserRecertificationManualTrigger('SYSTEM')">
+    System Rework Job
+</button>
 
 
-def process_system_recertification():
-    """
-    System-driven user recertification job.
+function UserRecertificationManualTrigger(jobType) {
 
-    This scheduler runs once per day to handle users where
-    Line Managers have not responded after multiple reminders.
+    // Optional: show loader
+    showLoader();
 
-    Workflow:
-    1. Identify Line Managers who received 3 reminder emails
-       and exceeded the defined waiting period.
-    2. Fetch users under those Line Managers from USER_TAB.
-    3. For users with no existing RECREATE_RESPONSE entry:
-       - Insert a new RECREATE_RESPONSE record with ACCESS_STATUS = 'REVOKE'.
-       - Actioned by system (SYSTEM_REVOKED).
-    4. Revoke access by:
-       - Deactivating metric-level access.
-       - Deactivating user–RMM role mapping.
+    $.ajax({
+        url: vHostname + "/run_user_recertification",
+        type: "POST",
+        contentType: "application/json; charset=utf-8",
+        data: JSON.stringify({
+            trigger_type: jobType   // 'LM' or 'SYSTEM'
+        }),
+        success: function (response) {
 
-    This job enforces compliance by removing inactive users
-    even without explicit Line Manager action.
-    """
+            if (response.status === "error") {
+                rapMsgBox_msg(
+                    "Error while triggering " + jobType + " recertification: " +
+                    response.msg
+                );
+            }
+            else if (response.status === "success") {
+                rapMsgBox_msg(
+                    jobType + " recertification triggered successfully"
+                );
+            }
+            else {
+                rapMsgBox_msg(response.msg);
+            }
+
+            hideLoader();
+        },
+        error: function (error) {
+            console.log(error);
+            rapMsgBox_msg(
+                "Unexpected error while triggering " + jobType + " recertification"
+            );
+            hideLoader();
+        }
+    });
+}
 
 
-def revoke_user_access(cursor, user_id, rmm_id):
-    """
-    Revokes user access for a specific RMM.
 
-    This function performs a soft-revocation (no deletes) by:
-    1. Identifying all metric_detail_ids associated with the user
-       for the given RMM and current month.
-    2. Deactivating all corresponding rows in METRIC_ACCESS.
-    3. Deactivating the user–RMM mapping in MAP_RAP_USER_ROLE.
-
-    Parameters:
-    - cursor : Active database cursor
-    - user_id : User identifier whose access is being revoked
-    - rmm_id  : RMM identifier for which access is revoked
-
-    The operation is transactional and safe for repeated execution.
-    """
-def bulk_update_data(self, sqlQry, param_list):
-    """
-    Executes bulk DML operations using executemany().
-
-    Supports efficient bulk UPDATE or INSERT operations by
-    accepting a list of bind-parameter dictionaries.
-
-    Features:
-    - Uses executemany for performance.
-    - Commits the transaction after execution.
-    - Returns total number of rows affected.
-    - Logs requested vs updated row counts for auditing.
-
-    Parameters:
-    - sqlQry     : SQL statement with named bind variables
-    - param_list : List of dictionaries containing bind values
-
-    Returns:
-    - int : Total number of rows affected, or -1 on error
-    """
-
-def sqlupdatedata(self, query_key, param):
-    """
-    Generic SQL update dispatcher.
-
-    Retrieves the SQL statement using the query key and
-    delegates execution to bulk_update_data.
-
-    Supports:
-    - Single-row updates (dict)
-    - Bulk updates (list of dicts)
-
-    Parameters:
-    - query_key : Key to fetch SQL from QueryString
-    - param     : Bind parameters (dict or list of dicts)
-
-    This function abstracts SQL execution while maintaining
-    consistency with the project's DB access pattern.
-    """
 
 
 @recert_bp.route("/trigger-recertification", methods=["POST"])
