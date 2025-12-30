@@ -1,235 +1,121 @@
+def process_lm_recertification():
+    """
+    Line Manager–driven user recertification job.
+
+    This scheduler runs periodically (hourly) to process user access
+    revocation decisions made by Line Managers.
+
+    Workflow:
+    1. Fetch records from RECREATE_RESPONSE where access is marked as REVOKE.
+    2. Validate revoke date (ACCESS_REVOKED_DATE_BY_LINE_MANAGER).
+    3. If revoke date is reached or passed:
+       - Deactivate metric-level access for the user.
+       - Deactivate user–RMM role mapping.
+       - Mark the RECREATE_RESPONSE record as processed.
+    4. Skip records scheduled for future revoke dates.
+
+    This function is idempotent and safe to re-run.
+    """
+
+
+def process_lm_recertification():
+    """
+    Line Manager–driven user recertification job.
+
+    This scheduler runs periodically (hourly) to process user access
+    revocation decisions made by Line Managers.
+
+    Workflow:
+    1. Fetch records from RECREATE_RESPONSE where access is marked as REVOKE.
+    2. Validate revoke date (ACCESS_REVOKED_DATE_BY_LINE_MANAGER).
+    3. If revoke date is reached or passed:
+       - Deactivate metric-level access for the user.
+       - Deactivate user–RMM role mapping.
+       - Mark the RECREATE_RESPONSE record as processed.
+    4. Skip records scheduled for future revoke dates.
+
+    This function is idempotent and safe to re-run.
+    """
+
 def revoke_user_access(cursor, user_id, rmm_id):
     """
-    Revoke user access by:
-    1. Deactivating metric access using USER_ID + METRIC_DETAIL_ID
-    2. Deactivating MAP_RAP_USER_ROLE using USER_ID + RMM_ID
+    Revokes user access for a specific RMM.
+
+    This function performs a soft-revocation (no deletes) by:
+    1. Identifying all metric_detail_ids associated with the user
+       for the given RMM and current month.
+    2. Deactivating all corresponding rows in METRIC_ACCESS.
+    3. Deactivating the user–RMM mapping in MAP_RAP_USER_ROLE.
+
+    Parameters:
+    - cursor : Active database cursor
+    - user_id : User identifier whose access is being revoked
+    - rmm_id  : RMM identifier for which access is revoked
+
+    The operation is transactional and safe for repeated execution.
     """
-
-    try:
-        logger_debug(
-            f"[REVOKE] Starting revoke for USER_ID={user_id}, RMM_ID={rmm_id}"
-        )
-
-        # ------------------------------------------------
-        # STEP 1: Fetch metric_detail_ids (already filtered
-        #         by RMM_ID + current month in earlier query)
-        # ------------------------------------------------
-        cursor.execute("""
-            SELECT METRIC_DETAIL_ID
-            FROM <YOUR_METRIC_DETAIL_QUERY_SOURCE>
-            WHERE USER_ID = :user_id
-              AND RMM_ID = :rmm_id
-        """, {
-            "user_id": user_id,
-            "rmm_id": rmm_id
-        })
-
-        metric_detail_ids = [row[0] for row in cursor.fetchall()]
-
-        if not metric_detail_ids:
-            logger_debug(
-                f"[REVOKE] No metrics found for USER_ID={user_id}, RMM_ID={rmm_id}"
-            )
-        else:
-            logger_debug(
-                f"[REVOKE] Deactivating {len(metric_detail_ids)} metrics "
-                f"for USER_ID={user_id}"
-            )
-
-            # ------------------------------------------------
-            # STEP 2: Bulk deactivate metric access
-            # ------------------------------------------------
-            cursor.execute(f"""
-                UPDATE METRIC_ACCESS
-                SET IS_ACTIVE = 0
-                WHERE USER_ID = :user_id
-                  AND METRIC_DETAIL_ID IN ({','.join(map(str, metric_detail_ids))})
-                  AND IS_ACTIVE = 1
-            """, {"user_id": user_id})
-
-            logger_debug(
-                f"[REVOKE] Metric access rows updated: {cursor.rowcount}"
-            )
-
-        # ------------------------------------------------
-        # STEP 3: Deactivate MAP_RAP_USER_ROLE
-        # ------------------------------------------------
-        cursor.execute("""
-            UPDATE MAP_RAP_USER_ROLE
-            SET IS_ACTIVE = 0
-            WHERE USER_ID = :user_id
-              AND RMM_ID = :rmm_id
-              AND IS_ACTIVE = 1
-        """, {
-            "user_id": user_id,
-            "rmm_id": rmm_id
-        })
-
-        logger_debug(
-            f"[REVOKE] MAP_RAP_USER_ROLE deactivated for "
-            f"USER_ID={user_id}, RMM_ID={rmm_id}"
-        )
-
-    except Exception as e:
-        logger_error(
-            f"[REVOKE][ERROR] Failed revoke for USER_ID={user_id}, "
-            f"RMM_ID={rmm_id} | {str(e)}"
-        )
-        raise
-==============================================
-def update_data(self, sqlQry, parm):
-    try:
-        print("in update_data")
-        print(sqlQry)
-        print(parm)
-
-        if isinstance(parm, list):
-            # NEW: support bulk updates
-            self.__cursor.executemany(sqlQry, parm)
-        else:
-            self.__cursor.execute(sqlQry, parm)
-
-        self.__con.commit()
-        return 0
-
-    except Exception as e:
-        log_error.error("Error | update_data | Error: %s", e, exc_info=True)
-        return -1
-
-===============================================
-
-def sqlinsertdata__ur(self, query_key, placeholder_list, param):
+def revoke_user_access(cursor, user_id, rmm_id):
     """
-    Generic INSERT / UPDATE executor
-    - Supports single row
-    - Supports bulk rows
-    - Uses existing update_data()
+    Revokes user access for a specific RMM.
+
+    This function performs a soft-revocation (no deletes) by:
+    1. Identifying all metric_detail_ids associated with the user
+       for the given RMM and current month.
+    2. Deactivating all corresponding rows in METRIC_ACCESS.
+    3. Deactivating the user–RMM mapping in MAP_RAP_USER_ROLE.
+
+    Parameters:
+    - cursor : Active database cursor
+    - user_id : User identifier whose access is being revoked
+    - rmm_id  : RMM identifier for which access is revoked
+
+    The operation is transactional and safe for repeated execution.
     """
-
-    try:
-        # 1. Build placeholders string
-        # Example: :1,:2,:3 OR :user_id,:metric_detail_id
-        placeholders_id = ', '.join(placeholder_list)
-
-        # 2. Prepare SQL
-        sqlQry = QueryString[query_key]['QString'].format(placeholders_id)
-
-        log_debug.debug("Executing SQL:")
-        log_debug.debug(sqlQry)
-        log_debug.debug(f"Params: {param}")
-
-        # 3. Delegate execution
-        Db_Con.update_data(sqlQry, param)
-
-        return 0
-
-    except Exception as e:
-        log_error.error(
-            f"Error | sqlinsertdata__ur | {str(e)}",
-            exc_info=True
-        )
-        return -1
-
-======================================================
-
-UPDATE METRIC_ACCESS
-SET IS_ACTIVE = 0
-WHERE USER_ID = :user_id
-  AND METRIC_DETAIL_ID = :metric_detail_id
-  AND IS_ACTIVE = 1
-
-
-
-
-====================
-final
-
 def sqlupdatedata(self, query_key, param):
     """
-    Generic UPDATE executor
-    - Supports single row
-    - Supports bulk rows
-    - Uses bulk_update_data
+    Generic SQL update dispatcher.
+
+    Retrieves the SQL statement using the query key and
+    delegates execution to bulk_update_data.
+
+    Supports:
+    - Single-row updates (dict)
+    - Bulk updates (list of dicts)
+
+    Parameters:
+    - query_key : Key to fetch SQL from QueryString
+    - param     : Bind parameters (dict or list of dicts)
+
+    This function abstracts SQL execution while maintaining
+    consistency with the project's DB access pattern.
     """
 
-    try:
-        # 1. Fetch SQL directly (NO formatting)
-        sqlQry = QueryString[query_key]['QString']
 
-        log_debug.debug("Executing SQL:")
-        log_debug.debug(sqlQry)
-        log_debug.debug(f"Params: {param}")
+@recert_bp.route("/trigger-recertification", methods=["POST"])
+def manual_trigger_recertification():
+    """
+    Manual trigger endpoint for user recertification jobs.
 
-        # 2. Delegate execution
-        Db_Con.bulk_update_data(sqlQry, param)
+    Accepts a trigger_type parameter to execute:
+    - 'LM'     → Line Manager–driven recertification
+    - 'SYSTEM' → System-driven recertification
 
-        return 0
+    This endpoint is intended for UAT testing and
+    administrative intervention only.
+    """
 
-    except Exception as e:
-        log_error.error(
-            f"Error | sqlupdatedata | {str(e)}",
-            exc_info=True
-        )
-        return -1
+    data = request.get_json()
+    trigger_type = data.get("trigger_type")
 
+    if trigger_type == "LM":
+        process_lm_recertification()
+        return jsonify({"status": "LM recertification triggered successfully"})
 
+    elif trigger_type == "SYSTEM":
+        process_system_recertification()
+        return jsonify({"status": "System recertification triggered successfully"})
 
-def bulk_update_data(self, sqlQry, parm):
-    try:
-        print("in bulk_update_data")
-        print(sqlQry)
-        print(parm)
-
-        if isinstance(parm, list):
-            self.__cursor.executemany(sqlQry, parm)
-        else:
-            self.__cursor.execute(sqlQry, parm)
-
-        self.__con.commit()
-        return 0
-
-    except Exception as e:
-        log_error.error("Error | bulk_update_data | Error: %s", e, exc_info=True)
-        return -1
-
-
-
-params = [
-    {
-        "user_id": user_id,
-        "metric_detail_id": metric_id
-    }
-    for metric_id in metric_detail_ids
-]
-======================
-row count
-
-def bulk_update_data(self, sqlQry, parm):
-    try:
-        log_debug.debug("in bulk_update_data")
-        log_debug.debug(sqlQry)
-
-        total_requested = len(parm) if isinstance(parm, list) else 1
-        log_debug.debug(f"Total rows requested for update: {total_requested}")
-
-        if isinstance(parm, list):
-            self.__cursor.executemany(sqlQry, parm)
-        else:
-            self.__cursor.execute(sqlQry, parm)
-
-        affected = self.__cursor.rowcount
-        self.__con.commit()
-
-        log_debug.debug(
-            f"bulk_update_data completed | "
-            f"rows_updated={affected} | "
-            f"rows_requested={total_requested}"
-        )
-
-        return affected  # 👈 RETURN ROWCOUNT
-
-    except Exception as e:
-        log_error.error(
-            "Error | bulk_update_data | Error: %s", e, exc_info=True
-        )
-        return -1
+    else:
+        return jsonify({
+            "error": "Invalid trigger_type. Use 'LM' or 'SYSTEM'."
+        }), 400
