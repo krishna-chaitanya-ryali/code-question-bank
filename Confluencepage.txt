@@ -58,23 +58,27 @@ def revoke_user_access(cursor, user_id, rmm_id):
 
     The operation is transactional and safe for repeated execution.
     """
-def revoke_user_access(cursor, user_id, rmm_id):
+def bulk_update_data(self, sqlQry, param_list):
     """
-    Revokes user access for a specific RMM.
+    Executes bulk DML operations using executemany().
 
-    This function performs a soft-revocation (no deletes) by:
-    1. Identifying all metric_detail_ids associated with the user
-       for the given RMM and current month.
-    2. Deactivating all corresponding rows in METRIC_ACCESS.
-    3. Deactivating the user–RMM mapping in MAP_RAP_USER_ROLE.
+    Supports efficient bulk UPDATE or INSERT operations by
+    accepting a list of bind-parameter dictionaries.
+
+    Features:
+    - Uses executemany for performance.
+    - Commits the transaction after execution.
+    - Returns total number of rows affected.
+    - Logs requested vs updated row counts for auditing.
 
     Parameters:
-    - cursor : Active database cursor
-    - user_id : User identifier whose access is being revoked
-    - rmm_id  : RMM identifier for which access is revoked
+    - sqlQry     : SQL statement with named bind variables
+    - param_list : List of dictionaries containing bind values
 
-    The operation is transactional and safe for repeated execution.
+    Returns:
+    - int : Total number of rows affected, or -1 on error
     """
+
 def sqlupdatedata(self, query_key, param):
     """
     Generic SQL update dispatcher.
