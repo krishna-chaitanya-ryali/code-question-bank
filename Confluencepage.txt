@@ -18,24 +18,28 @@ def process_lm_recertification():
     """
 
 
-def process_lm_recertification():
+def process_system_recertification():
     """
-    Line Manager–driven user recertification job.
+    System-driven user recertification job.
 
-    This scheduler runs periodically (hourly) to process user access
-    revocation decisions made by Line Managers.
+    This scheduler runs once per day to handle users where
+    Line Managers have not responded after multiple reminders.
 
     Workflow:
-    1. Fetch records from RECREATE_RESPONSE where access is marked as REVOKE.
-    2. Validate revoke date (ACCESS_REVOKED_DATE_BY_LINE_MANAGER).
-    3. If revoke date is reached or passed:
-       - Deactivate metric-level access for the user.
-       - Deactivate user–RMM role mapping.
-       - Mark the RECREATE_RESPONSE record as processed.
-    4. Skip records scheduled for future revoke dates.
+    1. Identify Line Managers who received 3 reminder emails
+       and exceeded the defined waiting period.
+    2. Fetch users under those Line Managers from USER_TAB.
+    3. For users with no existing RECREATE_RESPONSE entry:
+       - Insert a new RECREATE_RESPONSE record with ACCESS_STATUS = 'REVOKE'.
+       - Actioned by system (SYSTEM_REVOKED).
+    4. Revoke access by:
+       - Deactivating metric-level access.
+       - Deactivating user–RMM role mapping.
 
-    This function is idempotent and safe to re-run.
+    This job enforces compliance by removing inactive users
+    even without explicit Line Manager action.
     """
+
 
 def revoke_user_access(cursor, user_id, rmm_id):
     """
