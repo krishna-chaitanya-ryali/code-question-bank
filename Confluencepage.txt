@@ -1,11 +1,136 @@
-Subject: RAP – New Pack Onboarding Status & Next Steps
-Hi Satadru,
-Thanks for reaching out regarding the onboarding of the two new packs. I understand this is an urgent business requirement and that the expectation is to have them available in Production by the first week of January.
-As per the standard onboarding and change process, we cannot directly onboard new packs into Production. Following the agreed approach, we have now onboarded both packs into the UAT environment for initial validation.
-Please find the UAT links below for your review:
-Pack 1: [UAT Link]
-Pack 2: [UAT Link]
-Request you to kindly verify both packs in UAT and confirm if everything looks as expected. Once we receive your confirmation, we can proceed with planning the Production onboarding in the upcoming sprint and raise the required change request accordingly.
-Let us know if you need any assistance during the UAT validation.
-Thanks & Regards,
-Krishna Chaitanya
+def fetch_users_from_db():
+    rows = Db_Con.getData(QueryString["FETCH_USERS"]["QString"])
+
+    users = []
+    user_map_empid = {}
+    user_map_psid = {}
+
+    for r in rows:
+        user_id = r["USER_ID"]
+
+        emp_id = str(r["EMPLOYEE_ID"]).strip() if r["EMPLOYEE_ID"] else None
+        psid = r["PSID"].strip().lower() if r["PSID"] else None
+
+        users.append({
+            "user_id": user_id,
+            "employee_id": emp_id,
+            "psid": psid
+        })
+
+        if emp_id:
+            user_map_empid[emp_id] = user_id
+
+        if psid:
+            user_map_psid[psid] = user_id
+
+    return users, user_map_empid, user_map_psid
+
+
+def populate_line_manager_details():
+    """
+    Populate Line Manager details in USER_TAB using AD lookup.
+    Resolves users via EMPLOYEE_ID (numeric) OR PSID (alphanumeric).
+    """
+
+    log_debug.debug("[LM_POPULATE] Job started")
+
+    users, user_map_empid, user_map_psid = fetch_users_from_db()
+
+    total_users = len(users)
+    rows_updated = 0
+    unmapped_users = 0
+    no_lm_count = 0
+
+    server = Server(LDAP_SERVER, port=LDAP_PORT, use_ssl=True)
+    conn = Connection(
+        server,
+        LDAP_BIND_DN,
+        LDAP_PASSWORD,
+        auto_bind=True
+    )
+
+    for batch in chunk_list(users, 200):
+        emp_ids = [
+            u["employee_id"] for u in batch if u["employee_id"]
+        ] + [
+            u["psid"] for u in batch if u["psid"]
+        ]
+
+        emp_ids = list(set(emp_ids))  # de-duplicate
+
+        search_filter = "(|{})".format(
+            "".join(f"(name={eid})" for eid in emp_ids)
+        )
+
+        conn.search(
+            LDAP_BASE_DN,
+            f"(&(objectClass=UserProxy)(objectCategory=UserProxy){search_filter})",
+            attributes=[
+                "hsbc-ad-SAMAccountName",
+                "hsbc-ad-LineManagerID",
+                "hsbc-ad-LineManagerName"
+            ]
+        )
+
+        updates = []
+
+        for entry in conn.entries:
+            ad_id = str(entry["hsbc-ad-SAMAccountName"]).strip().lower()
+
+            # 🔑 DUAL RESOLUTION (THIS IS THE FIX)
+            user_id = (
+                user_map_psid.get(ad_id) or
+                user_map_empid.get(ad_id)
+            )
+
+            if not user_id:
+                unmapped_users += 1
+                log_debug.debug(
+                    f"[LM_POPULATE] User mapping failed | AD_ID={ad_id}"
+                )
+                continue
+
+            lm_id = (
+                str(entry["hsbc-ad-LineManagerID"])
+                if "hsbc-ad-LineManagerID" in entry
+                else None
+            )
+            lm_name = (
+                str(entry["hsbc-ad-LineManagerName"])
+                if "hsbc-ad-LineManagerName" in entry
+                else None
+            )
+
+            if not lm_id:
+                no_lm_count += 1
+                updates.append({
+                    "user_id": user_id,
+                    "lm_id": "NO_LM",
+                    "lm_name": "No Line Manager",
+                    "lm_mail": None
+                })
+            else:
+                updates.append({
+                    "user_id": user_id,
+                    "lm_id": lm_id,
+                    "lm_name": lm_name,
+                    "lm_mail": None  # mail enrichment already handled earlier
+                })
+
+        if updates:
+            rows_updated += Db_Con.bulk_update_data(
+                QueryString["UPDATE_USER_TAB_LM"]["QString"],
+                updates
+            )
+
+    log_debug.debug(
+        "[LM_POPULATE] Completed | "
+        f"total_users={total_users}, "
+        f"rows_updated={rows_updated}, "
+        f"no_lm={no_lm_count}, "
+        f"unmapped_users={unmapped_users}"
+    )
+
+def chunk_list(data, size):
+    for i in range(0, len(data), size):
+        yield data[i:i + size]
