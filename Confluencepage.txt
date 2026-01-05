@@ -134,3 +134,12 @@ def populate_line_manager_details():
 def chunk_list(data, size):
     for i in range(0, len(data), size):
         yield data[i:i + size]
+Hi Sandeep,
+
+We’d like to have a quick discussion today at 6:00 PM on the Metric Auto Cascade requirement. We’ve reviewed the BA material and want to validate a few business rules before proceeding further.
+
+Mainly around metric ownership across Parent–Child, re-cascade scenarios, and expectations when a metric is modified or removed.
+
+It should take 15 minutes. Please let me know if 6:00 PM works for you.
+
+Thanks!
