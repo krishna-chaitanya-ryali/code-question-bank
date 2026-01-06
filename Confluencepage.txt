@@ -1,145 +1,95 @@
-def fetch_users_from_db():
-    rows = Db_Con.getData(QueryString["FETCH_USERS"]["QString"])
+2️⃣ JIRA TICKET – RELEASE TASK (READY TO USE)
 
-    users = []
-    user_map_empid = {}
-    user_map_psid = {}
+You can copy-paste this directly into JIRA.
 
-    for r in rows:
-        user_id = r["USER_ID"]
+JIRA Title
 
-        emp_id = str(r["EMPLOYEE_ID"]).strip() if r["EMPLOYEE_ID"] else None
-        psid = r["PSID"].strip().lower() if r["PSID"] else None
+Release Task – ERR User Recertification Phase 1 (Dry Run – Limited Users)
 
-        users.append({
-            "user_id": user_id,
-            "employee_id": emp_id,
-            "psid": psid
-        })
+Issue Type
 
-        if emp_id:
-            user_map_empid[emp_id] = user_id
+Release Task
 
-        if psid:
-            user_map_psid[psid] = user_id
+Environment
 
-    return users, user_map_empid, user_map_psid
+UAT → Production
 
+Description
 
-def populate_line_manager_details():
-    """
-    Populate Line Manager details in USER_TAB using AD lookup.
-    Resolves users via EMPLOYEE_ID (numeric) OR PSID (alphanumeric).
-    """
+This release is to support a controlled dry run of ERR User Recertification – Phase 1 (Scope 2025) in the production environment.
 
-    log_debug.debug("[LM_POPULATE] Job started")
+The dry run will be executed on a limited set of users and line managers only, as identified by the business, to validate end-to-end recertification functionality before full-scale rollout.
 
-    users, user_map_empid, user_map_psid = fetch_users_from_db()
+Scope of Release
 
-    total_users = len(users)
-    rows_updated = 0
-    unmapped_users = 0
-    no_lm_count = 0
+The following activities will be performed as part of this release:
 
-    server = Server(LDAP_SERVER, port=LDAP_PORT, use_ssl=True)
-    conn = Connection(
-        server,
-        LDAP_BIND_DN,
-        LDAP_PASSWORD,
-        auto_bind=True
-    )
+Line Manager Data Preparation
 
-    for batch in chunk_list(users, 200):
-        emp_ids = [
-            u["employee_id"] for u in batch if u["employee_id"]
-        ] + [
-            u["psid"] for u in batch if u["psid"]
-        ]
+Manually populate Line Manager ID, Name, and Mail ID in USER_TAB
 
-        emp_ids = list(set(emp_ids))  # de-duplicate
+Scope restricted to 2 selected line managers and their direct reports only
 
-        search_filter = "(|{})".format(
-            "".join(f"(name={eid})" for eid in emp_ids)
-        )
+Dry-Run Configuration
 
-        conn.search(
-            LDAP_BASE_DN,
-            f"(&(objectClass=UserProxy)(objectCategory=UserProxy){search_filter})",
-            attributes=[
-                "hsbc-ad-SAMAccountName",
-                "hsbc-ad-LineManagerID",
-                "hsbc-ad-LineManagerName"
-            ]
-        )
+Temporarily override the standard 31-day recertification logic
 
-        updates = []
+Configure system to execute recertification logic on a fixed date (12 Jan) for dry run
 
-        for entry in conn.entries:
-            ad_id = str(entry["hsbc-ad-SAMAccountName"]).strip().lower()
+Ensure logic is restricted only to selected test users
 
-            # 🔑 DUAL RESOLUTION (THIS IS THE FIX)
-            user_id = (
-                user_map_psid.get(ad_id) or
-                user_map_empid.get(ad_id)
-            )
+Dry Run Execution
 
-            if not user_id:
-                unmapped_users += 1
-                log_debug.debug(
-                    f"[LM_POPULATE] User mapping failed | AD_ID={ad_id}"
-                )
-                continue
+Execute recertification logic for selected users
 
-            lm_id = (
-                str(entry["hsbc-ad-LineManagerID"])
-                if "hsbc-ad-LineManagerID" in entry
-                else None
-            )
-            lm_name = (
-                str(entry["hsbc-ad-LineManagerName"])
-                if "hsbc-ad-LineManagerName" in entry
-                else None
-            )
+Validate:
 
-            if not lm_id:
-                no_lm_count += 1
-                updates.append({
-                    "user_id": user_id,
-                    "lm_id": "NO_LM",
-                    "lm_name": "No Line Manager",
-                    "lm_mail": None
-                })
-            else:
-                updates.append({
-                    "user_id": user_id,
-                    "lm_id": lm_id,
-                    "lm_name": lm_name,
-                    "lm_mail": None  # mail enrichment already handled earlier
-                })
+Access retention / revocation
 
-        if updates:
-            rows_updated += Db_Con.bulk_update_data(
-                QueryString["UPDATE_USER_TAB_LM"]["QString"],
-                updates
-            )
+Correct handling of responses
 
-    log_debug.debug(
-        "[LM_POPULATE] Completed | "
-        f"total_users={total_users}, "
-        f"rows_updated={rows_updated}, "
-        f"no_lm={no_lm_count}, "
-        f"unmapped_users={unmapped_users}"
-    )
+No impact on non-scope users
 
-def chunk_list(data, size):
-    for i in range(0, len(data), size):
-        yield data[i:i + size]
-Hi Sandeep,
+Post-Execution Validation
 
-We’d like to have a quick discussion today at 6:00 PM on the Metric Auto Cascade requirement. We’ve reviewed the BA material and want to validate a few business rules before proceeding further.
+Verify database updates
 
-Mainly around metric ownership across Parent–Child, re-cascade scenarios, and expectations when a metric is modified or removed.
+Confirm access behavior with business users
 
-It should take 15 minutes. Please let me know if 6:00 PM works for you.
+Capture observations for Go / No-Go decision
 
-Thanks!
+Out of Scope
+
+Full-scale recertification for all ERR users
+
+Permanent changes to recertification timelines
+
+Any production data cleanup beyond dry-run scope
+
+Pre-Requisites
+
+Production backup to be taken prior to execution
+
+Confirmation of final user list for dry run from business
+
+Change approval completed
+
+Rollback Plan
+
+Restore database from pre-release backup if any issue is identified
+
+Revert temporary dry-run configuration changes
+
+Risk & Impact
+
+Risk Level: Low
+
+Impact: Limited to selected users only
+
+No impact expected on broader ERR user population
+
+Validation / Sign-off
+
+Business validation to be completed post dry run
+
+Go / No-Go decision scheduled for 12 January
