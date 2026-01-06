@@ -1,95 +1,26 @@
-2️⃣ JIRA TICKET – RELEASE TASK (READY TO USE)
+Hi Sandeep,
 
-You can copy-paste this directly into JIRA.
+Sure, we will not make any changes to user access as part of this activity.
 
-JIRA Title
+Please find below the proposed **IT action plan for the production dry run** of the ERR User Recertification process, planned for Thursday:
 
-Release Task – ERR User Recertification Phase 1 (Dry Run – Limited Users)
+**Prod Deployment**
 
-Issue Type
+* **8th – 9:00 AM**
 
-Release Task
+**Mail Notifications**
 
-Environment
+* **First Mail Reminder:** 8th – 4:00 PM
+* **Second Mail Reminder:** 9th – 4:00 PM
+* **Final Mail Reminder:** 12th – 4:00 PM
 
-UAT → Production
+**Non-Recertified User Revocation**
 
-Description
+* **13th – 5:00 PM**
 
-This release is to support a controlled dry run of ERR User Recertification – Phase 1 (Scope 2025) in the production environment.
+As discussed, this dry run will be executed only for the **identified limited set of users/line managers**, purely for validation purposes.
 
-The dry run will be executed on a limited set of users and line managers only, as identified by the business, to validate end-to-end recertification functionality before full-scale rollout.
+Please let us know if any changes are required in the above plan or if anything is missing from our side.
 
-Scope of Release
-
-The following activities will be performed as part of this release:
-
-Line Manager Data Preparation
-
-Manually populate Line Manager ID, Name, and Mail ID in USER_TAB
-
-Scope restricted to 2 selected line managers and their direct reports only
-
-Dry-Run Configuration
-
-Temporarily override the standard 31-day recertification logic
-
-Configure system to execute recertification logic on a fixed date (12 Jan) for dry run
-
-Ensure logic is restricted only to selected test users
-
-Dry Run Execution
-
-Execute recertification logic for selected users
-
-Validate:
-
-Access retention / revocation
-
-Correct handling of responses
-
-No impact on non-scope users
-
-Post-Execution Validation
-
-Verify database updates
-
-Confirm access behavior with business users
-
-Capture observations for Go / No-Go decision
-
-Out of Scope
-
-Full-scale recertification for all ERR users
-
-Permanent changes to recertification timelines
-
-Any production data cleanup beyond dry-run scope
-
-Pre-Requisites
-
-Production backup to be taken prior to execution
-
-Confirmation of final user list for dry run from business
-
-Change approval completed
-
-Rollback Plan
-
-Restore database from pre-release backup if any issue is identified
-
-Revert temporary dry-run configuration changes
-
-Risk & Impact
-
-Risk Level: Low
-
-Impact: Limited to selected users only
-
-No impact expected on broader ERR user population
-
-Validation / Sign-off
-
-Business validation to be completed post dry run
-
-Go / No-Go decision scheduled for 12 January
+Thanks & Regards,
+Krishna Chaitanya
