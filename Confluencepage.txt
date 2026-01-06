@@ -1,98 +1,97 @@
-Change Request – Database Changes (ERR User Recertification)
 Short Description
 
-Database changes to support ERR User Recertification Phase-1 dry run, including line manager data updates and new recertification tables.
+Execution of application pipelines in DR and Production environments to enable ERR User Recertification Phase-1 dry run.
 
 Description
 
-This change request is raised to implement required database changes to support the ERR User Recertification Phase-1 (Scope 2025) dry run.
+This change request is raised to execute application deployment pipelines in DR and Production environments to support the ERR User Recertification Phase-1 (Scope 2025) dry run.
 
-As part of this change:
+The deployment includes controlled application logic changes required for:
 
-Line manager details will be inserted/updated for a limited set of identified users.
+Triggering recertification workflows
 
-New database tables and columns required for the recertification process will be created.
+Sending reminder notifications
 
-A database backup will be taken prior to executing the changes.
+Supporting manual and scheduled execution
 
-These changes are required to enable controlled testing of the recertification workflow without impacting the broader user population.
+Enabling dry-run configuration for selected users only
+
+No functional changes impacting general users will be executed as part of this change.
 
 Why is this Change Being Done?
 
-The change is required to:
+This change is required to:
 
-Prepare the database for ERR User Recertification Phase-1.
+Deploy approved application code supporting ERR User Recertification Phase-1.
 
-Support a production dry run using a limited number of users and line managers.
+Enable a production dry run for a limited set of users and line managers.
 
-Ensure database structures are in place before triggering application-level recertification logic.
+Validate scheduler execution, notification flow, and access handling in production.
 
-Validate end-to-end recertification behavior in a controlled and auditable manner.
+Ensure readiness before full-scale recertification rollout.
 
 Implementation Plan
 
-Take a full database backup before starting the activity.
+Confirm database change CR is completed successfully.
 
-Create required new tables to support recertification (e.g., recertification response and related tables).
+Execute DR application pipeline.
 
-Add required new columns to existing tables (e.g., user table enhancements for line manager data).
+Perform basic smoke testing in DR.
 
-Insert/update line manager details for the identified set of users only (dry-run scope).
+Execute Production application pipeline.
 
-Validate successful creation of tables, columns, and data updates.
+Verify application services are up and running.
 
-Hand over database readiness confirmation to the application team.
+Enable dry-run configuration (restricted to identified users).
+
+Monitor logs and application health post-deployment.
 
 Customer and Business Impact
 
-No direct customer impact.
+No customer impact.
 
-Business impact is minimal and controlled, limited only to the identified test users.
+Business impact is minimal and controlled.
 
-No changes will be made to actual user access as part of this database change.
+No change to actual user access during the dry run.
+
+Changes are restricted to selected test users only.
 
 Technical Impact During Implementation
 
-Temporary database locks may occur during DDL/DML execution.
+Application services may be restarted during deployment.
 
-No expected downtime for the application.
+No expected downtime or user-facing disruption.
 
-Changes are isolated and scoped to specific tables and users only.
+Deployment is backward compatible and configuration-driven.
 
 Backup Plan
 
-A full database backup will be taken prior to implementation.
+Existing application version will remain available for rollback.
 
-Backup will be retained until post-implementation verification is completed successfully.
+Configuration backups will be retained.
+
+No data modification performed by the pipeline execution itself.
 
 Rollback Plan
 
-In case of any issue:
+In case of issues:
 
-Restore database from the pre-change backup.
+Roll back to the previous stable application version.
 
-Drop newly created tables/columns if required.
+Disable dry-run configuration flags.
 
-Revert inserted/updated records related to the dry run.
+Stop scheduler jobs if required.
 
 Post-Implementation Verification Plan
 
 Verify:
 
-New tables are created successfully.
+Application is accessible post-deployment.
 
-New columns exist with correct data types.
+Scheduler jobs are running as expected.
 
-Line manager data is correctly populated for the identified users.
+Manual trigger functionality works correctly.
 
-Run validation queries to confirm data accuracy.
+Logs show successful execution with no errors.
 
-Obtain confirmation from application team that database changes are successful.
-
-If you want next, I can also help you with:
-
-✅ Second CR draft (for code / pipeline changes)
-
-✅ Risk & compliance wording (for CAB approval)
-
-✅ One-line executive summary for managers
+Obtain confirmation from business and QA teams after dry run.
