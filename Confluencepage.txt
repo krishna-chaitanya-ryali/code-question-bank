@@ -1,39 +1,80 @@
-Hi Team,
+JIRA Title
 
-Good afternoon.
+DBA & App Support Required – Prod Release Support for User Recertification
 
-As discussed, we are planning a **production release tomorrow (Thursday)** related to the **User Recertification / User Table automation** activity.
+Issue Type
 
-For the smooth execution of this release, we request your support for the following:
+Task / Service Request (use whichever fits your JIRA workflow)
 
-**1. Database Backup (Mandatory)**
+Environment
 
-* Kindly take a **full database backup** before starting the release activity.
-* Backup will be required prior to executing any DB changes.
+Production
 
-**2. Application Server Support (If Required)**
+Description
 
-* During the release window, there may be a need for:
+This task is raised to request DBA and Application Support assistance for the planned production release of User Recertification (User Table Automation) scheduled for Thursday.
 
-  * Configuration updates on application servers (if any)
-  * Manual intervention in case the automated pipeline execution faces any issues
-* Hence, we request **DBA / application support availability between 9:00 AM and 12:00 PM**.
+Support is required to ensure safe execution of the release, including database backup and application-level assistance if needed.
 
-Please note:
+Scope of Support Required
+1. Database Backup (Mandatory)
 
-* No user access changes are planned as part of this activity.
-* The activity is controlled and part of a planned production dry run.
+Take a full production database backup prior to executing any database-related changes.
 
-Kindly let us know if the above support window works for you or if any additional information is required from our side.
+Backup is required as part of the approved change process.
 
-Thanks & Regards,
-Krishna Chaitanya
+2. Application Server Support (Conditional)
 
----
+Application support may be required during the release window for:
 
-If you want, I can also:
+Configuration updates on application servers (if needed)
 
-* make this **more formal** (CAB / Infra head style), or
-* shorten it for **Teams / Outlook quick approval**
+Manual deployment or intervention in case automated pipelines fail
 
-Just tell me 👍
+No planned configuration changes, but support availability is required as a precaution.
+
+Planned Release Window
+
+Date: Thursday
+
+Support Window: 9:00 AM – 12:00 PM
+
+Impact Assessment
+
+User Impact: None
+
+Business Impact: Minimal
+
+No user access changes are planned as part of this activity.
+
+Activity is part of a controlled production dry run.
+
+Pre-Requisites
+
+Approved database and software change requests
+
+Confirmation of support availability during the release window
+
+Rollback / Recovery Plan
+
+Restore database from pre-release backup if required
+
+Roll back application to previous stable version in case of issues
+
+Disable schedulers/configurations if necessary
+
+Post-Implementation Validation
+
+Confirm database backup completion
+
+Verify application services are running normally
+
+Confirm no unexpected errors in logs
+
+Obtain release completion confirmation
+
+Additional Notes
+
+This task is raised for support readiness only
+
+Actual intervention will be performed only if required
