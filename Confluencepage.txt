@@ -1,12 +1,37 @@
-from datetime import datetime
-import pytz
+Subject: RAP Onboarding Completed – HCIBUS Branch Pack
 
-IST = pytz.timezone("Asia/Kolkata")
+Hi [Requester’s Name],
 
-scheduler.add_job(
-    system_revoke_job,
-    trigger="date",
-    run_date=IST.localize(datetime(2025, 1, 13, 17, 0)),
-    id="system_revoke_job",
-    replace_existing=True
-)
+Good afternoon.
+
+The HCIBUS Branch pack has been successfully onboarded into the RAP application.
+Please find the access link below:
+
+RAP Pack Link:
+[Insert RAP link here]
+
+User Access – Next Steps
+
+We noticed that the below users are new users and currently do not have access requests raised:
+
+Heidi Mann (Employee ID: [ID])
+
+Gary G (Employee ID: [ID])
+
+For enabling access, please ask them to complete the following steps:
+
+Raise a SNOW request (if not already available).
+
+Request access through the Access Management Portal for the newly onboarded HCIBUS Branch pack.
+
+Once the access requests are approved, we will proceed with enabling the required roles.
+
+Clarification Required
+
+Could you please confirm under which parent RMM you would like this newly onboarded RMM (HCIBUS Branch) to be added? Based on your confirmation, we will update the hierarchy accordingly.
+
+Please let me know if you need any further details or assistance.
+
+Thanks & Regards,
+Krishna Chaitanya
+RAP Application Team
