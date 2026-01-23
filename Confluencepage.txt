@@ -1,14 +1,138 @@
-Hi Matt,
+1️⃣ Short Description
 
-I hope you are doing well.
+Production database data fix to update status, clean up access records, and maintain master/dropdown data
 
-I wanted to take a moment to formally introduce myself. I have been working on the RAP project since 2020/2021, supporting the platform across development, enhancements, production support, and overall application stability.
+2️⃣ Description
 
-Over the past few years, I have worked closely with the HSBC stakeholders and delivery teams to ensure continuity and reliability of the platform, especially during periods of transition. I’ve enjoyed being part of the RAP program and contributing to its long-term success.
+This change request is raised to perform controlled data-level updates in the production database to support multiple approved production tickets.
 
-Last year, there were initial discussions around longer-term engagement, but due to timing and planning considerations, things did not progress further at that point. I wanted to share this context with you so you’re aware of my background and continued involvement with the project.
+The scope of this change includes:
 
-I look forward to continuing to work with you and supporting the RAP platform. Please feel free to let me know if there’s anything I can assist with or if there’s any guidance you’d like to share as we move forward.
+Correcting an incorrect status value for a specific record as part of a production data fix.
 
-Best regards,
-R Krishna Chaitanya
+Performing hard delete operations on obsolete or incorrect records from access management tables to resolve access-related issues.
+
+Adding a new master/dropdown value required for application functionality.
+
+Renaming existing values within a column to align with updated business naming conventions.
+
+All activities are data-only changes and do not involve any schema modifications or application code changes.
+The changes will be executed manually on the database server using validated SQL scripts during the approved change window.
+
+3️⃣ Why is this change being done? (Business Justification)
+
+This change is required to:
+
+Resolve production issues caused by incorrect or stale data.
+
+Ensure accurate status representation for business workflows.
+
+Remove invalid access mappings to maintain proper access control.
+
+Support new business requirements by updating dropdown/master data.
+
+Maintain data consistency and integrity across the application.
+
+Without this change, users may continue to experience incorrect workflow behavior, access issues, or missing dropdown values.
+
+4️⃣ Implementation Plan (Change Request – Implementation)
+
+Obtain approved change window and necessary access.
+
+Log in to the designated production database server.
+
+Take pre-change backups of affected records (using SELECT queries).
+
+Execute validated SQL scripts in the following order:
+
+Update status column from IN_PROGRESS to REJECTED for identified records.
+
+Perform hard delete on specific records in:
+
+METRIC_ACCESS
+
+MAP_REP_USER_ROLE
+
+Insert new dropdown/master data values into the relevant table.
+
+Update existing values to reflect revised naming conventions.
+
+Commit the changes after verification of affected row counts.
+
+Capture execution logs and screenshots for audit purposes.
+
+5️⃣ Customer / Business Impact During Implementation
+
+No customer-facing downtime is expected.
+
+No functional impact to end users during the change window.
+
+Changes are data-level corrections and will be transparent to users.
+
+The change will improve accuracy of workflows and access management post-implementation.
+
+6️⃣ Technical Impact During Implementation
+
+No application restart required.
+
+No schema changes involved.
+
+Limited to specific rows in identified tables.
+
+Database performance impact is negligible due to controlled execution and limited data volume.
+
+7️⃣ Backout Plan (Change Request – Backout)
+
+In case of any issue during or after implementation:
+
+Stop further execution immediately.
+
+Restore affected records using:
+
+Pre-change backup data captured before execution, or
+
+Reverse SQL scripts (where applicable).
+
+Revert updated status values to their original state.
+
+Reinsert deleted access records if required.
+
+Validate data restoration with SELECT queries.
+
+Notify stakeholders once rollback is completed.
+
+8️⃣ Post-Implementation Verification Plan (Change Request – PIR)
+
+Validate updated status values using SELECT queries.
+
+Confirm deleted access records are no longer present.
+
+Verify newly added dropdown/master values are available.
+
+Confirm renamed values reflect correctly in the database.
+
+Coordinate with application/support team to validate application behavior if required.
+
+Obtain confirmation from business or support team that the issue is resolved.
+
+9️⃣ Release Plan
+
+This change will be deployed as a standalone production data fix.
+
+No application release or deployment is associated with this change.
+
+The change will be executed during the approved change window.
+
+Post-verification confirmation will be shared with stakeholders before closure.
+
+10️⃣ Summary (Optional but useful in CR tools)
+
+Type of change: Data fix / Data maintenance
+
+Environment: Production
+
+Risk level: Low
+
+Rollback: Yes (manual)
+
+Downtime: No
