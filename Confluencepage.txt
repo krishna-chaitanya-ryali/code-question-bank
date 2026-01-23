@@ -1,37 +1,14 @@
-Subject: RAP Onboarding Completed – HCIBUS Branch Pack
+Hi Matt,
 
-Hi [Requester’s Name],
+I hope you are doing well.
 
-Good afternoon.
+I wanted to take a moment to formally introduce myself. I have been working on the RAP project since 2020/2021, supporting the platform across development, enhancements, production support, and overall application stability.
 
-The HCIBUS Branch pack has been successfully onboarded into the RAP application.
-Please find the access link below:
+Over the past few years, I have worked closely with the HSBC stakeholders and delivery teams to ensure continuity and reliability of the platform, especially during periods of transition. I’ve enjoyed being part of the RAP program and contributing to its long-term success.
 
-RAP Pack Link:
-[Insert RAP link here]
+Last year, there were initial discussions around longer-term engagement, but due to timing and planning considerations, things did not progress further at that point. I wanted to share this context with you so you’re aware of my background and continued involvement with the project.
 
-User Access – Next Steps
+I look forward to continuing to work with you and supporting the RAP platform. Please feel free to let me know if there’s anything I can assist with or if there’s any guidance you’d like to share as we move forward.
 
-We noticed that the below users are new users and currently do not have access requests raised:
-
-Heidi Mann (Employee ID: [ID])
-
-Gary G (Employee ID: [ID])
-
-For enabling access, please ask them to complete the following steps:
-
-Raise a SNOW request (if not already available).
-
-Request access through the Access Management Portal for the newly onboarded HCIBUS Branch pack.
-
-Once the access requests are approved, we will proceed with enabling the required roles.
-
-Clarification Required
-
-Could you please confirm under which parent RMM you would like this newly onboarded RMM (HCIBUS Branch) to be added? Based on your confirmation, we will update the hierarchy accordingly.
-
-Please let me know if you need any further details or assistance.
-
-Thanks & Regards,
-Krishna Chaitanya
-RAP Application Team
+Best regards,
+R Krishna Chaitanya
