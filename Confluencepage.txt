@@ -1,138 +1,49 @@
-1️⃣ Short Description
+Hi [Name],
 
-Production database data fix to update status, clean up access records, and maintain master/dropdown data
+Thank you for your response.
 
-2️⃣ Description
+I would like to clarify that this request is **not an incident** but a **planned, controlled change request for production data correction**, raised under service protection.
 
-This change request is raised to perform controlled data-level updates in the production database to support multiple approved production tickets.
+The reference to *“incorrect / stale HR data”* is to explain the **root cause** of the issue and not an indication of an active production incident. There is **no ongoing outage, degradation, or user impact** at present. The application is functioning as expected.
 
-The scope of this change includes:
+This change is being raised to:
 
-Correcting an incorrect status value for a specific record as part of a production data fix.
+* Correct previously identified **data inconsistencies**
+* Clean up obsolete access records
+* Update master/dropdown values to align with current business requirements
 
-Performing hard delete operations on obsolete or incorrect records from access management tables to resolve access-related issues.
+All activities are:
 
-Adding a new master/dropdown value required for application functionality.
+* **Data-only changes** (no code or schema changes)
+* **One-time corrective actions**
+* Executed in a **controlled change window**
+* Fully reversible with a defined backout plan
 
-Renaming existing values within a column to align with updated business naming conventions.
+Since this is a **preventive and corrective data maintenance activity** and not a live incident resolution, it has been raised as a **change request** rather than an incident. Classifying this as an incident would require emergency handling, which is not applicable in this case.
 
-All activities are data-only changes and do not involve any schema modifications or application code changes.
-The changes will be executed manually on the database server using validated SQL scripts during the approved change window.
+Hence, we are requesting **exception approval** to proceed under service protection, avoiding unnecessary incident and HR approval workflows, while still maintaining full audit and governance compliance.
 
-3️⃣ Why is this change being done? (Business Justification)
+Please let me know if any additional clarification is required. I’ll be happy to provide further details.
 
-This change is required to:
+Thank you for your understanding and support.
 
-Resolve production issues caused by incorrect or stale data.
+Regards,
+R Krishna Chaitanya
 
-Ensure accurate status representation for business workflows.
+---
 
-Remove invalid access mappings to maintain proper access control.
+### 💡 Optional tip (don’t send, just for you)
 
-Support new business requirements by updating dropdown/master data.
+If she still pushes back:
 
-Maintain data consistency and integrity across the application.
+* Emphasize **“no customer impact”**
+* Use the phrase **“preventive data correction”**
+* Avoid words like *issue, failure, problem* — stick to *correction, alignment, cleanup*
 
-Without this change, users may continue to experience incorrect workflow behavior, access issues, or missing dropdown values.
+If you want, I can:
 
-4️⃣ Implementation Plan (Change Request – Implementation)
+* Make this **shorter** (some approvers prefer 4–5 lines)
+* Make it **more authoritative** (policy-driven tone)
+* Rewrite it to match **ITIL / CAB language** used in your org
 
-Obtain approved change window and necessary access.
-
-Log in to the designated production database server.
-
-Take pre-change backups of affected records (using SELECT queries).
-
-Execute validated SQL scripts in the following order:
-
-Update status column from IN_PROGRESS to REJECTED for identified records.
-
-Perform hard delete on specific records in:
-
-METRIC_ACCESS
-
-MAP_REP_USER_ROLE
-
-Insert new dropdown/master data values into the relevant table.
-
-Update existing values to reflect revised naming conventions.
-
-Commit the changes after verification of affected row counts.
-
-Capture execution logs and screenshots for audit purposes.
-
-5️⃣ Customer / Business Impact During Implementation
-
-No customer-facing downtime is expected.
-
-No functional impact to end users during the change window.
-
-Changes are data-level corrections and will be transparent to users.
-
-The change will improve accuracy of workflows and access management post-implementation.
-
-6️⃣ Technical Impact During Implementation
-
-No application restart required.
-
-No schema changes involved.
-
-Limited to specific rows in identified tables.
-
-Database performance impact is negligible due to controlled execution and limited data volume.
-
-7️⃣ Backout Plan (Change Request – Backout)
-
-In case of any issue during or after implementation:
-
-Stop further execution immediately.
-
-Restore affected records using:
-
-Pre-change backup data captured before execution, or
-
-Reverse SQL scripts (where applicable).
-
-Revert updated status values to their original state.
-
-Reinsert deleted access records if required.
-
-Validate data restoration with SELECT queries.
-
-Notify stakeholders once rollback is completed.
-
-8️⃣ Post-Implementation Verification Plan (Change Request – PIR)
-
-Validate updated status values using SELECT queries.
-
-Confirm deleted access records are no longer present.
-
-Verify newly added dropdown/master values are available.
-
-Confirm renamed values reflect correctly in the database.
-
-Coordinate with application/support team to validate application behavior if required.
-
-Obtain confirmation from business or support team that the issue is resolved.
-
-9️⃣ Release Plan
-
-This change will be deployed as a standalone production data fix.
-
-No application release or deployment is associated with this change.
-
-The change will be executed during the approved change window.
-
-Post-verification confirmation will be shared with stakeholders before closure.
-
-10️⃣ Summary (Optional but useful in CR tools)
-
-Type of change: Data fix / Data maintenance
-
-Environment: Production
-
-Risk level: Low
-
-Rollback: Yes (manual)
-
-Downtime: No
+Just tell me 👍
