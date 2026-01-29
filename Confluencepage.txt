@@ -1,176 +1,33 @@
-Short Description
+import pandas as pd
 
-Production database data corrections to support access flow updates and master data alignment
+excel_file = "rap_metrics.xlsx"
+sheet_name = "Sheet1"
+output_file = "update_rap_metrics.sql"
 
-Description
+df = pd.read_excel(excel_file, sheet_name=sheet_name)
 
-This database change request is raised to perform controlled, one-time data-level corrections in the production environment to support updated access flow behavior and resolve data inconsistencies.
+queries = []
 
-The change includes:
+for _, row in df.iterrows():
+    mapping_id = row["RAP_METRICS_MAPPING_ID"]
+    risk_type = row["PRIMARY_RISK_TYPE"]
 
-Corrective updates to access-related records for specific impacted users
+    # Safety checks
+    if pd.isna(mapping_id) or pd.isna(risk_type):
+        continue
 
-Cleanup or adjustment of records in access management tables to ensure proper access lifecycle handling
+    # Escape single quotes in risk type (VERY IMPORTANT)
+    risk_type = str(risk_type).replace("'", "''")
 
-Required master/dropdown data updates and value corrections to align with current business logic
+    query = (
+        f"UPDATE RAP_METRICS_DETAILS "
+        f"SET PRIMARY_RISK_TYPE = '{risk_type}' "
+        f"WHERE RAP_METRICS_MAPPING_ID = {int(mapping_id)};"
+    )
 
-These changes are data-only in nature and do not involve any schema modifications or application code changes. All updates will be executed using validated SQL scripts during the approved change window.
+    queries.append(query)
 
-This is a planned data maintenance activity and not related to any active production incident.
+with open(output_file, "w") as f:
+    f.write("\n".join(queries))
 
-Why is this change being done?
-
-To support corrected access removal and re-provisioning behavior
-
-To resolve data inconsistencies impacting access requests
-
-To ensure data integrity and consistency in production
-
-To avoid repeated manual intervention for access-related issues
-
-Implementation Plan
-
-Obtain approved DB change window and access.
-
-Identify impacted records/users.
-
-Take pre-change data backups (SELECT snapshots).
-
-Execute validated SQL scripts:
-
-Access-related data corrections
-
-Required data cleanup or updates
-
-Master/dropdown value updates (if applicable)
-
-Verify affected row counts.
-
-Commit changes and capture execution evidence.
-
-Business Impact During Implementation
-
-No customer-facing impact
-
-No downtime expected
-
-Changes are backend data corrections only
-
-Technical Impact During Implementation
-
-No application restart
-
-No schema changes
-
-Limited to specific records
-
-Minimal database load
-
-Backout Plan
-
-Restore affected records from pre-change backups
-
-Revert changes using rollback scripts if required
-
-Validate data restoration
-
-Post-Implementation Verification
-
-Validate corrected records using SELECT queries
-
-Confirm access-related data behaves as expected
-
-Obtain confirmation from support/business teams
-
-Release Plan
-
-Standalone production database change
-
-Executed during approved change window
-
-No application release dependency
-
-🟢 CHANGE REQUEST 2: PIPELINE / SOFTWARE CHANGE REQUEST
-Short Description
-
-Execution of DR and Production pipelines to deploy validated access flow updates
-
-Description
-
-This change request is raised to execute the approved CI/CD pipelines to deploy validated application changes related to access flow improvements.
-
-The change involves:
-
-Executing the DR pipeline as per standard deployment procedure
-
-Executing the Production pipeline post DR validation
-
-Performing required post-deployment validations to ensure correct application behavior
-
-No emergency fixes are involved. This is a planned software change following standard release and deployment practices.
-
-Why is this change being done?
-
-To deploy validated access flow logic changes to production
-
-To align production behavior with tested lower environments
-
-To ensure consistent and correct access lifecycle handling
-
-Implementation Plan
-
-Obtain approved change window.
-
-Trigger and complete the DR pipeline.
-
-Validate application behavior in DR.
-
-Trigger the Production pipeline.
-
-Monitor deployment logs and pipeline execution.
-
-Perform application-level validations.
-
-Confirm successful deployment.
-
-Business Impact During Implementation
-
-No expected business disruption
-
-No user-facing downtime
-
-Deployment performed during approved window
-
-Technical Impact During Implementation
-
-Application services updated via pipeline
-
-No database schema impact
-
-Standard deployment risk only
-
-Backout Plan
-
-Revert to previous stable application version using rollback pipeline
-
-Validate service stability post-rollback
-
-Inform stakeholders if rollback is executed
-
-Post-Implementation Verification
-
-Validate access removal and re-provisioning flow
-
-Confirm impacted users can raise access requests
-
-Monitor logs for errors
-
-Obtain confirmation from support team
-
-Release Plan
-
-Deployment via standard CI/CD pipelines
-
-DR pipeline followed by Production pipeline
-
-Post-deployment verification before change closure
+print(f"{len(queries)} UPDATE statements generated successfully.")
