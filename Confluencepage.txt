@@ -1,155 +1,176 @@
-PART 1: JIRA TICKET (Fix / Improvement – NOT Incident)
-Issue Type
-
-Task (or Change / Improvement, not Incident, not Bug if your org is strict)
-
-Summary
-
-Fix access removal flow to allow re-request of access for impacted users
-
-Description
-
-Currently, when a user is removed from the RAP application, the access removal logic updates the EZAC2 flag to 0 in the relevant tables. However, for certain users, existing records in the METRIC_ACCESS table prevent them from raising access requests again.
-
-This behavior is causing access re-provisioning issues for a limited set of users, even though they are no longer active in the application.
-
-A revised approach has been tested successfully in the unit environment, where access removal is handled in a way that ensures:
-
-Existing access records do not block future access requests
-
-Access re-provisioning works as expected
-
-This ticket tracks the production implementation of the validated solution for impacted users only.
-
-Impact
-
-Affects only specific users facing access re-request issues
-
-No impact to existing valid users
-
-No application downtime
-
-Environment
-
-Production (implementation via approved Change Request)
-
-Acceptance Criteria
-
-Impacted users can successfully raise access requests after removal
-
-No unintended access is retained
-
-No regression to existing access flows
-
-🟢 PART 2: CHANGE REQUEST (CR) – FULL CONTENT
 Short Description
 
-Production update to access removal flow to enable re-provisioning for impacted users
+Production database data corrections to support access flow updates and master data alignment
 
 Description
 
-This change request is raised to implement a corrective update to the RAP application’s access removal flow.
+This database change request is raised to perform controlled, one-time data-level corrections in the production environment to support updated access flow behavior and resolve data inconsistencies.
 
-Currently, when users are removed from RAP, access is revoked by setting the EZAC2 flag to 0. However, for some users, existing records in the METRIC_ACCESS table prevent them from requesting access again, resulting in access re-provisioning failures.
+The change includes:
 
-A revised solution has been validated in the unit environment, ensuring proper cleanup/handling of access records so that users can re-request access without issues. This change will apply the same validated logic in the production environment for identified impacted users only.
+Corrective updates to access-related records for specific impacted users
 
-This is a planned data correction / access flow fix, not an incident response.
+Cleanup or adjustment of records in access management tables to ensure proper access lifecycle handling
 
-Why is this change being done? (Business Justification)
+Required master/dropdown data updates and value corrections to align with current business logic
 
-To resolve access re-provisioning issues faced by specific users
+These changes are data-only in nature and do not involve any schema modifications or application code changes. All updates will be executed using validated SQL scripts during the approved change window.
 
-To align production behavior with validated access logic
+This is a planned data maintenance activity and not related to any active production incident.
 
-To ensure correct lifecycle handling of user access
+Why is this change being done?
 
-To prevent repeated manual intervention for access-related issues
+To support corrected access removal and re-provisioning behavior
 
-Implementation Plan (Implementation Change Request)
+To resolve data inconsistencies impacting access requests
 
-Obtain approved change window and necessary access.
+To ensure data integrity and consistency in production
 
-Identify impacted users based on approved criteria.
+To avoid repeated manual intervention for access-related issues
 
-Log in to the production database server.
+Implementation Plan
 
-Take pre-change backups (SELECT snapshots) of impacted records.
+Obtain approved DB change window and access.
 
-Execute validated SQL queries to:
+Identify impacted records/users.
 
-Correct access records in METRIC_ACCESS
+Take pre-change data backups (SELECT snapshots).
 
-Ensure access removal does not block future access requests
+Execute validated SQL scripts:
+
+Access-related data corrections
+
+Required data cleanup or updates
+
+Master/dropdown value updates (if applicable)
 
 Verify affected row counts.
 
-Commit the changes.
+Commit changes and capture execution evidence.
 
-Capture logs/screenshots for audit.
-
-Customer / Business Impact During Implementation
+Business Impact During Implementation
 
 No customer-facing impact
 
 No downtime expected
 
-Changes are limited to backend access data
-
-Improvement will be visible only when users re-request access
+Changes are backend data corrections only
 
 Technical Impact During Implementation
 
-No application restart required
+No application restart
 
-No schema or code changes
+No schema changes
 
-Limited to specific user records
+Limited to specific records
 
 Minimal database load
 
-Backout Plan (Backout Change Request)
+Backout Plan
 
-If any issue is observed:
+Restore affected records from pre-change backups
 
-Stop further execution.
+Revert changes using rollback scripts if required
 
-Restore pre-change data using backup snapshots.
+Validate data restoration
 
-Revert modified access records to original state.
+Post-Implementation Verification
 
-Validate restoration using SELECT queries.
+Validate corrected records using SELECT queries
 
-Inform stakeholders after rollback completion.
+Confirm access-related data behaves as expected
 
-Post-Implementation Verification Plan (PIV Change Request)
-
-Validate updated access records in METRIC_ACCESS.
-
-Confirm impacted users can raise access requests.
-
-Ensure no unintended access remains.
-
-Obtain confirmation from support or business teams.
-
-Close the change after validation.
+Obtain confirmation from support/business teams
 
 Release Plan
 
-Standalone production data fix
-
-No application release involved
+Standalone production database change
 
 Executed during approved change window
 
-Post-verification confirmation to stakeholders
+No application release dependency
 
-Change Classification (Helpful internally)
+🟢 CHANGE REQUEST 2: PIPELINE / SOFTWARE CHANGE REQUEST
+Short Description
 
-Type: Corrective / Preventive data fix
+Execution of DR and Production pipelines to deploy validated access flow updates
 
-Risk: Low
+Description
 
-Rollback: Available
+This change request is raised to execute the approved CI/CD pipelines to deploy validated application changes related to access flow improvements.
 
-Incident: No
+The change involves:
+
+Executing the DR pipeline as per standard deployment procedure
+
+Executing the Production pipeline post DR validation
+
+Performing required post-deployment validations to ensure correct application behavior
+
+No emergency fixes are involved. This is a planned software change following standard release and deployment practices.
+
+Why is this change being done?
+
+To deploy validated access flow logic changes to production
+
+To align production behavior with tested lower environments
+
+To ensure consistent and correct access lifecycle handling
+
+Implementation Plan
+
+Obtain approved change window.
+
+Trigger and complete the DR pipeline.
+
+Validate application behavior in DR.
+
+Trigger the Production pipeline.
+
+Monitor deployment logs and pipeline execution.
+
+Perform application-level validations.
+
+Confirm successful deployment.
+
+Business Impact During Implementation
+
+No expected business disruption
+
+No user-facing downtime
+
+Deployment performed during approved window
+
+Technical Impact During Implementation
+
+Application services updated via pipeline
+
+No database schema impact
+
+Standard deployment risk only
+
+Backout Plan
+
+Revert to previous stable application version using rollback pipeline
+
+Validate service stability post-rollback
+
+Inform stakeholders if rollback is executed
+
+Post-Implementation Verification
+
+Validate access removal and re-provisioning flow
+
+Confirm impacted users can raise access requests
+
+Monitor logs for errors
+
+Obtain confirmation from support team
+
+Release Plan
+
+Deployment via standard CI/CD pipelines
+
+DR pipeline followed by Production pipeline
+
+Post-deployment verification before change closure
