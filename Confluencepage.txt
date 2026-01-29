@@ -1,49 +1,155 @@
-Hi [Name],
+PART 1: JIRA TICKET (Fix / Improvement – NOT Incident)
+Issue Type
 
-Thank you for your response.
+Task (or Change / Improvement, not Incident, not Bug if your org is strict)
 
-I would like to clarify that this request is **not an incident** but a **planned, controlled change request for production data correction**, raised under service protection.
+Summary
 
-The reference to *“incorrect / stale HR data”* is to explain the **root cause** of the issue and not an indication of an active production incident. There is **no ongoing outage, degradation, or user impact** at present. The application is functioning as expected.
+Fix access removal flow to allow re-request of access for impacted users
 
-This change is being raised to:
+Description
 
-* Correct previously identified **data inconsistencies**
-* Clean up obsolete access records
-* Update master/dropdown values to align with current business requirements
+Currently, when a user is removed from the RAP application, the access removal logic updates the EZAC2 flag to 0 in the relevant tables. However, for certain users, existing records in the METRIC_ACCESS table prevent them from raising access requests again.
 
-All activities are:
+This behavior is causing access re-provisioning issues for a limited set of users, even though they are no longer active in the application.
 
-* **Data-only changes** (no code or schema changes)
-* **One-time corrective actions**
-* Executed in a **controlled change window**
-* Fully reversible with a defined backout plan
+A revised approach has been tested successfully in the unit environment, where access removal is handled in a way that ensures:
 
-Since this is a **preventive and corrective data maintenance activity** and not a live incident resolution, it has been raised as a **change request** rather than an incident. Classifying this as an incident would require emergency handling, which is not applicable in this case.
+Existing access records do not block future access requests
 
-Hence, we are requesting **exception approval** to proceed under service protection, avoiding unnecessary incident and HR approval workflows, while still maintaining full audit and governance compliance.
+Access re-provisioning works as expected
 
-Please let me know if any additional clarification is required. I’ll be happy to provide further details.
+This ticket tracks the production implementation of the validated solution for impacted users only.
 
-Thank you for your understanding and support.
+Impact
 
-Regards,
-R Krishna Chaitanya
+Affects only specific users facing access re-request issues
 
----
+No impact to existing valid users
 
-### 💡 Optional tip (don’t send, just for you)
+No application downtime
 
-If she still pushes back:
+Environment
 
-* Emphasize **“no customer impact”**
-* Use the phrase **“preventive data correction”**
-* Avoid words like *issue, failure, problem* — stick to *correction, alignment, cleanup*
+Production (implementation via approved Change Request)
 
-If you want, I can:
+Acceptance Criteria
 
-* Make this **shorter** (some approvers prefer 4–5 lines)
-* Make it **more authoritative** (policy-driven tone)
-* Rewrite it to match **ITIL / CAB language** used in your org
+Impacted users can successfully raise access requests after removal
 
-Just tell me 👍
+No unintended access is retained
+
+No regression to existing access flows
+
+🟢 PART 2: CHANGE REQUEST (CR) – FULL CONTENT
+Short Description
+
+Production update to access removal flow to enable re-provisioning for impacted users
+
+Description
+
+This change request is raised to implement a corrective update to the RAP application’s access removal flow.
+
+Currently, when users are removed from RAP, access is revoked by setting the EZAC2 flag to 0. However, for some users, existing records in the METRIC_ACCESS table prevent them from requesting access again, resulting in access re-provisioning failures.
+
+A revised solution has been validated in the unit environment, ensuring proper cleanup/handling of access records so that users can re-request access without issues. This change will apply the same validated logic in the production environment for identified impacted users only.
+
+This is a planned data correction / access flow fix, not an incident response.
+
+Why is this change being done? (Business Justification)
+
+To resolve access re-provisioning issues faced by specific users
+
+To align production behavior with validated access logic
+
+To ensure correct lifecycle handling of user access
+
+To prevent repeated manual intervention for access-related issues
+
+Implementation Plan (Implementation Change Request)
+
+Obtain approved change window and necessary access.
+
+Identify impacted users based on approved criteria.
+
+Log in to the production database server.
+
+Take pre-change backups (SELECT snapshots) of impacted records.
+
+Execute validated SQL queries to:
+
+Correct access records in METRIC_ACCESS
+
+Ensure access removal does not block future access requests
+
+Verify affected row counts.
+
+Commit the changes.
+
+Capture logs/screenshots for audit.
+
+Customer / Business Impact During Implementation
+
+No customer-facing impact
+
+No downtime expected
+
+Changes are limited to backend access data
+
+Improvement will be visible only when users re-request access
+
+Technical Impact During Implementation
+
+No application restart required
+
+No schema or code changes
+
+Limited to specific user records
+
+Minimal database load
+
+Backout Plan (Backout Change Request)
+
+If any issue is observed:
+
+Stop further execution.
+
+Restore pre-change data using backup snapshots.
+
+Revert modified access records to original state.
+
+Validate restoration using SELECT queries.
+
+Inform stakeholders after rollback completion.
+
+Post-Implementation Verification Plan (PIV Change Request)
+
+Validate updated access records in METRIC_ACCESS.
+
+Confirm impacted users can raise access requests.
+
+Ensure no unintended access remains.
+
+Obtain confirmation from support or business teams.
+
+Close the change after validation.
+
+Release Plan
+
+Standalone production data fix
+
+No application release involved
+
+Executed during approved change window
+
+Post-verification confirmation to stakeholders
+
+Change Classification (Helpful internally)
+
+Type: Corrective / Preventive data fix
+
+Risk: Low
+
+Rollback: Available
+
+Incident: No
