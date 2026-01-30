@@ -1,20 +1,67 @@
-WITH MISSING_METRICS AS (
-    SELECT METRIC_DETAIL_ID
-    FROM RAPUSER.RAP_METRICS_DETAILS
-    WHERE METRIC_FLAG = 'Insert'
-    MINUS
-    SELECT MA.METRIC_DETAIL_ID
-    FROM RAPUSER.METRIC_ACCESS MA
-    WHERE MA.USER_ID = 851
-)
-SELECT
-    851 AS USER_ID,
-    (
-        SELECT USER_ROLE_ID
-        FROM MAP_RAP_USER_ROLE
-        WHERE USER_ID = 851
-          AND IS_ACTIVE = 1
-          AND ROWNUM = 1
-    ) AS USER_ROLE_ID,
-    MM.METRIC_DETAIL_ID
-FROM MISSING_METRICS MM;
+Subject: Production Deployment Update – Summary of Changes Deployed Today
+
+Hi All,
+
+Good evening.
+
+As part of today’s production release, we have successfully deployed multiple fixes and enhancements across onboarding, access management, metrics, and database maintenance. Below is a detailed yet clear summary of the changes deployed:
+
+1. Onboarding Support – HBHCIBUS Branch
+
+During onboarding, only one user (SuperShe) was added initially.
+
+Post onboarding, while adding additional users, mandatory fields were required to be filled in the onboarding portal. Since these mandatory details were not known, new user requests could not be raised.
+
+Based on the request, we updated the required mandatory fields from the backend, after which access requests for additional capturers were successfully raised.
+
+This onboarding-related issue is now fully resolved, and the process is working as expected.
+
+2. Access Management Fix – Satadru
+
+Due to changes introduced as part of access management logic rework, Satadru’s access was removed temporarily for testing purposes.
+
+Because the new logic was not functioning as expected, the user was unable to raise access requests.
+
+As part of today’s release:
+
+The system was reverted to the previous stable access logic.
+
+Unwanted/invalid access requests were cleaned up from the system.
+
+Viewer access was provided for all required locations where access was missing.
+
+Access issues for Satadru are now resolved.
+
+3. Metrics Fix – Missing Metrics (Kunal)
+
+Resolved the issue where certain metrics were not appearing as expected.
+
+Metrics are now correctly visible and functioning for the user.
+
+4. Metric Rollover Fix – Non-Monthly Metrics
+
+Fixed an issue affecting Annual, Quarterly, and Semi-Annual metrics, where users faced problems during rollover or while capturing data.
+
+The rollover logic has now been corrected, and non-monthly metrics are working as expected.
+
+5. Database Maintenance Activities
+
+Completed database clean-up for inactive users to improve data consistency.
+
+Clean-up was performed across relevant access and role-mapping tables.
+
+Required permissions were granted to ensure audit/trigger records are properly captured and maintained.
+
+6. Additional Deployment – BCBS (Ajar)
+
+Code changes related to Ajar (BCBS) were also deployed as part of today’s release.
+
+All the above changes have been validated post-deployment and are functioning as expected in the production environment.
+
+The latest code corresponding to these changes is available in the GitHub repository:
+👉 [Insert GitHub Repository Link Here]
+
+Please let us know if you observe any issues or need further clarification. We will continue to monitor closely.
+
+Thanks & Regards,
+R Krishna Chaitanya
