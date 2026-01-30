@@ -1,33 +1,23 @@
-import pandas as pd
-
-excel_file = "rap_metrics.xlsx"
-sheet_name = "Sheet1"
-output_file = "update_rap_metrics.sql"
-
-df = pd.read_excel(excel_file, sheet_name=sheet_name)
-
-queries = []
-
-for _, row in df.iterrows():
-    mapping_id = row["RAP_METRICS_MAPPING_ID"]
-    risk_type = row["PRIMARY_RISK_TYPE"]
-
-    # Safety checks
-    if pd.isna(mapping_id) or pd.isna(risk_type):
-        continue
-
-    # Escape single quotes in risk type (VERY IMPORTANT)
-    risk_type = str(risk_type).replace("'", "''")
-
-    query = (
-        f"UPDATE RAP_METRICS_DETAILS "
-        f"SET PRIMARY_RISK_TYPE = '{risk_type}' "
-        f"WHERE RAP_METRICS_MAPPING_ID = {int(mapping_id)};"
+SELECT
+    851 AS USER_ID,
+    MRUR.USER_ROLE_ID,
+    RMD.METRIC_DETAIL_ID,
+    1 AS IS_ACTIVE,
+    43461262 AS CREAT_BY,
+    SYSDATE AS CREAT_DT,
+    43461262 AS UPDT_BY,
+    SYSDATE AS UPDT_DT
+FROM (
+    SELECT RMD.METRIC_DETAIL_ID
+    FROM RAPUSER.RAP_METRICS_DETAILS RMD
+    WHERE RMD.METRIC_FLAG = 'Insert'
+    AND NOT EXISTS (
+        SELECT 1
+        FROM RAPUSER.METRIC_ACCESS MA
+        WHERE MA.USER_ID = 851
+          AND MA.METRIC_DETAIL_ID = RMD.METRIC_DETAIL_ID
     )
-
-    queries.append(query)
-
-with open(output_file, "w") as f:
-    f.write("\n".join(queries))
-
-print(f"{len(queries)} UPDATE statements generated successfully.")
+) RMD
+JOIN MAP_RAP_USER_ROLE MRUR
+  ON MRUR.USER_ID = 851
+ AND MRUR.IS_ACTIVE = 1;
