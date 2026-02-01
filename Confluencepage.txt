@@ -1,23 +1,20 @@
-rows_updated = sql_insertData(371, "NA", [])
-
-log_debug.debug(
-    f"System revoke flag updated | rows_updated={rows_updated}",
-    extra={"job": job_name, "year": year}
-)
-
-
-if rows_updated == 0:
-    log_debug.debug(
-        "System revoke job executed but no eligible records found",
-        extra={"job": job_name, "year": year}
-    )
+SELECT
+    rmm.RMM_ID,
+    rmm.RMM_NAME,
+    NVL(rel.SYSTEM_REVOKE_DONE_IND, 'N') AS SYSTEM_REVOKE_DONE_IND
+FROM RAP_RMM_GROUP rmm
+LEFT JOIN RECERTIFICATION_EMAIL_LIST rel
+    ON rel.RMM_ID = rmm.RMM_ID
+   AND rel.MAIL_SENT_YEAR = :year
 
 
-log_debug.debug(
-    "System revoke job completed",
-    extra={
-        "job": job_name,
-        "year": year,
-        "rows_updated": rows_updated
-    }
-)
+<input type="checkbox"
+       disabled
+       {% if rmm.system_revoke_done_ind == 'Y' %}checked{% endif %}>
+<span>User Recertification Completed</span>
+
+
+<input type="checkbox"
+       disabled
+       {% if rmm.system_revoke_done_ind == 'Y' %}checked{% endif %}>
+<span>User Recertification Completed</span>
