@@ -1,20 +1,12 @@
-SELECT
-    rmm.RMM_ID,
-    rmm.RMM_NAME,
-    NVL(rel.SYSTEM_REVOKE_DONE_IND, 'N') AS SYSTEM_REVOKE_DONE_IND
-FROM RAP_RMM_GROUP rmm
-LEFT JOIN RECERTIFICATION_EMAIL_LIST rel
-    ON rel.RMM_ID = rmm.RMM_ID
-   AND rel.MAIL_SENT_YEAR = :year
-
-
-<input type="checkbox"
-       disabled
-       {% if rmm.system_revoke_done_ind == 'Y' %}checked{% endif %}>
-<span>User Recertification Completed</span>
-
-
-<input type="checkbox"
-       disabled
-       {% if rmm.system_revoke_done_ind == 'Y' %}checked{% endif %}>
-<span>User Recertification Completed</span>
+SELECT COUNT(*)
+FROM RECERTIFICATION_EMAIL_LIST rel
+WHERE NVL(rel.SYSTEM_REVOKE_DONE_IND, 'N') = 'N'
+  AND rel.MAIL_SENT_COUNT = 3
+  AND rel.MAIL_SENT_YEAR = :recert_year
+  AND (
+        SELECT MIN(e2.CREAT_DT)
+        FROM RECERTIFICATION_EMAIL_LIST e2
+        WHERE e2.LINEMANAGER_ID = rel.LINEMANAGER_ID
+          AND e2.MAIL_SENT_COUNT = 1
+          AND e2.MAIL_SENT_YEAR = :recert_year
+      ) + 31 <= TRUNC(SYSDATE);
