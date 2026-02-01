@@ -1,18 +1,10 @@
-2. Access Management Enhancement Fix
+i Srinivas,
 
-During usage, an issue was observed in the access management flow affecting a small set of users when re-requesting access.
+Thanks for the update.
 
-As part of today’s release, the access logic has been stabilized by reverting to the previously validated logic, ensuring consistent behavior for all users.
+We have completed the sanity checks, and both RAP and DS applications are up and running as expected. No issues observed.
 
-Invalid or stale access requests were cleaned up as part of this activity.
+Thanks for your support.
 
-Required viewer access has been provided wherever access gaps were identified.
-
-The access management flow is now working as expected.
-
-
-3. Metrics Data Update – Missing Metrics
-
-Database-level updates were applied to address the missing metrics.
-
-The changes are deployed and ready for user validation.
+Regards,
+Krishna
