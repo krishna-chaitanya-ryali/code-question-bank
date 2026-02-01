@@ -1,26 +1,23 @@
-SELECT COUNT(*)
-FROM RECERTIFICATION_EMAIL_LIST rel
-WHERE NVL(rel.SYSTEM_REVOKE_DONE_IND, 'N') = 'N'
-  AND rel.MAIL_SENT_COUNT = 3
-  AND (
-        SELECT MIN(e2.CREAT_DT)
-        FROM RECERTIFICATION_EMAIL_LIST e2
-        WHERE e2.LINEMANAGER_ID = rel.LINEMANAGER_ID
-          AND e2.MAIL_SENT_COUNT = 1
-      ) + 31 <= TRUNC(SYSDATE);
+rows_updated = sql_insertData(371, "NA", [])
+
+log_debug.debug(
+    f"System revoke flag updated | rows_updated={rows_updated}",
+    extra={"job": job_name, "year": year}
+)
 
 
-UPDATE RECERTIFICATION_EMAIL_LIST rel
-SET SYSTEM_REVOKE_DONE_IND = 'Y',
-    SYSTEM_REVOKE_DONE_DT  = SYSTIMESTAMP,
-    UPDT_DT               = SYSTIMESTAMP,
-    UPDT_USER_ID          = 'SYSTEM_REVOKE_JOB'
-WHERE NVL(rel.SYSTEM_REVOKE_DONE_IND, 'N') = 'N'
-  AND rel.MAIL_SENT_COUNT = 3
-  AND rel.LINEMANAGER_ID IS NOT NULL
-  AND (
-        SELECT MIN(e2.CREAT_DT)
-        FROM RECERTIFICATION_EMAIL_LIST e2
-        WHERE e2.LINEMANAGER_ID = rel.LINEMANAGER_ID
-          AND e2.MAIL_SENT_COUNT = 1
-      ) + 31 <= TRUNC(SYSDATE);
+if rows_updated == 0:
+    log_debug.debug(
+        "System revoke job executed but no eligible records found",
+        extra={"job": job_name, "year": year}
+    )
+
+
+log_debug.debug(
+    "System revoke job completed",
+    extra={
+        "job": job_name,
+        "year": year,
+        "rows_updated": rows_updated
+    }
+)
