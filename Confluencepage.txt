@@ -1,207 +1,38 @@
-CR–1: Database Change Request (DB)
-Short Description
-
-User Recertification – Database enhancements to support system-driven revoke and annual recertification tracking.
-
-Description
-
-This change introduces database-level enhancements to support automated user recertification and system-driven revoke functionality. The changes include adding new tracking columns, updating recertification status handling, and ensuring proper auditability for annual recertification cycles.
-
-These changes are required to reliably identify users who have not responded to recertification requests and to mark recertification completion once system revoke is executed.
-
-Why is this change required
-
-To support automated system revoke after multiple reminder emails and a defined waiting period.
-
-To ensure recertification runs only once per year, avoiding duplicate revokes.
-
-To provide clear audit visibility of recertification completion status.
-
-To eliminate manual tracking and reduce operational risk.
-
-Scope / List of Database Changes
-
-Add new columns to RECERTIFICATION_EMAIL_LIST:
-
-SYSTEM_REVOKE_DONE_IND CHAR(1) (Default: 'N')
-
-SYSTEM_REVOKE_DONE_DT TIMESTAMP
-
-Update queries to:
-
-Identify users eligible for system revoke (based on email count + elapsed days).
-
-Mark recertification completion after system revoke.
-
-Ensure queries handle cross-year scenarios correctly (Dec → Jan).
-
-No existing data deletion or modification outside recertification scope.
-
-Implementation Plan
-
-Take pre-change database backup.
-
-Add new columns to RECERTIFICATION_EMAIL_LIST.
-
-Deploy updated SQL queries used by the application.
-
-Validate column defaults and existing data integrity.
-
-Grant required privileges (if applicable).
-
-Technical Impact
-
-Low risk
-
-Schema-level change only
-
-No impact to unrelated tables or queries
-
-Changes are backward compatible
-
-Business Impact
-
-Improves compliance with annual access review policies.
-
-Reduces manual intervention for recertification tracking.
-
-Ensures consistent enforcement of access governance.
-
-Customer Impact
-
-No direct customer-facing impact.
-
-Improves security posture and access hygiene.
-
-Verification / Testing Plan
-
-Verify new columns exist with correct defaults.
-
-Validate select queries return correct eligible records.
-
-Confirm update query marks SYSTEM_REVOKE_DONE_IND = 'Y' correctly.
-
-Confirm no unintended rows are updated.
-
-Backout / Rollback Plan
-
-Restore database from pre-change backup.
-
-Drop newly added columns if required.
-
-Post-Implementation Verification
-
-Monitor recertification data for correct status updates.
-
-Confirm no repeat system revoke for same year.
-
-Validate audit trail timestamps.
-
-🔹 CR–2: Software / Pipeline Change Request
-Short Description
-
-User Recertification – Application and pipeline changes for system-driven revoke execution.
-
-Description
-
-This change implements application-level logic and scheduled job updates to support automated system-driven user revoke as part of annual recertification. The change ensures system revoke runs only once per year and updates recertification status upon completion.
-
-Pipeline execution is required to deploy updated backend logic and scheduler configuration to the target environments.
-
-Why is this change required
-
-To automate revocation of user access when line managers do not respond.
-
-To ensure recertification logic is time-bound and non-repetitive.
-
-To prevent repeated revokes across multiple scheduler runs.
-
-To align application behavior with governance and audit requirements.
-
-Scope / List of Software Changes
-
-Backend logic to:
-
-Identify users eligible for system revoke.
-
-Execute revoke (delete/update access records).
-
-Update recertification completion status.
-
-Scheduler job changes:
-
-Ensure system revoke runs only once per recertification cycle.
-
-Prevent re-execution once marked completed.
-
-Frontend:
-
-Display read-only “User Recertification” checkbox based on backend status.
-
-No update actions from UI.
-
-Pipeline execution for deployment to UAT / PROD.
-
-Implementation Plan
-
-Deploy updated backend code.
-
-Deploy updated scheduler configuration.
-
-Run application pipelines in target environment.
-
-Validate scheduler initialization and job execution.
-
-Monitor logs for successful completion.
-
-Technical Impact
-
-Low to medium (controlled scheduler logic).
-
-No API contract changes.
-
-No UI write operations introduced.
-
-Business Impact
-
-Ensures access recertification is enforced consistently.
-
-Reduces dependency on manual revocation.
-
-Improves audit readiness.
-
-Customer Impact
-
-No visible UI disruption.
-
-Users may see access revoked only if recertification is not completed.
-
-Verification / Testing Plan
-
-Trigger scheduler in test mode (UAT).
-
-Verify eligible users are identified correctly.
-
-Confirm revoke actions are executed once.
-
-Validate recertification checkbox reflects correct status.
-
-Ensure scheduler does not rerun for same year.
-
-Backout / Rollback Plan
-
-Revert application code via pipeline rollback.
-
-Disable scheduler job if required.
-
-Restore DB data from backup (if applicable).
-
-Post-Implementation Verification
-
-Confirm scheduler logs show single execution.
-
-Validate no repeat system revoke.
-
-Verify UI status reflects backend state.
-
-Monitor application logs for errors.
+SELECT
+    10701 AS user_id,
+    mrur.rap_user_role_id,
+    rmd.metric_detail_id
+FROM rapuser.map_rap_user_role mrur
+JOIN rapuser.rap_rmm_group rrg
+    ON rrg.rmm_id = mrur.rmm_id
+JOIN rapuser.rap_metrics_details rmd
+    ON rmd.metric_flag = 'insert'
+WHERE mrur.user_id = 10701
+  AND mrur.rmm_id = 14
+  AND mrur.is_active = 1
+  AND NOT EXISTS (
+        SELECT 1
+        FROM rapuser.metric_access ma
+        WHERE ma.user_id = 10701
+          AND ma.user_role_id = mrur.rap_user_role_id
+          AND ma.metric_detail_id = rmd.metric_detail_id
+  );
+
+
+
+SELECT
+    rmd.metric_detail_id,
+    CASE
+        WHEN ma.metric_access_id IS NULL THEN 'MISSING'
+        ELSE 'PRESENT'
+    END AS access_status
+FROM rapuser.map_rap_user_role mrur
+JOIN rapuser.rap_metrics_details rmd
+    ON rmd.metric_flag = 'insert'
+LEFT JOIN rapuser.metric_access ma
+    ON ma.user_id = mrur.user_id
+   AND ma.user_role_id = mrur.rap_user_role_id
+   AND ma.metric_detail_id = rmd.metric_detail_id
+WHERE mrur.user_id = 10701
+  AND mrur.rmm_id = 14
+  AND mrur.is_active = 1;
