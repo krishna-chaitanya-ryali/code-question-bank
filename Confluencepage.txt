@@ -1,25 +1,40 @@
-SELECT
-    reportees_name        AS user_name,
-    reportees_id          AS user_id,
-    system_name           AS system,
-    location_name         AS location,
-    access_level          AS user_role,
-    access_status         AS "Maintain / Revoke",
-    actioned_by,
-    updt_dt               AS actioned_date
-FROM (
-    SELECT
-        rr.*,
-        ROW_NUMBER() OVER (
-            PARTITION BY
-                rr.reportees_id,
-                rr.location_name,
-                rr.recert_year
-            ORDER BY
-                rr.updt_dt DESC
-        ) rn
-    FROM recert_response rr
-    WHERE rr.recert_year = :year
-)
-WHERE rn = 1
-ORDER BY user_name, location;
+Title
+One-time setup & execution of manager update script for User Recertification (RAP)
+Description
+As part of the User Recertification activity, we need to perform a one-time update of manager details directly in the RAP database (ZTAB table).
+To ensure security compliance and avoid manual handling of credentials, support is required from the Linux / DB team to set up and execute the script in the application server environment.
+Scope of Work
+Copy Script to Server
+Clone / copy the provided script folder from the approved GitHub repository
+Place it in the appropriate RAP application directory on the server
+Environment & Configuration Setup
+Use existing RAP configuration (.env / encrypted credentials)
+Ensure the script runs under the same service account as the RAP application
+No plaintext passwords to be shared or exposed
+Script Execution
+Execute the Python script to update manager details in the ZTAB table
+Script will only perform the required UPDATE statements
+This is a one-time execution
+Post-Execution Cleanup
+Remove the script folder from the server
+Clear / delete any temporary configuration files if created
+No persistence of credentials beyond existing application setup
+Impact / Risk
+Low risk
+One-time controlled update
+No impact to application runtime
+No credential exposure
+Validation
+Record count before and after update
+Spot verification of updated manager records
+Environment
+☐ PROD (confirm)
+☐ UAT (if required before PROD)
+Attachments
+GitHub repository link (to be attached)
+Script execution steps (optional)
+Request
+Please assist with:
+Server-level setup
+Script execution under appropriate permissions
+Confirmation once the update is completed
