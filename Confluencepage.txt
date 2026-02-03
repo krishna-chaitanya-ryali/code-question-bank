@@ -1,40 +1,16 @@
-Title
-One-time setup & execution of manager update script for User Recertification (RAP)
-Description
-As part of the User Recertification activity, we need to perform a one-time update of manager details directly in the RAP database (ZTAB table).
-To ensure security compliance and avoid manual handling of credentials, support is required from the Linux / DB team to set up and execute the script in the application server environment.
-Scope of Work
-Copy Script to Server
-Clone / copy the provided script folder from the approved GitHub repository
-Place it in the appropriate RAP application directory on the server
-Environment & Configuration Setup
-Use existing RAP configuration (.env / encrypted credentials)
-Ensure the script runs under the same service account as the RAP application
-No plaintext passwords to be shared or exposed
-Script Execution
-Execute the Python script to update manager details in the ZTAB table
-Script will only perform the required UPDATE statements
-This is a one-time execution
-Post-Execution Cleanup
-Remove the script folder from the server
-Clear / delete any temporary configuration files if created
-No persistence of credentials beyond existing application setup
-Impact / Risk
-Low risk
-One-time controlled update
-No impact to application runtime
-No credential exposure
-Validation
-Record count before and after update
-Spot verification of updated manager records
-Environment
-☐ PROD (confirm)
-☐ UAT (if required before PROD)
-Attachments
-GitHub repository link (to be attached)
-Script execution steps (optional)
-Request
-Please assist with:
-Server-level setup
-Script execution under appropriate permissions
-Confirmation once the update is completed
+import os
+from dotenv import load_dotenv
+from cryptography.fernet import Fernet
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+ENV_PATH = os.path.join(BASE_DIR, ".env")
+
+load_dotenv(ENV_PATH)
+
+KEY = os.getenv("KEY")
+if not KEY:
+    raise RuntimeError("KEY not loaded")
+
+fernet = Fernet(KEY.encode())
+
+decPassword = fernet.decrypt(encPassword).decode()
