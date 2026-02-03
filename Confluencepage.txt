@@ -1,34 +1,25 @@
-MERGE INTO metric_access ma
-USING (
+SELECT
+    reportees_name        AS user_name,
+    reportees_id          AS user_id,
+    system_name           AS system,
+    location_name         AS location,
+    access_level          AS user_role,
+    access_status         AS "Maintain / Revoke",
+    actioned_by,
+    updt_dt               AS actioned_date
+FROM (
     SELECT
-        ma.metric_access_id,
-        mrur.rap_user_role_id
-    FROM metric_access ma
-    JOIN map_rap_user_role mrur
-        ON mrur.user_id = ma.user_id
-       AND mrur.is_active = '1'
-    JOIN rap_metrics_details rmd
-        ON ma.metric_detail_id = rmd.metric_detail_id
-    JOIN rap_rap rap
-        ON rmd.rap_id = rap.rap_id
-    WHERE ma.user_id = 10701
-      AND rmd.metric_flag <> 'removed'
-      AND rap.rap_instance_id = (
-            SELECT mo.meet_instc_id
-            FROM meet_instc mo
-            WHERE mo.rmm_id = mrur.rmm_id
-              AND mo.dt_id = (
-                    SELECT MAX(mi.dt_id)
-                    FROM meet_instc mi
-                    WHERE mi.rmm_id = mrur.rmm_id
-                      AND mi.meet_stat_id IN (1, 2)
-              )
-      )
-      AND ma.user_role_id <> mrur.rap_user_role_id
-) src
-ON (ma.metric_access_id = src.metric_access_id)
-WHEN MATCHED THEN
-UPDATE SET
-    ma.user_role_id = src.rap_user_role_id,
-    ma.updt_dt      = SYSTIMESTAMP,
-    ma.updt_user_id = 'SYSTEM_RECERT_JOB';
+        rr.*,
+        ROW_NUMBER() OVER (
+            PARTITION BY
+                rr.reportees_id,
+                rr.location_name,
+                rr.recert_year
+            ORDER BY
+                rr.updt_dt DESC
+        ) rn
+    FROM recert_response rr
+    WHERE rr.recert_year = :year
+)
+WHERE rn = 1
+ORDER BY user_name, location;
