@@ -1,10 +1,42 @@
 Hi Team,
 
-As communicated earlier, I will be on leave on 5th, 6th, 9th and 10th. Additionally, due to a personal emergency, I will also be unavailable on 11th and during the first half of Thursday (12th).
+As we will be on leave for the next couple of days, I wanted to share a quick status update on the User Recertification changes in both UAT and Production.
 
-I will be available from the second half of Thursday (12th) onwards.
+✅ UAT Environment
 
-Thanks for your understanding.
+- Line Manager Revoke Job is scheduled to run every 1 hour.
+- System Revoke Job is scheduled to run once daily at 10:00 AM.
+- These timings are configurable and can be changed if required.
+
+✅ Production – Database Changes
+
+- All required table and column changes have been completed.
+- DB changes are already updated in the CRM.
+
+✅ Production – Code Status
+
+- Production-ready code is available in:
+  - Testing UAT branch
+  - Testing UAT common branch
+- I have also shared the production-ready code with Prasan.
+- When Prasan raises the upcoming CRM (Friday or Monday) for another fix, our code will also be included in that release.
+
+ℹ Current Production Behavior
+
+- The scheduler-related revoke logic is currently commented in production.
+- Once we are ready to activate it in PROD, the commented lines can be uncommented.
+
+(I will paste the exact code snippet below this mail for reference.)
+
+🔍 Line Manager Specific Testing
+
+- For production validation with specific line managers, we are not enabling all line managers by default.
+- We can selectively update required line managers using the below query:
+
+(I will paste the query below this mail.)
+
+Please let me know if any timing changes are required or if further clarification is needed.
 
 Regards,
-Krishna
+R Krishna Chaitanya
+(Veda)
