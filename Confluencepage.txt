@@ -1,24 +1,10 @@
-Subject: Timezone issue in RECERT_RESPONSE timestamp causing scheduler mismatch
 Hi Team,
-We identified a timezone-related issue with timestamps being inserted into the UK Oracle database from the HK application layer.
-Currently, timestamps such as:
-ACCESS_REVOKE_DATE_BY_LINEMANAGER
-CREAT_DT / UPDT_DT
-are inserted using SYSTIMESTAMP / CURRENT_TIMESTAMP, which stores the application server’s local timezone (HK).
-Our scheduler and database server run in UK timezone, so when comparisons are done using SYSDATE, records appear as “future dated” and revocation logic is skipped.
-Recommended Fix (Standard Practice):
-Please store all timestamps in UTC using:
-Copy code
-Sql
-SYS_EXTRACT_UTC(SYSTIMESTAMP)
-or
-Copy code
-Sql
-CURRENT_TIMESTAMP AT TIME ZONE 'UTC'
-Example:
-Copy code
-Sql
-ACCESS_REVOKE_DATE_BY_LINEMANAGER = SYS_EXTRACT_UTC(SYSTIMESTAMP)
-This will ensure consistent behavior across regions and avoid date mismatch issues.
-Let us know once this change is implemented so we can validate end-to-end.
-Thanks.
+
+As shared earlier, I will be on leave on 5th, 6th, 9th, 10th and 11th. Due to a personal emergency, I will also be unavailable during the first half of Thursday (12th).
+
+I will be available from the second half of Thursday (12th) onwards.
+
+Thanks for your understanding.
+
+Regards,
+Krishna
