@@ -1,19 +1,24 @@
-Hi Ipsita,
-
-I wanted to share some honest feedback and seek clarity regarding my current situation.
-
-I was surprised to receive a "Needs Improvement" rating, especially given my continuous contributions over the past several years on the RAP project, including development, production support, critical fixes, and ensuring platform stability. I have been consistently working with a strong sense of ownership and responsibility, and I would like to understand the specific areas where my performance is considered below expectations.
-
-At the same time, I would also like to share that I have been working on the same project since around 2020/2021, and with the recent feedback and lack of visible growth or recognition, I am feeling increasingly demotivated.
-
-Given this, I would like to request a discussion on either:
-
-* Re-evaluating my performance based on my actual contributions, and/or
-* Exploring a possible release or role change to a different engagement where I can continue to add value with better alignment and growth.
-
-I am committed to delivering quality work, but I also need clarity on expectations, fair evaluation, and a sustainable path forward.
-
-Looking forward to your guidance.
-
-Regards,
-R Krishna Chaitanya
+Subject: Timezone issue in RECERT_RESPONSE timestamp causing scheduler mismatch
+Hi Team,
+We identified a timezone-related issue with timestamps being inserted into the UK Oracle database from the HK application layer.
+Currently, timestamps such as:
+ACCESS_REVOKE_DATE_BY_LINEMANAGER
+CREAT_DT / UPDT_DT
+are inserted using SYSTIMESTAMP / CURRENT_TIMESTAMP, which stores the application server’s local timezone (HK).
+Our scheduler and database server run in UK timezone, so when comparisons are done using SYSDATE, records appear as “future dated” and revocation logic is skipped.
+Recommended Fix (Standard Practice):
+Please store all timestamps in UTC using:
+Copy code
+Sql
+SYS_EXTRACT_UTC(SYSTIMESTAMP)
+or
+Copy code
+Sql
+CURRENT_TIMESTAMP AT TIME ZONE 'UTC'
+Example:
+Copy code
+Sql
+ACCESS_REVOKE_DATE_BY_LINEMANAGER = SYS_EXTRACT_UTC(SYSTIMESTAMP)
+This will ensure consistent behavior across regions and avoid date mismatch issues.
+Let us know once this change is implemented so we can validate end-to-end.
+Thanks.
