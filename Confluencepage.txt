@@ -1,73 +1,19 @@
-SELECT
-    ma.metric_access_id,
-    mrur.user_id,
-    mrur.rmm_id,
-    mrur.rap_user_role_id   AS correct_user_role_id,
-    ma.user_role_id         AS existing_user_role_id
-FROM user_tab ut
-JOIN map_rap_user_role mrur
-    ON ut.user_id = mrur.user_id
-JOIN metric_access ma
-    ON mrur.user_id = ma.user_id
-JOIN rap_metrics_details rmd
-    ON ma.metric_detail_id = rmd.metric_detail_id
-JOIN rap_rmm_group rrg
-    ON mrur.rmm_id = rrg.rmm_id
-JOIN rap_rap rap
-    ON rmd.rap_id = rap.rap_id
-WHERE mrur.is_active = '1'
-  AND mrur.user_id = 10701
-  AND rap.rap_instance_id = (
-        SELECT mo.meet_instc_id
-        FROM meet_instc mo
-        WHERE mo.rmm_id = mrur.rmm_id
-          AND mo.dt_id = (
-                SELECT MAX(mi.dt_id)
-                FROM meet_instc mi
-                JOIN meet_stat ms
-                    ON mi.meet_stat_id = ms.meet_stat_id
-                WHERE mi.rmm_id = mrur.rmm_id
-                  AND mi.meet_stat_id IN (2, 1)
-          )
-  )
-  AND rmd.metric_flag <> 'removed'
-  AND ma.user_role_id <> mrur.rap_user_role_id;
+Hi Ipsita,
 
+I wanted to share some honest feedback and seek clarity regarding my current situation.
 
+I was surprised to receive a "Needs Improvement" rating, especially given my continuous contributions over the past several years on the RAP project, including development, production support, critical fixes, and ensuring platform stability. I have been consistently working with a strong sense of ownership and responsibility, and I would like to understand the specific areas where my performance is considered below expectations.
 
-UPDATE metric_access ma
-SET ma.user_role_id = (
-        SELECT mrur.rap_user_role_id
-        FROM map_rap_user_role mrur
-        JOIN rap_metrics_details rmd
-            ON ma.metric_detail_id = rmd.metric_detail_id
-        JOIN rap_rap rap
-            ON rmd.rap_id = rap.rap_id
-        WHERE mrur.user_id = ma.user_id
-          AND mrur.is_active = '1'
-          AND rap.rap_instance_id = (
-                SELECT mo.meet_instc_id
-                FROM meet_instc mo
-                WHERE mo.rmm_id = mrur.rmm_id
-                  AND mo.dt_id = (
-                        SELECT MAX(mi.dt_id)
-                        FROM meet_instc mi
-                        JOIN meet_stat ms
-                            ON mi.meet_stat_id = ms.meet_stat_id
-                        WHERE mi.rmm_id = mrur.rmm_id
-                          AND mi.meet_stat_id IN (2, 1)
-                  )
-          )
-)
-WHERE ma.user_id = 10701
-  AND EXISTS (
-        SELECT 1
-        FROM map_rap_user_role mrur
-        WHERE mrur.user_id = ma.user_id
-          AND mrur.is_active = '1'
-          AND ma.user_role_id <> mrur.rap_user_role_id
-  );
+At the same time, I would also like to share that I have been working on the same project since around 2020/2021, and with the recent feedback and lack of visible growth or recognition, I am feeling increasingly demotivated.
 
+Given this, I would like to request a discussion on either:
 
-SELECT COUNT(*) FROM metric_access
-WHERE user_id = 10701;
+* Re-evaluating my performance based on my actual contributions, and/or
+* Exploring a possible release or role change to a different engagement where I can continue to add value with better alignment and growth.
+
+I am committed to delivering quality work, but I also need clarity on expectations, fair evaluation, and a sustainable path forward.
+
+Looking forward to your guidance.
+
+Regards,
+R Krishna Chaitanya
