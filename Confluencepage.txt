@@ -1,42 +1,22 @@
-Hi Team,
+Use this exact opening:
 
-As we will be on leave for the next couple of days, I wanted to share a quick status update on the User Recertification changes in both UAT and Production.
+Ipsita, I wanted to understand the basis for the “Needs Improvement” rating. I was genuinely surprised because over the past year I have been consistently handling development, enhancements, and multiple production issues. I’d appreciate clarity on which specific areas are considered below expectations.
 
-✅ UAT Environment
+Stop. Let her speak.
 
-- Line Manager Revoke Job is scheduled to run every 1 hour.
-- System Revoke Job is scheduled to run once daily at 10:00 AM.
-- These timings are configurable and can be changed if required.
+Could you please share specific examples where my delivery, quality, or ownership did not meet expectations?
 
-✅ Production – Database Changes
+This forces facts.
 
-- All required table and column changes have been completed.
-- DB changes are already updated in the CRM.
+Over the past year, I worked on critical fixes like the incremental data load issue, resolving date format inconsistencies, correcting missing master metric IDs, and several production defects, in parallel with enhancements and change requests. I’ve also been supporting deployments and stability activities.
 
-✅ Production – Code Status
+Based on this, I was expecting at least a “Meets Expectations” rating, so I want to understand the gap.
 
-- Production-ready code is available in:
-  - Testing UAT branch
-  - Testing UAT common branch
-- I have also shared the production-ready code with Prasan.
-- When Prasan raises the upcoming CRM (Friday or Monday) for another fix, our code will also be included in that release.
+If there are gaps, I’m open to improving. At the same time, I would like to know if this rating can be reconsidered based on my actual contributions.
 
-ℹ Current Production Behavior
 
-- The scheduler-related revoke logic is currently commented in production.
-- Once we are ready to activate it in PROD, the commented lines can be uncommented.
+Say:
 
-(I will paste the exact code snippet below this mail for reference.)
+I understand your view. However, I respectfully disagree based on my contributions. I’d like this feedback and my points to be documented, and I would also like guidance on what concrete milestones I need to meet for this rating to be revisited.
 
-🔍 Line Manager Specific Testing
-
-- For production validation with specific line managers, we are not enabling all line managers by default.
-- We can selectively update required line managers using the below query:
-
-(I will paste the query below this mail.)
-
-Please let me know if any timing changes are required or if further clarification is needed.
-
-Regards,
-R Krishna Chaitanya
-(Veda)
+This creates paper trail.
