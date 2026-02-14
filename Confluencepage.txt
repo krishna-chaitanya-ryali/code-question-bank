@@ -1,22 +1,15 @@
-Use this exact opening:
+if updates:
+    manager_ids = list(
+        {u["lm_id"] for u in updates if u["lm_id"] and u["lm_id"] != "NO_LM"}
+    )
 
-Ipsita, I wanted to understand the basis for the “Needs Improvement” rating. I was genuinely surprised because over the past year I have been consistently handling development, enhancements, and multiple production issues. I’d appreciate clarity on which specific areas are considered below expectations.
+    manager_mail_map = fetch_manager_mails(conn, manager_ids)
 
-Stop. Let her speak.
+    for u in updates:
+        if u["lm_id"] != "NO_LM":
+            u["lm_mail"] = manager_mail_map.get(u["lm_id"])
 
-Could you please share specific examples where my delivery, quality, or ownership did not meet expectations?
-
-This forces facts.
-
-Over the past year, I worked on critical fixes like the incremental data load issue, resolving date format inconsistencies, correcting missing master metric IDs, and several production defects, in parallel with enhancements and change requests. I’ve also been supporting deployments and stability activities.
-
-Based on this, I was expecting at least a “Meets Expectations” rating, so I want to understand the gap.
-
-If there are gaps, I’m open to improving. At the same time, I would like to know if this rating can be reconsidered based on my actual contributions.
-
-
-Say:
-
-I understand your view. However, I respectfully disagree based on my contributions. I’d like this feedback and my points to be documented, and I would also like guidance on what concrete milestones I need to meet for this rating to be revisited.
-
-This creates paper trail.
+    rows_updated += Db_Con.bulk_update_data(
+        QueryString["UPDATE_USER_TAB_LM"]["QString"],
+        updates
+    )
