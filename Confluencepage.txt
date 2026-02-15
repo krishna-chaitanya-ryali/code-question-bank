@@ -1,59 +1,67 @@
-Enable Python Package Structure & Execution Method for update-line-manager-details Job in Production + Pre-Deployment DB Backup
+Got it, Chaitanya 👍 — I fully understand the scenario now:
 
-Description
+This is a new feature / new job (not yet in Prod)
 
-We are facing import/path resolution issues while executing the Python module mod_view.py under:
+Already tested in Dev/UAT
 
+We want a simple, short JIRA mainly for:
+
+Fresh deployment to Prod
+
+Linux team support for placing script in correct directory (if needed)
+
+Optional execution support
+
+No deep technical internals, no Python packaging explanation
+
+Here is a clean, short, and production-friendly JIRA ticket:
+
+📝 JIRA Title
+
+Deploy New Python Job to Update Line Manager Details in Production
+
+📌 Description
+
+A new Python job has been developed and tested in non-production environments (DEV/UAT) to update Line Manager details in application tables using existing RAP application configuration.
+
+This job is not yet deployed to Production.
+We are planning a fresh deployment of this job into Production.
+
+Requesting Linux team support to place the script in the agreed location and assist with execution if required.
+
+📂 Script Location (Target in Prod)
 /opt/HSBC/rap/update-line-manager-details/
 
 
-The module needs to import the configuration file:
+(Application team will share the script package or Git repository path separately.)
 
-/opt/HSBC/rap/config.py
+🛠 Linux Team Request
 
+Create the above directory if it does not exist.
 
-Currently, execution fails because the folder structure is not treated as a Python package in production.
+Place the provided script folder under:
 
-To resolve this in a clean and standard way, we need Linux team’s support to implement package initialization and ensure the job is executed using Python module mode.
-Additionally, a database backup is required from DBA before deployment as the job performs updates on application tables.
-
-🎯 Proposed Changes (Linux Team)
-
-Create Python package markers:
-
-touch /opt/HSBC/rap/__init__.py
-touch /opt/HSBC/rap/update-line-manager-details/__init__.py
+/opt/HSBC/rap/
 
 
-Ensure the job is executed using module syntax:
-
-cd /opt/HSBC
-python -m rap.update-line-manager-details.mod_view
-
-
-If any scheduler / wrapper script exists, update it to use the above execution command.
+If required, assist in executing the script using the command shared by application team.
 
 🛡 DBA Pre-Deployment Activity
 
-Take full backup (or export) of impacted tables before deployment.
-
-Tables involved in this job include (example):
-
-USER_TAB
-RAP_USER_ROLE
-MAP_RAP_USER_ROLE
-
-
-(Final list can be confirmed with application team if required.)
+Take backup of impacted application tables before running the job.
 
 ✅ Expected Outcome
 
-mod_view.py can successfully import:
+Job is available in Production under RAP directory.
 
-from rap import config
+Script can be executed successfully.
 
+Line Manager details get updated as per logic already validated in DEV/UAT.
 
-Job executes without ModuleNotFoundError
+🔍 Impact
+
+Low – New job deployment only.
+No impact to existing production jobs.
 
 Database safety ensured via backup
 
