@@ -1,15 +1,256 @@
-if updates:
-    manager_ids = list(
-        {u["lm_id"] for u in updates if u["lm_id"] and u["lm_id"] != "NO_LM"}
-    )
+Enable Python Package Structure & Execution Method for update-line-manager-details Job in Production + Pre-Deployment DB Backup
 
-    manager_mail_map = fetch_manager_mails(conn, manager_ids)
+Description
 
-    for u in updates:
-        if u["lm_id"] != "NO_LM":
-            u["lm_mail"] = manager_mail_map.get(u["lm_id"])
+We are facing import/path resolution issues while executing the Python module mod_view.py under:
 
-    rows_updated += Db_Con.bulk_update_data(
-        QueryString["UPDATE_USER_TAB_LM"]["QString"],
-        updates
-    )
+/opt/HSBC/rap/update-line-manager-details/
+
+
+The module needs to import the configuration file:
+
+/opt/HSBC/rap/config.py
+
+
+Currently, execution fails because the folder structure is not treated as a Python package in production.
+
+To resolve this in a clean and standard way, we need Linux team’s support to implement package initialization and ensure the job is executed using Python module mode.
+Additionally, a database backup is required from DBA before deployment as the job performs updates on application tables.
+
+🎯 Proposed Changes (Linux Team)
+
+Create Python package markers:
+
+touch /opt/HSBC/rap/__init__.py
+touch /opt/HSBC/rap/update-line-manager-details/__init__.py
+
+
+Ensure the job is executed using module syntax:
+
+cd /opt/HSBC
+python -m rap.update-line-manager-details.mod_view
+
+
+If any scheduler / wrapper script exists, update it to use the above execution command.
+
+🛡 DBA Pre-Deployment Activity
+
+Take full backup (or export) of impacted tables before deployment.
+
+Tables involved in this job include (example):
+
+USER_TAB
+RAP_USER_ROLE
+MAP_RAP_USER_ROLE
+
+
+(Final list can be confirmed with application team if required.)
+
+✅ Expected Outcome
+
+mod_view.py can successfully import:
+
+from rap import config
+
+
+Job executes without ModuleNotFoundError
+
+Database safety ensured via backup
+
+🔍 Impact
+
+Low risk – only adds empty __init__.py files and adjusts execution method.
+No application logic changes.
+DB backup provides rollback safety.
+
+🧪 Validation Steps
+
+Linux team runs:
+
+cd /opt/HSBC
+python -m rap.update-line-manager-details.mod_view
+
+
+Confirm job starts without import errors.
+
+Verify logs show successful processing.
+
+DBA confirms backup completion.
+
+================================================================
+
+JIRA Ticket – Production Release
+
+Summary
+Production Release – User Recertification Enhancements & Line Manager Details Population
+
+Issue Type
+Change / Release
+
+Description
+We are planning a production release to deploy enhancements related to User Recertification and Line Manager (LM) details population. The release includes database schema changes, application code updates for populating and enriching line manager details using Active Directory, and deployment of validated code through DR and PROD pipelines.
+
+This release ensures accurate line manager mapping, mail ID enrichment, and supports upcoming user recertification functionality.
+
+Scope of Release
+
+Database schema changes for user recertification and LM related fields
+
+Application code changes for LM population using LDAP
+
+Static code updates already validated in UAT
+
+DR and PROD pipeline execution
+
+Environments
+UAT → DR → PROD
+
+Planned Release Date
+Tuesday (mention date)
+
+Risk Level
+Low
+
+Rollback Plan
+
+Revert DB schema changes (drop added columns if required)
+
+Roll back application code to previous stable version
+
+Stop scheduler jobs if enabled
+
+Validation / Testing
+
+UAT functional testing completed
+
+LM details verified in USER_TAB
+
+No regression observed
+
+Dependencies
+
+Approved Change Requests (CRs)
+
+Pipeline availability
+
+✅ CR-1 : DB Changes + Application Static Code
+
+Title
+Implement DB Schema Changes and Static Code Updates for Line Manager Population & User Recertification
+
+Reason for Change
+To support user recertification and ensure accurate line manager details (ID, name, mail) are populated and maintained in the application using Active Directory lookups.
+
+Description
+This change introduces new database columns and static application code updates to populate and maintain line manager details in USER_TAB. The changes are required for upcoming user recertification functionality and reporting.
+
+Components Impacted
+
+Database schema
+
+Application server (static python code)
+
+List of Changes
+
+Database
+
+Add new columns in USER_TAB (LM_ID, LM_NAME, LM_MAIL) (as applicable)
+
+Any additional recertification related columns
+
+Application
+
+Add new LM population job
+
+LDAP lookup integration
+
+Bulk update logic
+
+Logging improvements
+
+Implementation Plan
+
+Apply DB DDL scripts
+
+Deploy updated application code
+
+Restart application services
+
+Validate data population
+
+Backout Plan
+
+Revert DB DDL
+
+Rollback code deployment
+
+Restart services
+
+Verification Steps
+
+Verify columns exist
+
+Run LM populate job
+
+Validate sample users
+
+Check logs
+
+Business Impact
+Ensures correct line manager mapping and enables user recertification process.
+
+Customer Impact
+None (backend change)
+
+Risk
+Low
+
+✅ CR-2 : DR & PROD Pipeline Execution
+
+Title
+Execute DR and PROD Pipelines for User Recertification and LM Population Enhancements
+
+Reason for Change
+To deploy tested code and DB changes into DR and PROD environments.
+
+Description
+Run deployment pipelines for DR and PROD to release the new enhancements related to LM population and user recertification.
+
+Components Impacted
+
+CI/CD pipelines
+
+Application servers
+
+Implementation Plan
+
+Trigger DR pipeline
+
+Perform smoke testing
+
+Trigger PROD pipeline
+
+Post deployment verification
+
+Backout Plan
+
+Rollback pipeline to previous artifact
+
+Restart services
+
+Verification Steps
+
+Application up and running
+
+Logs show no errors
+
+Sample LM data validated
+
+Business Impact
+Supports compliance and access governance.
+
+Customer Impact
+None
+
+Risk
+Low
