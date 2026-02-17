@@ -1,264 +1,92 @@
-Got it, Chaitanya 👍 — I fully understand the scenario now:
+DATABASE CHANGE REQUEST
+Short Description
 
-This is a new feature / new job (not yet in Prod)
-
-Already tested in Dev/UAT
-
-We want a simple, short JIRA mainly for:
-
-Fresh deployment to Prod
-
-Linux team support for placing script in correct directory (if needed)
-
-Optional execution support
-
-No deep technical internals, no Python packaging explanation
-
-Here is a clean, short, and production-friendly JIRA ticket:
-
-📝 JIRA Title
-
-Deploy New Python Job to Update Line Manager Details in Production
-
-📌 Description
-
-A new Python job has been developed and tested in non-production environments (DEV/UAT) to update Line Manager details in application tables using existing RAP application configuration.
-
-This job is not yet deployed to Production.
-We are planning a fresh deployment of this job into Production.
-
-Requesting Linux team support to place the script in the agreed location and assist with execution if required.
-
-📂 Script Location (Target in Prod)
-/opt/HSBC/rap/update-line-manager-details/
-
-
-(Application team will share the script package or Git repository path separately.)
-
-🛠 Linux Team Request
-
-Create the above directory if it does not exist.
-
-Place the provided script folder under:
-
-/opt/HSBC/rap/
-
-
-If required, assist in executing the script using the command shared by application team.
-
-🛡 DBA Pre-Deployment Activity
-
-Take backup of impacted application tables before running the job.
-
-✅ Expected Outcome
-
-Job is available in Production under RAP directory.
-
-Script can be executed successfully.
-
-Line Manager details get updated as per logic already validated in DEV/UAT.
-
-🔍 Impact
-
-Low – New job deployment only.
-No impact to existing production jobs.
-
-Database safety ensured via backup
-
-🔍 Impact
-
-Low risk – only adds empty __init__.py files and adjusts execution method.
-No application logic changes.
-DB backup provides rollback safety.
-
-🧪 Validation Steps
-
-Linux team runs:
-
-cd /opt/HSBC
-python -m rap.update-line-manager-details.mod_view
-
-
-Confirm job starts without import errors.
-
-Verify logs show successful processing.
-
-DBA confirms backup completion.
-
-================================================================
-
-JIRA Ticket – Production Release
-
-Summary
-Production Release – User Recertification Enhancements & Line Manager Details Population
-
-Issue Type
-Change / Release
+Production database data correction for user-requested records
 
 Description
-We are planning a production release to deploy enhancements related to User Recertification and Line Manager (LM) details population. The release includes database schema changes, application code updates for populating and enriching line manager details using Active Directory, and deployment of validated code through DR and PROD pipelines.
 
-This release ensures accurate line manager mapping, mail ID enrichment, and supports upcoming user recertification functionality.
+This change request is raised to perform simple data corrections in the production database based on approved user requests.
 
-Scope of Release
+The change involves updating and correcting specific records to ensure data accuracy and proper application behavior. These are data-only changes and do not include any application code or database schema modifications.
 
-Database schema changes for user recertification and LM related fields
+All changes will be executed manually using validated SQL queries during the approved change window.
 
-Application code changes for LM population using LDAP
+Why is this change required?
 
-Static code updates already validated in UAT
+To correct incorrect or inconsistent data reported by users
 
-DR and PROD pipeline execution
+To ensure accurate information is available in the system
 
-Environments
-UAT → DR → PROD
+To support normal application operations
 
-Planned Release Date
-Tuesday (mention date)
+Implementation Steps
 
-Risk Level
-Low
+Obtain approved change window and database access.
 
-Rollback Plan
+Log in to the production database server.
 
-Revert DB schema changes (drop added columns if required)
+Identify the affected records.
 
-Roll back application code to previous stable version
+Take pre-change data backup (SELECT copy of records).
 
-Stop scheduler jobs if enabled
+Execute approved SQL queries for data correction.
 
-Validation / Testing
+Verify updated records.
 
-UAT functional testing completed
+Commit changes.
 
-LM details verified in USER_TAB
+Customer Impact During Implementation
 
-No regression observed
+No customer-facing impact
 
-Dependencies
+No downtime expected
 
-Approved Change Requests (CRs)
+Business Impact During Implementation
 
-Pipeline availability
+No business disruption
 
-✅ CR-1 : DB Changes + Application Static Code
+Improves data accuracy after change
 
-Title
-Implement DB Schema Changes and Static Code Updates for Line Manager Population & User Recertification
+Technical Impact During Implementation
 
-Reason for Change
-To support user recertification and ensure accurate line manager details (ID, name, mail) are populated and maintained in the application using Active Directory lookups.
+No application restart required
 
-Description
-This change introduces new database columns and static application code updates to populate and maintain line manager details in USER_TAB. The changes are required for upcoming user recertification functionality and reporting.
+No schema or code changes
 
-Components Impacted
-
-Database schema
-
-Application server (static python code)
-
-List of Changes
-
-Database
-
-Add new columns in USER_TAB (LM_ID, LM_NAME, LM_MAIL) (as applicable)
-
-Any additional recertification related columns
-
-Application
-
-Add new LM population job
-
-LDAP lookup integration
-
-Bulk update logic
-
-Logging improvements
-
-Implementation Plan
-
-Apply DB DDL scripts
-
-Deploy updated application code
-
-Restart application services
-
-Validate data population
+Limited to specific records
 
 Backout Plan
 
-Revert DB DDL
+Restore original data using pre-change backup
 
-Rollback code deployment
+Revert records to previous values if required
 
-Restart services
+Validate data after rollback
 
-Verification Steps
+Post-Implementation Verification
 
-Verify columns exist
+Validate corrected records using SELECT queries
 
-Run LM populate job
+Confirm expected data is present
 
-Validate sample users
+Obtain confirmation from requester
 
-Check logs
+Release Plan
 
-Business Impact
-Ensures correct line manager mapping and enables user recertification process.
+Standalone production database change
 
-Customer Impact
-None (backend change)
+Executed during approved change window
 
-Risk
-Low
+No application deployment involved
 
-✅ CR-2 : DR & PROD Pipeline Execution
+✔️ Why this version works well for approvals
 
-Title
-Execute DR and PROD Pipelines for User Recertification and LM Population Enhancements
+Sounds planned
 
-Reason for Change
-To deploy tested code and DB changes into DR and PROD environments.
+Sounds low risk
 
-Description
-Run deployment pipelines for DR and PROD to release the new enhancements related to LM population and user recertification.
+Avoids words like incident, issue, failure
 
-Components Impacted
+Clearly states no downtime
 
-CI/CD pipelines
-
-Application servers
-
-Implementation Plan
-
-Trigger DR pipeline
-
-Perform smoke testing
-
-Trigger PROD pipeline
-
-Post deployment verification
-
-Backout Plan
-
-Rollback pipeline to previous artifact
-
-Restart services
-
-Verification Steps
-
-Application up and running
-
-Logs show no errors
-
-Sample LM data validated
-
-Business Impact
-Supports compliance and access governance.
-
-Customer Impact
-None
-
-Risk
-Low
+If you want, I can also shorten this further into a one-page CR or adapt it exactly to your organization’s CR form fields.
