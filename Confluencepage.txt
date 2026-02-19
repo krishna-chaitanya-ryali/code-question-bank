@@ -1,4 +1,7 @@
-We checked and the user is still showing with HBU UK pack access in the database. We do not see any recent removal request raised via the UI.
-Could you please confirm how the user was removed from RAPDB? Was a request submitted through the application to remove the user or the pack access?
-Please note that direct DB removal is not supported — access must be removed through the UI for it to reflect correctly in the security report.
-Kindly confirm so we can proceed further.
+Bishmoy,
+I reviewed the email thread and could not find any specific error message, screenshot, or confirmation on which ERR link the user is accessing to raise WRAP access. The Confluence link shared contains multiple scenarios.
+Before we classify this as an access issue, could you please confirm with the user:
+The exact ERR URL being accessed
+Whether the “Risk Appetite Profile Access Request” option is visible under Access Request
+A screenshot if the option is not visible
+If the user confirms they are using the correct ERR link and still cannot see the option, we can then treat this as an access issue and proceed further.
