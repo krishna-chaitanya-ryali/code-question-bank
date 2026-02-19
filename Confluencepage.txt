@@ -1,7 +1,13 @@
-Bishmoy,
-I reviewed the email thread and could not find any specific error message, screenshot, or confirmation on which ERR link the user is accessing to raise WRAP access. The Confluence link shared contains multiple scenarios.
-Before we classify this as an access issue, could you please confirm with the user:
-The exact ERR URL being accessed
-Whether the “Risk Appetite Profile Access Request” option is visible under Access Request
-A screenshot if the option is not visible
-If the user confirms they are using the correct ERR link and still cannot see the option, we can then treat this as an access issue and proceed further.
+Hi YUAN,
+Thanks for your email.
+To help us investigate this further, could you please raise a service ticket and include the below details:
+The exact link/URL you are trying to access
+Pack name(s) you are attempting to view
+Type of access you currently have
+From when you have been facing this issue
+Whether you are a new user to the RAS system or previously had access
+Screenshot of any error message, if displayed
+If no error is shown, please share a screenshot of the page where you are unable to view the required information
+Once the ticket is raised with the above details, one of our team members will contact you and assist further.
+Thanks,
+Krishna
