@@ -1,6 +1,41 @@
-Just wanted to raise one point on the user recertification completion checkbox. Ashok mentioned it will be visible only to capturers.
-
-Since recertification is done at the user level, I feel it would be better to show the completion indicator to all users (capturer, inputter, viewer). This way everyone is aware that annual user recertification happens and that line managers perform it, with access revoked if required.
-
-Sharing this as a suggestion for consideration.
-What do you think, Sandeep?
+Sub-task Title
+Add Transverse Risk Flag in Risk Taxonomy Master & Expose via APIs
+Description
+Introduce a backend-driven mechanism to identify Transverse Risks at L1 taxonomy level without introducing new UI fields. Add a new column IS_TRANSVERSE in WRAP_APPLICABLE_RISK_TYPES, mark Strategic Risk as transverse, and expose this flag through existing select queries and APIs used by Add/Edit Metric screens.
+Scope
+Add IS_TRANSVERSE column in WRAP_APPLICABLE_RISK_TYPES
+Backfill Strategic Risk row with IS_TRANSVERSE = 'Y'
+Update select queries to fetch this column along with risk type ID
+Update API response models to include transverse flag
+Ensure Add/Edit Metric popup receives and displays transverse indication
+Out of Scope
+No UI structural changes
+No new input fields / checkboxes
+No changes in metric tables
+✅ Acceptance Criteria
+WRAP_APPLICABLE_RISK_TYPES contains column IS_TRANSVERSE
+Strategic Risk L1 taxonomy is marked as transverse
+API returns transverse flag with risk taxonomy data
+Add/Edit Metric popup shows informational message for transverse risks
+Existing metrics reflect transverse status automatically
+No regression in existing taxonomy selection
+🗂️ Technical Implementation Notes
+DDL
+SQL
+Copy code
+ALTER TABLE WRAP_APPLICABLE_RISK_TYPES
+ADD IS_TRANSVERSE CHAR(1) DEFAULT 'N';
+Backfill
+SQL
+Copy code
+UPDATE WRAP_APPLICABLE_RISK_TYPES
+SET IS_TRANSVERSE = 'Y'
+WHERE RISK_TYPE_ID = <Strategic_Risk_ID>;
+Query Enhancement
+SQL
+Copy code
+SELECT
+   RISK_TYPE_ID,
+   RISK_NAME,
+   IS_TRANSVERSE
+FROM WRAP_APPLICABLE_RISK_TYPES;
