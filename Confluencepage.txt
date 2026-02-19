@@ -1,0 +1,6 @@
+Just wanted to raise one point on the user recertification completion checkbox. Ashok mentioned it will be visible only to capturers.
+
+Since recertification is done at the user level, I feel it would be better to show the completion indicator to all users (capturer, inputter, viewer). This way everyone is aware that annual user recertification happens and that line managers perform it, with access revoked if required.
+
+Sharing this as a suggestion for consideration.
+What do you think, Sandeep?
