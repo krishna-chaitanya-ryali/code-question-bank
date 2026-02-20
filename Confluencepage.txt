@@ -17,3 +17,26 @@ SELECT CASE
          ELSE 'Y'
        END AS SYSTEM_RECERT_COMPLETED
 FROM DUAL;
+
+final query 
+
+SELECT CASE
+         WHEN NOT EXISTS (
+              SELECT 1
+              FROM RECERTIFICATION_EMAIL_LIST
+              WHERE MAIL_SENT_YEAR = :year
+         )
+         THEN 'N'   -- No recert started
+
+         WHEN EXISTS (
+              SELECT 1
+              FROM RECERTIFICATION_EMAIL_LIST
+              WHERE MAIL_SENT_YEAR = :year
+                AND MAIL_SENT_COUNT = 3
+                AND NVL(SYSTEM_REVOKE_DONE_IND,'N') = 'N'
+         )
+         THEN 'N'   -- Recert started but revoke not done
+
+         ELSE 'Y'   -- Revoke completed
+       END AS SYSTEM_RECERT_COMPLETED
+FROM DUAL;
