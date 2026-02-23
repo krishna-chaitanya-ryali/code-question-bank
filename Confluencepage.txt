@@ -1,42 +1,8 @@
 UPDATE RECERTIFICATION_EMAIL_LIST
 SET SYSTEM_REVOKE_DONE_IND = 'Y',
-    SYSTEM_REVOKE_DONE_DT  = SYSTIMESTAMP
-WHERE MAIL_SENT_YEAR = :year
-  AND LINEMANAGER_ID = :lm_id;
-
-
-SELECT CASE
-         WHEN EXISTS (
-           SELECT 1
-           FROM RECERTIFICATION_EMAIL_LIST
-           WHERE MAIL_SENT_YEAR = :year
-             AND MAIL_SENT_COUNT = 3
-             AND NVL(SYSTEM_REVOKE_DONE_IND,'N') = 'N'
-         )
-         THEN 'N'
-         ELSE 'Y'
-       END AS SYSTEM_RECERT_COMPLETED
-FROM DUAL;
-
-final query 
-
-SELECT CASE
-         WHEN NOT EXISTS (
-              SELECT 1
-              FROM RECERTIFICATION_EMAIL_LIST
-              WHERE MAIL_SENT_YEAR = :year
-         )
-         THEN 'N'   -- No recert started
-
-         WHEN EXISTS (
-              SELECT 1
-              FROM RECERTIFICATION_EMAIL_LIST
-              WHERE MAIL_SENT_YEAR = :year
-                AND MAIL_SENT_COUNT = 3
-                AND NVL(SYSTEM_REVOKE_DONE_IND,'N') = 'N'
-         )
-         THEN 'N'   -- Recert started but revoke not done
-
-         ELSE 'Y'   -- Revoke completed
-       END AS SYSTEM_RECERT_COMPLETED
-FROM DUAL;
+    SYSTEM_REVOKE_DONE_DT = SYSTIMESTAMP,
+    UPDT_DT = SYSTIMESTAMP,
+    UPDT_USER_ID = 'SYSTEM_REVOKE_JOB'
+WHERE MAIL_SENT_YEAR = :recert_year
+  AND MAIL_SENT_COUNT = 3
+  AND NVL(SYSTEM_REVOKE_DONE_IND,'N') = 'N';
