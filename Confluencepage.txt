@@ -1,8 +1,32 @@
-UPDATE RECERTIFICATION_EMAIL_LIST
-SET SYSTEM_REVOKE_DONE_IND = 'Y',
-    SYSTEM_REVOKE_DONE_DT = SYSTIMESTAMP,
-    UPDT_DT = SYSTIMESTAMP,
-    UPDT_USER_ID = 'SYSTEM_REVOKE_JOB'
-WHERE MAIL_SENT_YEAR = :recert_year
-  AND MAIL_SENT_COUNT = 3
-  AND NVL(SYSTEM_REVOKE_DONE_IND,'N') = 'N';
+Hi Sandeep,
+
+Good evening.
+
+As discussed earlier today, we are planning to perform a production dry run for the User Recertification enhancements on the 27th of this week. Ahead of raising the change requests and finalizing the deployment plan, we would need a few inputs from your side to proceed further.
+
+Could you please help us with the following details:
+
+1. Production Users for Dry Run
+   
+   - List of production user(s) whose access needs to be revoked as part of the dry run.
+   - Corresponding Line Manager details for each of those users.
+
+2. Reminder Email Schedule (ERR Team – Ashok)
+   
+   - When should the first reminder email be triggered?
+   - Time gap between first & second reminder, and second & third reminder.
+
+3. Scheduler Frequency for LM Actions
+   
+   - Preferred frequency for scheduler execution to process Line Manager responses (e.g., hourly, every 30 minutes, etc.).
+
+4. Final System Revoke Date & Time
+   
+   - Date and time when the final system revoke should be executed after completion of LM testing.
+
+We would ideally need the above details by tomorrow so that we can configure the database changes and application settings at least one day prior to the planned deployment.
+
+Please let us know if you need any additional information from our side.
+
+Thanks & Regards,
+R Krishna Chaitanya
