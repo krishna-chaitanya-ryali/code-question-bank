@@ -82,3 +82,76 @@ Backend services will be restarted (if required).
 Jenkins pipeline execution.
 
 No downtime expected.
+
+=============================================
+
+
+Jira Ticket – Description
+
+Title
+User Recertification – Production Dry Run Preparation & Execution
+
+Description
+This ticket tracks the activities required to perform a controlled production dry run of the User Recertification feature. The objective of this dry run is to validate end-to-end user recertification flow, including line manager-driven revoke, system revoke, and UI indicator behavior, using a limited set of production users.
+
+The scope includes backend enhancements, scheduler configuration, database readiness, and coordination with business stakeholders for test user and line manager inputs.
+
+Key features covered in this dry run:
+
+Line Manager details (ID, Name, Mail) population in USER_TAB using AD integration.
+
+Line Manager revoke processing via scheduler.
+
+System revoke processing after final reminder conditions.
+
+UI checkbox to indicate completion of user recertification for a year.
+
+Controlled execution on a small set of production users.
+
+This dry run will help confirm stability and correctness before enabling the solution for wider production usage.
+
+✅ Jira Comments / Progress Update
+
+Progress Update – [Date]
+
+Completed backend development for User Recertification logic.
+
+Implemented Line Manager details population (LM ID, LM Name, LM Mail) in USER_TAB using AD lookup with dual resolution (Employee ID / PSID).
+
+Implemented scheduler jobs:
+
+Line Manager revoke job (hourly).
+
+System revoke job (once per day – configurable).
+
+Implemented logic to update SYSTEM_REVOKE_DONE_IND when system revoke completes.
+
+Implemented UI checkbox logic driven from database flag to indicate recertification completion.
+
+Verified functionality in UAT with manual and scheduler-based testing.
+
+Walked through solution with Sandeep and demonstrated checkbox and revoke behavior.
+
+Sent confirmation email to business requesting:
+
+Production test users & line managers
+
+Reminder email schedule
+
+Scheduler frequency
+
+Final system revoke date & time
+
+Next Steps
+
+Receive inputs from business (Sandeep).
+
+Raise Change Requests for:
+
+DB backup & schema readiness
+
+Jenkins pipeline execution
+
+Perform production dry run on selected users.
+
+Capture results and confirm sign-off.
