@@ -1,32 +1,84 @@
-Hi Sandeep,
+Change Request – Production Dry Run (User Recertification Enhancements)
+Short Description
 
-Good evening.
+Production Dry Run – Deploy User Recertification Enhancements & Line Manager Population Logic via Jenkins Pipeline
 
-As discussed earlier today, we are planning to perform a production dry run for the User Recertification enhancements on the 27th of this week. Ahead of raising the change requests and finalizing the deployment plan, we would need a few inputs from your side to proceed further.
+Description
 
-Could you please help us with the following details:
+This change request is to deploy the latest backend enhancements related to User Recertification and Line Manager (LM) details population into the Production environment for a controlled dry run.
 
-1. Production Users for Dry Run
-   
-   - List of production user(s) whose access needs to be revoked as part of the dry run.
-   - Corresponding Line Manager details for each of those users.
+The changes include:
 
-2. Reminder Email Schedule (ERR Team – Ashok)
-   
-   - When should the first reminder email be triggered?
-   - Time gap between first & second reminder, and second & third reminder.
+Backend logic to populate and update Line Manager ID, Name, and Mail ID in USER_TAB using Active Directory.
 
-3. Scheduler Frequency for LM Actions
-   
-   - Preferred frequency for scheduler execution to process Line Manager responses (e.g., hourly, every 30 minutes, etc.).
+Backend logic to support user recertification workflow, including system revoke and UI checkbox indication.
 
-4. Final System Revoke Date & Time
-   
-   - Date and time when the final system revoke should be executed after completion of LM testing.
+Configuration updates and deployment through Jenkins pipelines.
 
-We would ideally need the above details by tomorrow so that we can configure the database changes and application settings at least one day prior to the planned deployment.
+Database backup prior to deployment.
 
-Please let us know if you need any additional information from our side.
+Purpose of Change / Why is this Change Required?
 
-Thanks & Regards,
-R Krishna Chaitanya
+To enable a controlled production dry run of the User Recertification feature and ensure accurate Line Manager information is available in the system. This will support access governance, compliance requirements, and validation of recertification behavior before full-scale rollout.
+
+Scope of Change
+
+Application backend code deployment via Jenkins pipeline
+
+Scheduler-related configuration (as per approved logic)
+
+No UI breaking changes
+
+No data migration (only data population/updates)
+
+Implementation Plan
+
+Obtain DBA confirmation and perform full database backup.
+
+Trigger Jenkins pipeline for production deployment.
+
+Deploy updated backend code.
+
+Restart application services (if required).
+
+Validate application health.
+
+Execute production dry run for selected users and line managers.
+
+Backout / Rollback Plan
+
+Rollback application code using previous stable Jenkins artifact.
+
+Restart application services.
+
+Restore database from backup if required.
+
+Post-Implementation Verification Plan
+
+Verify application is up and accessible.
+
+Verify Line Manager details are populated in USER_TAB.
+
+Verify user recertification checkbox visibility.
+
+Validate system revoke and LM revoke functionality for test users.
+
+Check logs for errors.
+
+Business Impact
+
+Positive impact – Enables compliance-driven user recertification and access governance.
+
+No negative business impact expected.
+
+Customer Impact
+
+None. Changes are backend-only and executed as controlled dry run.
+
+Technical Impact
+
+Backend services will be restarted (if required).
+
+Jenkins pipeline execution.
+
+No downtime expected.
