@@ -1,157 +1,16 @@
-Change Request – Production Dry Run (User Recertification Enhancements)
-Short Description
+Hi Team,
 
-Production Dry Run – Deploy User Recertification Enhancements & Line Manager Population Logic via Jenkins Pipeline
+Good morning.
 
-Description
+We are planning to perform a production dry run release for the User Recertification enhancements on 27th.
 
-This change request is to deploy the latest backend enhancements related to User Recertification and Line Manager (LM) details population into the Production environment for a controlled dry run.
+As part of the standard deployment procedure, we request a full database backup to be taken prior to executing the production deployment activities.
 
-The changes include:
+Kindly confirm the availability to take the backup before the deployment window begins. We will coordinate the exact time accordingly.
 
-Backend logic to populate and update Line Manager ID, Name, and Mail ID in USER_TAB using Active Directory.
+Although the system revoke and reminder triggers are scheduled for early March, the application logic changes are being deployed on 27th. Hence, we would like to ensure a backup is available before proceeding with the release.
 
-Backend logic to support user recertification workflow, including system revoke and UI checkbox indication.
+Please let us know if any additional details are required from our end.
 
-Configuration updates and deployment through Jenkins pipelines.
-
-Database backup prior to deployment.
-
-Purpose of Change / Why is this Change Required?
-
-To enable a controlled production dry run of the User Recertification feature and ensure accurate Line Manager information is available in the system. This will support access governance, compliance requirements, and validation of recertification behavior before full-scale rollout.
-
-Scope of Change
-
-Application backend code deployment via Jenkins pipeline
-
-Scheduler-related configuration (as per approved logic)
-
-No UI breaking changes
-
-No data migration (only data population/updates)
-
-Implementation Plan
-
-Obtain DBA confirmation and perform full database backup.
-
-Trigger Jenkins pipeline for production deployment.
-
-Deploy updated backend code.
-
-Restart application services (if required).
-
-Validate application health.
-
-Execute production dry run for selected users and line managers.
-
-Backout / Rollback Plan
-
-Rollback application code using previous stable Jenkins artifact.
-
-Restart application services.
-
-Restore database from backup if required.
-
-Post-Implementation Verification Plan
-
-Verify application is up and accessible.
-
-Verify Line Manager details are populated in USER_TAB.
-
-Verify user recertification checkbox visibility.
-
-Validate system revoke and LM revoke functionality for test users.
-
-Check logs for errors.
-
-Business Impact
-
-Positive impact – Enables compliance-driven user recertification and access governance.
-
-No negative business impact expected.
-
-Customer Impact
-
-None. Changes are backend-only and executed as controlled dry run.
-
-Technical Impact
-
-Backend services will be restarted (if required).
-
-Jenkins pipeline execution.
-
-No downtime expected.
-
-=============================================
-
-
-Jira Ticket – Description
-
-Title
-User Recertification – Production Dry Run Preparation & Execution
-
-Description
-This ticket tracks the activities required to perform a controlled production dry run of the User Recertification feature. The objective of this dry run is to validate end-to-end user recertification flow, including line manager-driven revoke, system revoke, and UI indicator behavior, using a limited set of production users.
-
-The scope includes backend enhancements, scheduler configuration, database readiness, and coordination with business stakeholders for test user and line manager inputs.
-
-Key features covered in this dry run:
-
-Line Manager details (ID, Name, Mail) population in USER_TAB using AD integration.
-
-Line Manager revoke processing via scheduler.
-
-System revoke processing after final reminder conditions.
-
-UI checkbox to indicate completion of user recertification for a year.
-
-Controlled execution on a small set of production users.
-
-This dry run will help confirm stability and correctness before enabling the solution for wider production usage.
-
-✅ Jira Comments / Progress Update
-
-Progress Update – [Date]
-
-Completed backend development for User Recertification logic.
-
-Implemented Line Manager details population (LM ID, LM Name, LM Mail) in USER_TAB using AD lookup with dual resolution (Employee ID / PSID).
-
-Implemented scheduler jobs:
-
-Line Manager revoke job (hourly).
-
-System revoke job (once per day – configurable).
-
-Implemented logic to update SYSTEM_REVOKE_DONE_IND when system revoke completes.
-
-Implemented UI checkbox logic driven from database flag to indicate recertification completion.
-
-Verified functionality in UAT with manual and scheduler-based testing.
-
-Walked through solution with Sandeep and demonstrated checkbox and revoke behavior.
-
-Sent confirmation email to business requesting:
-
-Production test users & line managers
-
-Reminder email schedule
-
-Scheduler frequency
-
-Final system revoke date & time
-
-Next Steps
-
-Receive inputs from business (Sandeep).
-
-Raise Change Requests for:
-
-DB backup & schema readiness
-
-Jenkins pipeline execution
-
-Perform production dry run on selected users.
-
-Capture results and confirm sign-off.
+Thanks & Regards,
+R Krishna Chaitanya
