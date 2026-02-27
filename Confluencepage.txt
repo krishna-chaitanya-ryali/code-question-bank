@@ -1,17 +1,7 @@
-Hi All,
-
-This is to inform you that we will be performing Production Trial Run 2 deployment today at [mention time].
-
-Two approved Change Requests have been raised for this activity:
-
-- Database changes
-- Application deployment via pipeline
-
-A database backup will be taken prior to execution as per standard procedure.
-
-No downtime is expected during this activity.
-
-This is for your information.
-
-Thanks & Regards,
-R Krishna Chaitanya
+As part of User Recertification – Production Dry Run Phase 2, the planned changes have been successfully deployed to Production.
+User Recertification changes deployed
+ST changes deployed
+BCP-related changes deployed
+All database activities (including backup and script execution) completed as per plan
+All applications are up and running, and initial validations look good.
+Please let us know if you observe any issues.
