@@ -1,67 +1,17 @@
-Change Request – Database Changes (Production)
-Short Description
-Production DB Changes – User Recertification Enhancements (Schema & Data Preparation)
-Description
-This change request is to implement database-related changes required for the User Recertification production dry run.
-The scope includes:
-Creation of new columns related to recertification tracking.
-Creation/validation of required supporting tables.
-Updates to selected production user records for dry run testing.
-Ensuring proper indexing and constraints remain intact.
-Pre-deployment database backup.
-These changes are necessary to support the backend recertification logic, scheduler execution, and reporting functionality.
-Purpose of Change / Why is this Change Required?
-The database changes are required to:
-Support User Recertification workflow in Production.
-Store recertification email trigger history.
-Maintain system revoke completion status.
-Enable UI checkbox logic to reflect recertification completion.
-Support Line Manager detail population.
-Without these DB changes, the application enhancements cannot function correctly.
-Scope of DB Changes
-Creation/Modification of Tables:
-RECERTIFICATION_EMAIL_LIST (new columns for system revoke tracking).
-RECREATE_RESPONSE (if applicable).
-Any required updates in USER_TAB (Line Manager fields).
-Addition of new columns (example):
-SYSTEM_REVOKE_DONE_IND
-SYSTEM_REVOKE_DONE_DT
-Any supporting tracking columns.
-Data preparation:
-Insert/update limited production users for dry run validation.
-Validation of constraints and existing data integrity.
-Implementation Plan
-DBA to take full database backup prior to execution.
-Execute DDL scripts in production environment.
-Execute required DML scripts (for dry run user preparation).
-Validate:
-Tables exist.
-Columns added successfully.
-No invalid objects.
-Confirm application connectivity post-change.
-Technical Impact
-Schema-level changes.
-No downtime expected.
-No impact to existing application functionality.
-Minimal risk (additive changes only).
-Business Impact
-No direct business disruption.
-Positive impact:
-Enables compliance-driven user recertification tracking.
-Supports controlled production dry run validation.
-Customer Impact
-No direct customer impact.
-Backend-only structural updates.
-Risk Level
-Low
-(Additive DB changes only; no structural deletion of existing production data.)
-Backout / Rollback Plan
-Restore database from backup if required.
-Drop newly created objects (if rollback needed).
-Revert modified data to pre-change state (if necessary).
-Post-Implementation Verification Plan
-Validate table structure using DESC.
-Validate sample data insertion.
-Validate application connectivity.
-Confirm no invalid objects in schema.
-Confirm no errors in DB alert logs.
+Hi All,
+
+This is to inform you that we will be performing Production Trial Run 2 deployment today at [mention time].
+
+Two approved Change Requests have been raised for this activity:
+
+- Database changes
+- Application deployment via pipeline
+
+A database backup will be taken prior to execution as per standard procedure.
+
+No downtime is expected during this activity.
+
+This is for your information.
+
+Thanks & Regards,
+R Krishna Chaitanya
