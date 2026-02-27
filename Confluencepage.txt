@@ -5,3 +5,18 @@ BCP-related changes deployed
 All database activities (including backup and script execution) completed as per plan
 All applications are up and running, and initial validations look good.
 Please let us know if you observe any issues.
+
+
+
+Hi All,
+
+This is to inform you that the Production Trial Run 2 deployment has been completed successfully.
+
+The database changes have been applied, and the related application code updates have been moved to Production as planned.
+
+No issues were observed during the deployment.
+
+Please proceed with the planned validation activities. Let us know if any concerns are identified.
+
+Thanks & Regards,
+R Krishna Chaitanya
