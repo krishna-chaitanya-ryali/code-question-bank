@@ -1,11 +1,39 @@
-Question 1
-
-What are the biggest backend engineering challenges the team is currently solving?
-
-Question 2
-
-What does success look like for someone in this role in the first 6 months?
-
-“Could you share how the backend architecture is structured in your platform? For example, is it primarily microservices-based or a modular monolithic architecture?”
-“What are the biggest backend engineering challenges the team is currently solving?”
-“Are there any plans to adopt newer backend technologies such as async frameworks, event-driven architecture, or AI-assisted workflows in your platform?”
+Short Description
+Production database update to correct RMM names based on approved user request.
+Description
+This change request is raised to update and correct RMM names in specific database tables based on a validated user request.
+The change involves updating existing name values to ensure the data reflects the correct information. These updates are data-only corrections and do not involve any database schema or application code changes.
+The updates will be executed manually through the TPAM database access link during the approved change window using validated SQL update queries.
+Why is this change required?
+To correct RMM names as requested by the user
+To ensure accurate data in the application
+To maintain data consistency in the database
+Implementation Plan
+Obtain approved change window and TPAM access.
+Log in to the production database server using the TPAM link.
+Identify the records where RMM names need to be corrected.
+Take a backup of the affected records using SELECT queries.
+Execute validated SQL UPDATE queries to correct the names.
+Verify that the records are updated correctly.
+Commit the changes and document the execution.
+Customer / Business Impact During Implementation
+No customer impact expected
+No downtime required
+Changes are limited to data corrections only
+Technical Impact
+No application restart required
+No schema changes involved
+Minimal database impact
+Backout Plan
+If any issue occurs:
+Restore original values using the pre-change backup data.
+Execute rollback update queries if required.
+Validate restored records.
+Post Implementation Verification
+Run SELECT queries to verify updated RMM names.
+Confirm records reflect the correct values.
+Inform the requester once validation is complete.
+Release Plan
+Standalone production database data correction
+Executed via TPAM access during approved change window
+No application deployment required
