@@ -1,159 +1,200 @@
-1️⃣ Project Explanation (Very Important)
-
-If they ask:
-“Explain your current project”
-
-You can answer like this:
-
-I am currently working on the Risk Appetite Platform (RAP), which is used to monitor the actual performance of different risk metrics defined in the Risk Appetite Statement (RAS). These metrics are compared against predefined risk appetite and tolerance thresholds.
-
-The platform provides a centralized system for collecting monthly data from multiple business units and storing historical data for trend analysis. Previously this process was handled manually using multiple Excel files and email communication, which was time-consuming and error-prone.
-
-The RAP system automates the entire workflow including data submission, validation, automatic RAG calculation, breach commentary, risk steward validation, and final report generation. The platform also provides dashboards, audit trails, and historical reporting capabilities.
-
-It significantly reduces manual effort, improves data accuracy, and provides better visibility into risk metrics for decision-making.
-
-2️⃣ Process Flow Explanation
-
-You can explain the workflow like this:
-
-The system works in multiple stages:
-
-First, the planner defines the submission dates and sends requests to data submitters.
-
-Data submitters then provide the actual data inputs into the system. Based on the submitted values, the system automatically calculates the RAG (Red-Amber-Green) status using predefined thresholds.
-
-If a metric breaches the threshold, the user must provide breach commentary explaining the cause and corrective action.
-
-After submission, risk stewards validate the data and approve the final submission.
-
-Finally, the system generates reports, including PowerPoint exports, regional reports, and trend charts for the past 12 months.
-
-This explanation matches the process diagram you shared.
-
-3️⃣ Technology Stack Explanation
-
-If they ask:
-
-“What technologies are used in your project?”
-
+1️⃣ Tell Me About Yourself
 Answer:
+I have around 11 years of experience in backend development, primarily working with Python. Currently, I work as a Senior Python Backend Engineer at Synechron, where I contribute to the Risk Appetite Platform used for monitoring financial and non-financial risk metrics across different business units.
+My main responsibilities include designing and developing backend APIs using FastAPI and Flask, optimizing SQL queries for large data pipelines, and supporting high-volume data processing workflows.
+I have also worked on improving backend performance using asynchronous processing and query optimization, which helped reduce API response latency significantly. Along with development, I handle production issue resolution, CI/CD deployments, and collaborate with cross-functional teams to maintain system stability.
+At this stage of my career, I’m looking to contribute to building scalable backend platforms where I can apply my experience in API design, performance optimization, and system reliability.
+________________________________________
+2️⃣ Walk Me Through Your Current Project
+Answer:
+I currently work on the Risk Appetite Platform (RAP), which is responsible for collecting and monitoring risk metrics across multiple business units. The platform processes large datasets every month and provides insights for risk monitoring and reporting.
+My role focuses on backend development using Python frameworks like FastAPI and Flask. I design APIs for data ingestion, validation, and reporting workflows. Since the platform handles high-volume data, performance optimization is very important.
+I worked on improving API performance using asynchronous processing and optimizing database queries, which helped reduce API response latency by around 30–40%. I also contributed to improving incremental data load logic, which improved the efficiency of monthly data pipelines.
+In addition to development, I support production stability, resolve critical issues, and collaborate with data and reporting teams to ensure reliable system operations.
+________________________________________
+3️⃣ Why Are You Looking for a Change?
+Answer:
+I have been working on the same platform for several years and have gained strong experience in backend systems, data pipelines, and production stability.
+At this stage of my career, I’m looking for opportunities where I can contribute to building scalable backend systems while continuing to grow technically and work on modern architecture patterns.
+________________________________________
+4️⃣ Tell Me About a Production Issue You Solved
+Answer:
+One of the critical issues we faced was related to incremental data loads failing due to inconsistent date formats across different datasets. This caused failures in the data processing pipeline.
+I investigated the issue by analyzing logs and tracing the transformation logic in the pipeline. I identified that the incoming data contained multiple date formats that were not handled correctly.
+To resolve this, I implemented normalization and validation logic before ingestion, ensuring that all dates were converted into a consistent format. This stabilized the pipeline and prevented similar failures in future processing cycles.
+________________________________________
+5️⃣ How Do You Prioritize Work When Multiple Tasks Come?
+Answer:
+I prioritize tasks based on business impact. Production issues that affect live systems always take the highest priority because they impact users or downstream systems.
+Once production stability is ensured, I coordinate with the team to plan enhancement tasks and communicate timelines clearly. This approach helps maintain system reliability while ensuring that development work progresses smoothly.
+________________________________________
+6️⃣ Have You Mentored Junior Developers?
+Answer:
+Yes, I regularly support junior developers in understanding system architecture, debugging production issues, and writing optimized SQL queries.
+I also review their code and guide them on best practices related to API design, logging, and error handling to ensure maintainable and reliable backend services.
+________________________________________
+7️⃣ How Do You Handle Tight Deadlines?
+Answer:
+When deadlines are tight, I focus on delivering stable incremental changes instead of large risky changes. I prioritize tasks carefully and communicate clearly with stakeholders about progress and potential risks.
+This approach helps ensure system stability while still meeting business requirements.
+________________________________________
+8️⃣ How Would You Design a Scalable REST API System?
+Answer:
+A scalable REST API system should follow a microservices architecture where services are loosely coupled and independently deployable.
+We typically place an API gateway or load balancer in front of the services to distribute traffic. Backend services should be stateless so that they can scale horizontally across multiple instances.
+For performance optimization, caching mechanisms such as Redis can be used. Message queues like Kafka can handle asynchronous processing for heavy tasks.
+Monitoring, logging, and proper error handling are also important to maintain system reliability.
+________________________________________
+9️⃣ How Would You Scale FastAPI Applications?
+Answer:
+FastAPI applications can be scaled by running multiple workers using servers like Uvicorn or Gunicorn. The application can be containerized using Docker and deployed on orchestration platforms such as Kubernetes.
+Horizontal scaling can be achieved by increasing the number of instances behind a load balancer.
+For heavy workloads, asynchronous processing and message queues can be used so that long-running tasks are handled outside the main API request cycle.
+________________________________________
+🔟 What Is Kafka and Why Is It Used?
+Answer:
+Kafka is a distributed event streaming platform used for asynchronous communication between services. Instead of tightly coupling services with synchronous API calls, producers publish messages to Kafka topics and consumers process those messages independently.
+This architecture improves scalability and reliability.
+Kafka is commonly used for event streaming, data pipelines, log aggregation, and microservice communication.
+________________________________________
+1️⃣1️⃣ Tell Me About Your GenAI Experience
+Answer:
+In our project, we explored a proof-of-concept where OpenAI APIs were integrated into backend workflows to assist with intelligent data validation.
+The idea was to use embeddings-based similarity comparison to identify potential inconsistencies across metric descriptions in different datasets.
+My role involved integrating the OpenAI API through backend services and designing FastAPI endpoints to interact with the model. While this was an experimental POC, it helped us understand how AI-assisted workflows could improve manual validation processes.
+________________________________________
+1️⃣2️⃣ How Do You See AI Tools Like GitHub Copilot Helping Developers?
+Answer:
+Tools like GitHub Copilot can significantly improve developer productivity by assisting with code suggestions, boilerplate generation, and documentation.
+However, they should be used as a support tool rather than a replacement for developer judgment. Developers still need to review generated code carefully to ensure correctness, security, and maintainability.
+When used properly, these tools can reduce repetitive work and allow engineers to focus more on solving complex problems.
+________________________________________
+1️⃣3️⃣ Are You Comfortable Learning New Technologies Like TypeScript?
+Answer:
+Yes. My core strength is backend engineering and system design. I am comfortable learning new technologies whenever required by the project.
+Throughout my career, I have adapted to different frameworks, cloud platforms, and tools, so learning a new language or technology would not be a challenge.
+________________________________________
+1️⃣4️⃣ Questions You Can Ask Them
+At the end of the interview, ask 1–2 questions:
+Question 1:
+What are the main backend challenges your team is currently working on?
+Question 2:
+How does the team approach scalability and reliability for APIs in production?
 
-The backend of the RAP platform is developed primarily using Python with Flask.
 
-The frontend uses standard web technologies including HTML, CSS, and JavaScript.
 
-The application uses Oracle as the primary database to store metric data, historical records, and audit logs.
 
-The system is hosted on Linux servers and deployed using Jenkins pipelines for continuous integration and deployment.
 
-The web server uses Apache with mod_wsgi to host the Python application.
 
-Your architecture diagram confirms this.
 
-4️⃣ Architecture Explanation
 
-If they ask about architecture:
 
-You can say:
 
-The architecture follows a typical web application model where client requests are sent through the Apache web server.
 
-The Apache server uses mod_wsgi to route HTTP requests to the Python Flask application running in daemon processes.
 
-The backend application processes the business logic, interacts with the Oracle database, and returns responses back to the client through the web server.
 
-This setup allows multiple Python processes to run concurrently, improving scalability and reliability.
 
-5️⃣ Key Features of the RAP Platform
 
-You can mention these if they ask about system features:
 
-• Dashboard for multiple risk metric packs
-• Automatic RAG calculation based on threshold values
-• Breach commentary management
-• Historical trend analysis for metrics
-• One-click export to PowerPoint
-• Admin portal for metric configuration
-• Role-based access control
-• Audit trail for tracking changes
 
-This shows strong product understanding.
-
-6️⃣ Challenges in the Old System
-
-You can mention this if they ask why the system was built:
-
-Before RAP, the reporting process was manual and relied on Excel files shared through email. This created several challenges such as:
-
-Manual calculation of risk metrics
-
-High risk of human errors
-
-Multiple versions of Excel files
-
-Difficulty in maintaining formulas
-
-Limited visibility into historical data
-
-Dependency on key individuals
-
-This shows business impact awareness, which managers like.
-
-7️⃣ Improvements You Worked On
-
-You should mention your contributions:
-
+1️⃣ Design a Scalable API System
+Question
+How would you design a scalable REST API system?
+Answer Structure
+To design a scalable REST API system, I would follow a microservices-based architecture where services are independently deployable and loosely coupled.
+Then explain components:
+1.	API Gateway / Load Balancer
+o	Routes traffic to backend services
+o	Handles authentication and rate limiting
+2.	Backend Services
+o	Stateless services implemented using frameworks like FastAPI
+o	Multiple instances can run behind a load balancer
+3.	Database Layer
+o	Use relational or NoSQL databases depending on use case
+o	Implement indexing and query optimization
+4.	Caching Layer
+o	Use Redis to cache frequently accessed data
+5.	Asynchronous Processing
+o	Use Kafka or message queues for long-running tasks
+6.	Monitoring
+o	Centralized logging
+o	Metrics monitoring
+End with:
+This architecture allows horizontal scaling and improves system reliability.
+________________________________________
+2️⃣ How Would You Design a High-Traffic Backend System?
+Example: Appointment booking system
+Answer:
+First I would separate the system into multiple layers such as API layer, business logic layer, and data storage layer.
+Key components:
+Load Balancer
+•	Distributes incoming requests
+API Layer
+•	FastAPI services running in multiple instances
+Database
+•	Use optimized queries and indexing
+Caching
+•	Cache frequently accessed data
+Queue System
+•	Use Kafka or RabbitMQ for background tasks
+Monitoring
+•	Logging and alerting
+Finish with:
+The system should be stateless so that new instances can be added easily to handle increased traffic.
+________________________________________
+3️⃣ How Would You Design an Event-Driven System?
+Example: Kafka use case
+Answer:
+In an event-driven system, services communicate through events rather than direct API calls.
+Explain flow:
+1.	Producer
+o	Service publishes event to Kafka topic
+2.	Kafka Topic
+o	Stores events
+3.	Consumers
+o	Multiple services consume events independently
+Advantages:
+•	Loose coupling
+•	Better scalability
+•	Asynchronous processing
 Example:
-
-In the backend, I worked on improving the incremental data load logic and optimizing SQL queries to improve performance.
-
-I also contributed to resolving production issues related to data processing and ensured stability during monthly reporting cycles.
-
-Additionally, I supported deployment pipelines and production monitoring to maintain system reliability.
-
-8️⃣ How the System Handles Security
-
-If they ask about security:
-
+For example, when a new order is created, an event can be published to Kafka and multiple services such as billing, notifications, and analytics can process it independently.
+________________________________________
+4️⃣ How Would You Handle a Slow API?
+Managers like this question.
 Answer:
-
-The system uses role-based access control to restrict access based on user roles.
-
-Authentication is integrated with enterprise login systems, and sensitive data is stored in secure storage environments.
-
-Audit trails are also maintained to track changes made by users.
-
-9️⃣ Deployment Process
-
-You can explain:
-
-The application is deployed on Linux servers using Jenkins pipelines. Jenkins automates the build and deployment process, ensuring consistent releases.
-
-The Python application is hosted on Apache servers using mod_wsgi.
-
-🔟 One Question They May Ask
-
-“How would you improve this system if given a chance?”
-
-Good answer:
-
-If given the opportunity, I would explore modernizing the architecture by introducing containerization using Docker and improving scalability using cloud-based infrastructure.
-
-Additionally, asynchronous processing using message queues could improve performance for heavy data-processing tasks.
-
-This shows architectural thinking.
-
-⭐ Final Tip for Tomorrow
-
-When you explain the project:
-
-Follow this structure:
-
-1️⃣ Business problem
-2️⃣ What system does
-3️⃣ Tech stack
-4️⃣ Architecture
-5️⃣ Your contributions
-
-Managers love this structure.
+When an API is slow, I first analyze the system to identify the bottleneck.
+Steps:
+1️⃣ Check database queries
+•	Look for slow queries
+•	Add indexes
+•	Optimize joins
+2️⃣ Analyze API processing logic
+•	Check blocking operations
+•	Use async processing where possible
+3️⃣ Add caching
+•	Redis for repeated queries
+4️⃣ Use profiling tools
+•	Identify heavy operations
+5️⃣ Scale the service
+•	Add multiple instances behind load balancer
+End with:
+Performance optimization usually requires improvements across database queries, API logic, and system architecture.
+________________________________________
+⭐ One Important Tip for Managerial Round
+When answering system design questions:
+Do not jump directly to technologies.
+Instead follow this order:
+1️⃣ Explain problem
+2️⃣ Explain architecture
+3️⃣ Mention technologies
+Managers like structured thinking.
+________________________________________
+🔥 Final Quick Revision Checklist for Tonight
+Revise these topics quickly:
+•	REST API design
+•	FastAPI async concept
+•	Kafka basics
+•	SQL optimization
+•	Python memory management
+•	Your RAP project architecture
