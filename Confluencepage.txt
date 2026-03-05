@@ -1,157 +1,159 @@
-Change Request – Production Dry Run (User Recertification Enhancements)
-Short Description
+1️⃣ Project Explanation (Very Important)
 
-Production Dry Run – Deploy User Recertification Enhancements & Line Manager Population Logic via Jenkins Pipeline
+If they ask:
+“Explain your current project”
 
-Description
+You can answer like this:
 
-This change request is to deploy the latest backend enhancements related to User Recertification and Line Manager (LM) details population into the Production environment for a controlled dry run.
+I am currently working on the Risk Appetite Platform (RAP), which is used to monitor the actual performance of different risk metrics defined in the Risk Appetite Statement (RAS). These metrics are compared against predefined risk appetite and tolerance thresholds.
 
-The changes include:
+The platform provides a centralized system for collecting monthly data from multiple business units and storing historical data for trend analysis. Previously this process was handled manually using multiple Excel files and email communication, which was time-consuming and error-prone.
 
-Backend logic to populate and update Line Manager ID, Name, and Mail ID in USER_TAB using Active Directory.
+The RAP system automates the entire workflow including data submission, validation, automatic RAG calculation, breach commentary, risk steward validation, and final report generation. The platform also provides dashboards, audit trails, and historical reporting capabilities.
 
-Backend logic to support user recertification workflow, including system revoke and UI checkbox indication.
+It significantly reduces manual effort, improves data accuracy, and provides better visibility into risk metrics for decision-making.
 
-Configuration updates and deployment through Jenkins pipelines.
+2️⃣ Process Flow Explanation
 
-Database backup prior to deployment.
+You can explain the workflow like this:
 
-Purpose of Change / Why is this Change Required?
+The system works in multiple stages:
 
-To enable a controlled production dry run of the User Recertification feature and ensure accurate Line Manager information is available in the system. This will support access governance, compliance requirements, and validation of recertification behavior before full-scale rollout.
+First, the planner defines the submission dates and sends requests to data submitters.
 
-Scope of Change
+Data submitters then provide the actual data inputs into the system. Based on the submitted values, the system automatically calculates the RAG (Red-Amber-Green) status using predefined thresholds.
 
-Application backend code deployment via Jenkins pipeline
+If a metric breaches the threshold, the user must provide breach commentary explaining the cause and corrective action.
 
-Scheduler-related configuration (as per approved logic)
+After submission, risk stewards validate the data and approve the final submission.
 
-No UI breaking changes
+Finally, the system generates reports, including PowerPoint exports, regional reports, and trend charts for the past 12 months.
 
-No data migration (only data population/updates)
+This explanation matches the process diagram you shared.
 
-Implementation Plan
+3️⃣ Technology Stack Explanation
 
-Obtain DBA confirmation and perform full database backup.
+If they ask:
 
-Trigger Jenkins pipeline for production deployment.
+“What technologies are used in your project?”
 
-Deploy updated backend code.
+Answer:
 
-Restart application services (if required).
+The backend of the RAP platform is developed primarily using Python with Flask.
 
-Validate application health.
+The frontend uses standard web technologies including HTML, CSS, and JavaScript.
 
-Execute production dry run for selected users and line managers.
+The application uses Oracle as the primary database to store metric data, historical records, and audit logs.
 
-Backout / Rollback Plan
+The system is hosted on Linux servers and deployed using Jenkins pipelines for continuous integration and deployment.
 
-Rollback application code using previous stable Jenkins artifact.
+The web server uses Apache with mod_wsgi to host the Python application.
 
-Restart application services.
+Your architecture diagram confirms this.
 
-Restore database from backup if required.
+4️⃣ Architecture Explanation
 
-Post-Implementation Verification Plan
+If they ask about architecture:
 
-Verify application is up and accessible.
+You can say:
 
-Verify Line Manager details are populated in USER_TAB.
+The architecture follows a typical web application model where client requests are sent through the Apache web server.
 
-Verify user recertification checkbox visibility.
+The Apache server uses mod_wsgi to route HTTP requests to the Python Flask application running in daemon processes.
 
-Validate system revoke and LM revoke functionality for test users.
+The backend application processes the business logic, interacts with the Oracle database, and returns responses back to the client through the web server.
 
-Check logs for errors.
+This setup allows multiple Python processes to run concurrently, improving scalability and reliability.
 
-Business Impact
+5️⃣ Key Features of the RAP Platform
 
-Positive impact – Enables compliance-driven user recertification and access governance.
+You can mention these if they ask about system features:
 
-No negative business impact expected.
+• Dashboard for multiple risk metric packs
+• Automatic RAG calculation based on threshold values
+• Breach commentary management
+• Historical trend analysis for metrics
+• One-click export to PowerPoint
+• Admin portal for metric configuration
+• Role-based access control
+• Audit trail for tracking changes
 
-Customer Impact
+This shows strong product understanding.
 
-None. Changes are backend-only and executed as controlled dry run.
+6️⃣ Challenges in the Old System
 
-Technical Impact
+You can mention this if they ask why the system was built:
 
-Backend services will be restarted (if required).
+Before RAP, the reporting process was manual and relied on Excel files shared through email. This created several challenges such as:
 
-Jenkins pipeline execution.
+Manual calculation of risk metrics
 
-No downtime expected.
+High risk of human errors
 
-=============================================
+Multiple versions of Excel files
 
+Difficulty in maintaining formulas
 
-Jira Ticket – Description
+Limited visibility into historical data
 
-Title
-User Recertification – Production Dry Run Preparation & Execution
+Dependency on key individuals
 
-Description
-This ticket tracks the activities required to perform a controlled production dry run of the User Recertification feature. The objective of this dry run is to validate end-to-end user recertification flow, including line manager-driven revoke, system revoke, and UI indicator behavior, using a limited set of production users.
+This shows business impact awareness, which managers like.
 
-The scope includes backend enhancements, scheduler configuration, database readiness, and coordination with business stakeholders for test user and line manager inputs.
+7️⃣ Improvements You Worked On
 
-Key features covered in this dry run:
+You should mention your contributions:
 
-Line Manager details (ID, Name, Mail) population in USER_TAB using AD integration.
+Example:
 
-Line Manager revoke processing via scheduler.
+In the backend, I worked on improving the incremental data load logic and optimizing SQL queries to improve performance.
 
-System revoke processing after final reminder conditions.
+I also contributed to resolving production issues related to data processing and ensured stability during monthly reporting cycles.
 
-UI checkbox to indicate completion of user recertification for a year.
+Additionally, I supported deployment pipelines and production monitoring to maintain system reliability.
 
-Controlled execution on a small set of production users.
+8️⃣ How the System Handles Security
 
-This dry run will help confirm stability and correctness before enabling the solution for wider production usage.
+If they ask about security:
 
-✅ Jira Comments / Progress Update
+Answer:
 
-Progress Update – [Date]
+The system uses role-based access control to restrict access based on user roles.
 
-Completed backend development for User Recertification logic.
+Authentication is integrated with enterprise login systems, and sensitive data is stored in secure storage environments.
 
-Implemented Line Manager details population (LM ID, LM Name, LM Mail) in USER_TAB using AD lookup with dual resolution (Employee ID / PSID).
+Audit trails are also maintained to track changes made by users.
 
-Implemented scheduler jobs:
+9️⃣ Deployment Process
 
-Line Manager revoke job (hourly).
+You can explain:
 
-System revoke job (once per day – configurable).
+The application is deployed on Linux servers using Jenkins pipelines. Jenkins automates the build and deployment process, ensuring consistent releases.
 
-Implemented logic to update SYSTEM_REVOKE_DONE_IND when system revoke completes.
+The Python application is hosted on Apache servers using mod_wsgi.
 
-Implemented UI checkbox logic driven from database flag to indicate recertification completion.
+🔟 One Question They May Ask
 
-Verified functionality in UAT with manual and scheduler-based testing.
+“How would you improve this system if given a chance?”
 
-Walked through solution with Sandeep and demonstrated checkbox and revoke behavior.
+Good answer:
 
-Sent confirmation email to business requesting:
+If given the opportunity, I would explore modernizing the architecture by introducing containerization using Docker and improving scalability using cloud-based infrastructure.
 
-Production test users & line managers
+Additionally, asynchronous processing using message queues could improve performance for heavy data-processing tasks.
 
-Reminder email schedule
+This shows architectural thinking.
 
-Scheduler frequency
+⭐ Final Tip for Tomorrow
 
-Final system revoke date & time
+When you explain the project:
 
-Next Steps
+Follow this structure:
 
-Receive inputs from business (Sandeep).
+1️⃣ Business problem
+2️⃣ What system does
+3️⃣ Tech stack
+4️⃣ Architecture
+5️⃣ Your contributions
 
-Raise Change Requests for:
-
-DB backup & schema readiness
-
-Jenkins pipeline execution
-
-Perform production dry run on selected users.
-
-Capture results and confirm sign-off.
+Managers love this structure.
