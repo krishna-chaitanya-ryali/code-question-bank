@@ -1,39 +1,232 @@
-Short Description
-Production database update to correct RMM names based on approved user request.
-Description
-This change request is raised to update and correct RMM names in specific database tables based on a validated user request.
-The change involves updating existing name values to ensure the data reflects the correct information. These updates are data-only corrections and do not involve any database schema or application code changes.
-The updates will be executed manually through the TPAM database access link during the approved change window using validated SQL update queries.
-Why is this change required?
-To correct RMM names as requested by the user
-To ensure accurate data in the application
-To maintain data consistency in the database
-Implementation Plan
-Obtain approved change window and TPAM access.
-Log in to the production database server using the TPAM link.
-Identify the records where RMM names need to be corrected.
-Take a backup of the affected records using SELECT queries.
-Execute validated SQL UPDATE queries to correct the names.
-Verify that the records are updated correctly.
-Commit the changes and document the execution.
-Customer / Business Impact During Implementation
-No customer impact expected
-No downtime required
-Changes are limited to data corrections only
-Technical Impact
-No application restart required
-No schema changes involved
-Minimal database impact
-Backout Plan
-If any issue occurs:
-Restore original values using the pre-change backup data.
-Execute rollback update queries if required.
-Validate restored records.
-Post Implementation Verification
-Run SELECT queries to verify updated RMM names.
-Confirm records reflect the correct values.
-Inform the requester once validation is complete.
-Release Plan
-Standalone production database data correction
-Executed via TPAM access during approved change window
-No application deployment required
+Scheduling a short discussion to review the enhancement request related to **Access Request Form and Location Menu visibility** in RAP, and to align on the proposed database design change before implementation.
+
+
+**Subject:** Discussion on RAP Enhancement – Access Request Form & Location Menu Visibility
+
+Hi Team,
+
+I would like to schedule a quick discussion to review the enhancement request related to the RAP **Access Request Form and Location Menu**.
+
+**Background**
+Currently, the RAP application uses the **ACTIVE** flag in the RAP_RMM_GROUP table to control visibility of locations. If ACTIVE = 'Y', the location is visible in both:
+
+* RAP menu
+* Access request form dropdown
+
+If ACTIVE = 'N', the location is hidden from both.
+
+However, the new requirement introduces **standalone/hidden locations** which should:
+
+* Not appear in the RAP menu
+* Still be available in the Access Request form for users to request access.
+
+**Proposed Solution**
+To support this requirement, we are proposing to separate the visibility logic by introducing two columns in RAP_RMM_GROUP:
+
+* SHOW_IN_MENU
+* SHOW_IN_ACCESS_REQ
+
+This will allow us to control menu visibility and access request visibility independently.
+
+Example behaviour:
+
+Normal location
+SHOW_IN_MENU = Y
+SHOW_IN_ACCESS_REQ = Y
+
+Standalone location
+SHOW_IN_MENU = N
+SHOW_IN_ACCESS_REQ = Y
+
+Inactive location
+SHOW_IN_MENU = N
+SHOW_IN_ACCESS_REQ = N
+
+**Discussion Points**
+
+1. Validate the proposed database design change.
+2. Confirm impact on downstream systems (QuickSense ETL).
+3. Confirm how standalone locations should behave in reporting/data pipelines.
+4. Agree on implementation approach and rollout plan.
+
+Please share your thoughts during the discussion.
+
+Thanks.
+=====================================================================================================
+
+
+1. Current System Behaviour (Based on your explanation)
+
+Table: RAP_RMM_GROUP
+
+Important column:
+
+ACTIVE (Y / N)
+
+Current logic:
+
+ACTIVE	Menu	Access Request Form
+Y	Visible	Visible
+N	Hidden	Hidden
+
+So one column is controlling two behaviours:
+
+Menu visibility
+
+Access request visibility
+
+2. New Requirement
+
+Now there is a new category called Standalone / Hidden RMM.
+
+These should behave like this:
+
+Type	Menu	Access Request
+Normal Active	Visible	Visible
+Standalone RMM	Hidden	Visible
+Inactive	Hidden	Hidden
+
+So menu visibility and access request visibility must be controlled separately.
+
+3. Your Proposed Solution
+
+You suggested adding a column:
+
+STANDALONE_RMM (Y/N)
+
+And then modifying queries.
+
+Your idea is correct, but there is a better design approach.
+
+4. Recommended Design (Best Practice)
+
+Instead of STANDALONE_RMM, create two explicit columns.
+
+Option (Best Approach)
+
+Add:
+
+SHOW_IN_MENU        CHAR(1)
+SHOW_IN_ACCESS_REQ  CHAR(1)
+
+Example table:
+
+RMM	ACTIVE	SHOW_IN_MENU	SHOW_IN_ACCESS_REQ
+Global CMB	Y	Y	Y
+Global GBM	Y	Y	Y
+Standalone APP	Y	N	Y
+Deprecated APP	N	N	N
+5. Advantages of this Design
+1️⃣ More Flexible
+
+Future requirements become easy.
+
+Example:
+
+Scenario	Possible
+Hidden everywhere	YES
+Only menu	YES
+Only access form	YES
+Both	YES
+
+Your STANDALONE_RMM column cannot support all combinations.
+
+2️⃣ Cleaner Queries
+
+Menu query:
+
+SELECT *
+FROM RAP_RMM_GROUP
+WHERE ACTIVE = 'Y'
+AND SHOW_IN_MENU = 'Y';
+
+Access request query:
+
+SELECT *
+FROM RAP_RMM_GROUP
+WHERE ACTIVE = 'Y'
+AND SHOW_IN_ACCESS_REQ = 'Y';
+3️⃣ No Logic Confusion
+
+Right now ACTIVE is overloaded.
+
+It is controlling:
+
+existence
+
+menu
+
+access form
+
+Separating responsibilities is clean architecture.
+
+6. If DB Change Is Not Allowed (Alternative)
+
+If they don't allow schema changes, then your approach works:
+
+Add column:
+
+STANDALONE_RMM CHAR(1)
+
+Menu query:
+
+WHERE ACTIVE = 'Y'
+AND NVL(STANDALONE_RMM,'N') = 'N'
+
+Access request query:
+
+WHERE ACTIVE = 'Y'
+
+But this is less flexible long-term.
+
+7. What I Would Recommend in Production
+
+As a 10-year Python/backend developer like you, I strongly recommend:
+
+SHOW_IN_MENU
+SHOW_IN_ACCESS_REQ
+
+because enterprise systems eventually grow and new combinations will appear.
+
+8. Migration Plan
+
+Step 1 — Add columns
+
+ALTER TABLE RAP_RMM_GROUP
+ADD (
+  SHOW_IN_MENU CHAR(1) DEFAULT 'Y',
+  SHOW_IN_ACCESS_REQ CHAR(1) DEFAULT 'Y'
+);
+
+Step 2 — Update existing data
+
+UPDATE RAP_RMM_GROUP
+SET SHOW_IN_MENU = ACTIVE,
+    SHOW_IN_ACCESS_REQ = ACTIVE;
+9. Example Final Data
+RMM	Menu	Access Form
+Global CMB	Y	Y
+APAC CMB	Y	Y
+Hidden Standalone	N	Y
+Deprecated	N	N
+10. One Important Question
+
+From the screenshot they listed locations like:
+
+Global CMB
+
+Global GBM
+
+APAC CMB
+
+MALTA GBM
+
+Do they want these completely removed, or only hidden from menu but still accessible through access request?
+
+Because the implementation differs slightly.
+
+If you want, I can also show you:
+
+How large enterprise systems (like banking apps) usually design menu visibility vs access request visibility tables.
+
+That pattern will make this 100% future-proof.
