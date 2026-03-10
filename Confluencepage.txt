@@ -1,65 +1,37 @@
-Hi Team,
-
-Please find below the Minutes of Meeting (MOM) for the discussion held on 09 Mar 2026 regarding the RAP enhancement related to Access Request Form and Location Menu visibility.
-
-For detailed background, problem statement, current logic, and proposed design, please refer to the Confluence page where the discussion details and technical notes have already been documented.
-
----
-
-Discussion Summary
-
-• Currently, the RAP application uses the ACTIVE flag in the RAP_RMM_GROUP table to control visibility of locations in both the Location Menu and the Access Request Form.
-
-• The new requirement introduces standalone RMM locations, which should not appear in the RAP menu but should still be available in the Access Request form for users to request access.
-
-• The team discussed handling different scenarios related to active, inactive, and standalone locations, along with the potential impact on downstream applications such as QuickSense ETL and Qlik reporting.
-
-• Historical data retention requirements remain unchanged, and the system will continue to support data retrieval as per the existing data retention policy (data visible in UI for 7 years and retrievable up to 10 years upon request).
-
-• The final confirmation regarding whether inactive locations should remain visible in the RAP menu is still under discussion with the business team.
-
----
-
-Proposed Technical Solution
-
-It was agreed to enhance the RAP_RMM_GROUP table by introducing two new columns to manage visibility independently:
-
-• SHOW_IN_MENU – Controls whether the location appears in the RAP menu
-• SHOW_IN_ACCESS_REQ – Controls whether the location appears in the Access Request form
-
-This approach will allow flexible handling of different scenarios such as:
-
-- Active locations visible in both menu and access request form
-- Standalone locations hidden from the menu but available in the access request form
-- Inactive locations hidden from both menu and access request form (subject to final business confirmation)
-
----
-
-Note on Standalone Packs
-
-Standalone packs are currently being used in the system (e.g., Shadowflow-related use cases) and have been functioning without issues over the past few years.
-
-However, it should be noted that Auto Cascade and Cascade functionalities will not apply to standalone packs, since they are not part of the standard menu hierarchy.
-
-Other existing functionalities are expected to continue working as designed. That said, any edge scenarios may only become evident during actual usage. If any functional gaps are identified, they will be reviewed and addressed accordingly.
-
-For future enhancements, it is recommended that standalone packs are also considered during design and implementation to ensure compatibility with the RAP framework.
-
----
-
-Action Items
-
-• Krishna – Share the detailed database change proposal with Somya via email.
-• Somya – Validate potential impact on downstream applications (QuickSense / ETL).
-• Sandip – Confirm the final approach for handling inactive locations in the RAP menu.
-• Krishna – Provide consolidated reporting impact analysis as part of the proposal.
-• Krishna – Schedule a follow-up meeting to review findings and finalize the implementation approach.
-
----
-
-Please refer to the Confluence documentation for full details of the requirement, discussion points, and the proposed design approach.
-
-Please let me know if any corrections or updates are required.
-
-Thanks & Regards,
-Krishna
+Database Change Request – Data Correction
+Short Description
+Production database update to correct demised RAP locations in the Consolidated section.
+Description
+This change request is raised to perform a data correction in the production database based on a user request.
+Some locations that are already demised in the RAP locations data are currently appearing in the Consolidated report section. To maintain data consistency, the relevant records in the database will be updated so that these demised locations are no longer displayed in the Consolidated menu.
+This activity involves updating specific records in the relevant tables to ensure the application reflects the correct location status.
+These are data-only corrections and do not involve any changes to application code or database schema.
+Reason for Change
+To align Consolidated section data with RAP location status
+To ensure demised locations are not displayed in reports
+To maintain accurate and consistent application data
+Implementation Plan
+Obtain the approved change window and database access.
+Log in to the production database server.
+Identify the affected location records.
+Take a backup of the affected records using SELECT queries.
+Execute validated SQL queries to update the relevant records.
+Verify the updates in the database.
+Commit the changes.
+Customer / Business Impact
+No customer impact expected
+No downtime required
+This change improves data accuracy in the Consolidated section
+Technical Impact
+No application restart required
+No database schema changes
+Limited to specific location records
+Backout Plan
+If any issue occurs:
+Restore the original records using the pre-change backup.
+Revert the updates using rollback queries if required.
+Validate the restored data.
+Post Implementation Verification
+Run verification queries to confirm the updates.
+Ensure demised locations are no longer visible in the Consolidated section.
+Confirm with the requester after validation.
