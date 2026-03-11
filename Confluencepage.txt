@@ -1,60 +1,10 @@
-Ticket 1 — Analysis & Solution Design
-Writing
-Title: RAP Enhancement – Analysis and Solution Design for Access Request Form & Location Menu Visibility
-Description: Perform detailed analysis for the enhancement request related to managing visibility of RMM locations in the RAP application.
-Scope of Work: • Review current logic where the ACTIVE flag in RAP_RMM_GROUP controls visibility in both the RAP menu and Access Request form.
-• Analyze the requirement to support standalone RMM locations.
-• Identify design gaps in the current implementation.
-• Prepare the proposed technical solution.
-Proposed Design: Introduce two new columns in RAP_RMM_GROUP:
-SHOW_IN_MENU
-SHOW_IN_ACCESS_REQ
-These columns will allow independent control of visibility in the menu and the access request form.
-Deliverables: • Confluence documentation including problem statement, current logic, and proposed design.
-• Discussion with stakeholders including business, ETL team, and Scrum Master.
-Acceptance Criteria: • Confluence documentation completed.
-• Solution design reviewed with stakeholders.
-• Implementation approach finalized.
-Ticket 2 — RAP Application Backend & UI Changes
-Writing
-Title: RAP Enhancement – Implement RMM Visibility Logic for Menu and Access Request Form
-Description: Implement application changes to support independent visibility of RMM locations in the RAP menu and access request form.
-Scope of Work: • Add new columns in RAP_RMM_GROUP table:
-SHOW_IN_MENU
-SHOW_IN_ACCESS_REQ
-• Update queries used to populate:
-RAP Location Menu
-Access Request Form dropdown
-• Implement logic based on new columns to control visibility.
-• Ensure standalone RMM locations appear only in the access request form and not in the menu.
-Acceptance Criteria: • Menu visibility controlled using SHOW_IN_MENU column.
-• Access request form visibility controlled using SHOW_IN_ACCESS_REQ column.
-• Standalone RMM locations behave as expected.
-• No impact on existing functionality.
-Ticket 3 — Super Admin Portal Changes
-Writing
-Title: RAP Enhancement – Apply Updated RMM Visibility Logic in Super Admin Portal
-Description: Update Super Admin Portal functionality to support the new RMM visibility logic introduced in RAP_RMM_GROUP.
-Scope of Work: • Update RMM search/dropdown logic in Super Admin Portal pages.
-• Ensure visibility rules are aligned with RAP application logic.
-• Validate that standalone RMM locations are handled correctly.
-• Verify compatibility with previously implemented enhancements in the Super Admin Portal.
-Acceptance Criteria: • Super Admin Portal reflects the updated RMM visibility logic.
-• RMM selection behaves consistently with RAP application rules.
-• Existing Super Admin Portal functionalities continue to work without regression.
-Ticket 4 — Consolidated Report Changes
-Writing
-Title: RAP Enhancement – Update Consolidated Report Logic for RMM Visibility
-Description: Update the consolidated reporting logic to align with the updated RMM visibility design.
-Scope of Work: • Identify queries used in consolidated reporting modules.
-• Update query logic to consider new columns:
-SHOW_IN_MENU
-SHOW_IN_ACCESS_REQ
-• Ensure reports correctly handle:
-Active RMM locations
-Inactive locations
-Standalone locations
-• Validate that historical reporting and data retention logic remain unchanged.
-Acceptance Criteria: • Consolidated reports reflect correct RMM visibility logic.
-• Historical data remains accessible as per retention policy.
-• No inconsistencies between application data and reporting output.
+Hi Sandip,
+
+Scheduling this call on behalf of Nitin to review the observations related to the data fix required for the Consolidate Report (location mismatch scenarios identified between RAP and the Consolidate report).
+
+Nitin will walk through the findings and discuss the possible next steps.
+
+We will also take this opportunity to briefly discuss the solution design for the Access Request enhancements.
+
+Thanks,
+Krishna Chaitanya
