@@ -6,5 +6,16 @@ Nitin will walk through the findings and discuss the possible next steps.
 
 We will also take this opportunity to briefly discuss the solution design for the Access Request enhancements.
 
+
+Hi Sandip,
+
+Scheduling this call on behalf of Nitin to review the observations related to the data fix required for the Consolidate Report (location mismatch scenarios identified between RAP and the Consolidate report).
+
+Nitin will walk through the findings and discuss the possible next steps.
+
+We will also take this opportunity to briefly discuss the solution design for the Access Request enhancements.
+
+Thanks,
+Krishna Chaitanya
 Thanks,
 Krishna Chaitanya
