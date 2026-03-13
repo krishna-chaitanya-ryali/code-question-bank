@@ -1,13 +1,5 @@
-Hi Team,
+Hi Sandeep,
 
-Here is a quick summary of the updates completed today:
+Just a quick suggestion on the timeline. If the first email is planned for the 18th, we would need to complete the deployment by 16th/17th. However, we still need to raise CRs (24-hour approval), prepare the runbook/documentation, update Line Manager details in DB, and also coordinate with the DP/DBA team for backup and related activities.
 
-• Completed ERR location mapping updates related to the Consolidated section changes.
-• Completed UK CMB demising activity and updated all associated users to Viewer access.
-• Implemented the requested modifications for the New Onboarding Monthly Report.
-• Resolved a user access issue, applied the required fix, and requested confirmation from the user.
-• SuperAdmin portal access has been provided to Satadru as part of today’s change request.
-
-Additionally, confirmation has been received from the user for the UK CMB demising changes, and the activity has been completed successfully.
-
-Please let me know if any further clarification is required.
+To avoid a rushed deployment, would it be possible to trigger the first email on the 19th instead? We can complete all pre-deployment activities by the 18th and proceed smoothly. The rest of the schedule can continue as planned.
