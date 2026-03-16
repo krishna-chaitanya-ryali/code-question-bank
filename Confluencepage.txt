@@ -1,5 +1,7 @@
 Hi Sandeep,
 
-Just a quick suggestion on the timeline. If the first email is planned for the 18th, we would need to complete the deployment by 16th/17th. However, we still need to raise CRs (24-hour approval), prepare the runbook/documentation, update Line Manager details in DB, and also coordinate with the DP/DBA team for backup and related activities.
+Understood. We will try to prepare and complete the deployment in time for the 18 Mar trigger. If there are any delays due to dependencies like CR approvals, DB backup coordination with the DP/DBA team, or other pre-deployment activities, we may need to move the trigger to 19 Mar.
 
-To avoid a rushed deployment, would it be possible to trigger the first email on the 19th instead? We can complete all pre-deployment activities by the 18th and proceed smoothly. The rest of the schedule can continue as planned.
+Also, just a small suggestion for future planning — it would help if deployment timelines are aligned with the development team before dates are finalized or communicated, as there are several dependencies such as CR approvals, deployment preparation, test cases, and regression checks. For larger releases, having around a week’s lead time helps us plan and execute smoothly.
+
+Thanks for your understanding.
