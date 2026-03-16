@@ -1,7 +1,93 @@
-Hi Sandeep,
-
-Understood. We will try to prepare and complete the deployment in time for the 18 Mar trigger. If there are any delays due to dependencies like CR approvals, DB backup coordination with the DP/DBA team, or other pre-deployment activities, we may need to move the trigger to 19 Mar.
-
-Also, just a small suggestion for future planning — it would help if deployment timelines are aligned with the development team before dates are finalized or communicated, as there are several dependencies such as CR approvals, deployment preparation, test cases, and regression checks. For larger releases, having around a week’s lead time helps us plan and execute smoothly.
-
-Thanks for your understanding.
+1️⃣ JIRA TICKET 1 – Line Manager Data Population
+Title
+User Recertification – Populate Line Manager Details in USER_TAB (Production)
+Description
+This task involves populating and validating Line Manager details in the USER_TAB table for users participating in the User Recertification process.
+The Line Manager information (LM_ID, LM_NAME, LM_MAIL) will be populated using the application utility developed for Active Directory lookup.
+The data population is required before triggering the User Recertification email workflow so that the correct Line Managers receive the recertification emails.
+Scope
+Populate Line Manager details in USER_TAB.
+Validate LM mapping for selected users.
+Ensure no null or incorrect mappings.
+Perform validation queries after execution.
+Acceptance Criteria
+USER_TAB contains correct LM_ID, LM_NAME, LM_MAIL values.
+Records verified for selected users.
+No errors in execution logs.
+2️⃣ JIRA TICKET 2 – Production Deployment (Pipeline)
+Title
+User Recertification – Production Deployment via Pipeline
+Description
+This ticket tracks the production deployment activities required for the User Recertification feature rollout.
+The deployment includes application code updates, scheduler configuration readiness, and database preparation to support the recertification workflow.
+Deployment will be executed via Jenkins pipelines and coordinated with the DBA team for database backup and validation.
+Scope
+Deploy updated application code via pipeline.
+Enable scheduler jobs for recertification processing.
+Validate system functionality after deployment.
+Acceptance Criteria
+Pipeline execution successful.
+Application services operational.
+Scheduler jobs ready for execution.
+3️⃣ CHANGE REQUEST 1 – PIPELINE DEPLOYMENT
+Short Description
+Production Deployment – User Recertification Enhancements via Jenkins Pipeline
+Description
+This change request covers the deployment of application code updates related to the User Recertification feature into the production environment using the Jenkins pipeline.
+Implementation Plan
+Confirm CR approval.
+Ensure database backup is completed.
+Trigger Jenkins production pipeline.
+Deploy application code updates.
+Restart services if required.
+Validate application availability.
+Verify scheduler configuration.
+Technical Impact
+Backend application deployment
+No downtime expected.
+Business Impact
+Supports the User Recertification process for ERR user access governance.
+Backout Plan
+Rollback to previous pipeline artifact.
+Restart services.
+Validate application functionality.
+Post Implementation Validation
+Application health check
+Scheduler job readiness
+Log verification via Splunk.
+4️⃣ CHANGE REQUEST 2 – TPM / APP + DB SERVER ACTIVITY
+Short Description
+Production Data Preparation – User Recertification (Application & DB Servers)
+Description
+This change request covers production data preparation and server-side execution activities required before initiating the User Recertification workflow.
+Scope
+Populate Line Manager details in USER_TAB table.
+Execute required scripts on application servers.
+Validate database updates.
+Prepare system for recertification email triggers.
+Implementation Plan
+Take database backup (DBA support required).
+Connect to TPM / application server.
+Execute Line Manager population script.
+Update required records in USER_TAB.
+Validate data integrity.
+Confirm scheduler readiness.
+Technical Impact
+Database updates and server-side script execution.
+Business Impact
+Ensures correct Line Manager mapping for recertification email workflow.
+Backout Plan
+Restore database backup.
+Revert updated records if necessary.
+Post Validation
+Verify USER_TAB updates.
+Run validation queries.
+Confirm scheduler logs in Splunk.
+🔥 My Recommendation (Important for your release)
+Execution Order
+1️⃣ Raise Jira tickets
+2️⃣ Link Jira → CRs
+3️⃣ CR1 → TPM/DB Data Prep
+4️⃣ CR2 → Pipeline Deployment
+Because:
+Data must exist before the scheduler or email process starts.
