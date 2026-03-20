@@ -1,1 +1,36 @@
-Just to clarify, this is not about whether UK CMB is part of Mimosa or not. The current demising behavior follows the logic implemented as part of the Mimosa project. Changing it now without the required enhancement or process update may impact the existing system. If a different approach is needed, it should ideally be handled as part of an enhancement.
+Short Description
+Production deployment of fix for report download issue in Comment Report
+Description
+This change request is raised to deploy a fix for an issue in the Comment Report functionality.
+Earlier, when users filled all required details, selected a single risk, and clicked on the Generate Report button, they were not able to download the report. This issue has been identified and fixed in the lower environments.
+The change involves deploying the validated fix to the production environment to ensure users can successfully generate and download the report.
+This is a planned deployment of a tested fix and does not involve any major functional changes.
+Business Justification
+To ensure users can successfully download reports from the Comment Report section
+To improve user experience and avoid disruption in report generation
+To align production behavior with validated functionality
+Implementation Plan
+Obtain approved change window.
+Deploy the fix using the standard deployment pipeline.
+Monitor deployment logs for successful execution.
+Perform basic validation post deployment.
+Customer / Business Impact
+No downtime expected
+No negative impact to users
+Issue resolution will improve report download functionality
+Technical Impact
+No database schema changes
+No infrastructure impact
+Standard deployment only
+Backout Plan
+Roll back to previous stable version using deployment pipeline
+Validate application functionality after rollback
+Post Implementation Verification
+Navigate to Comment Report section
+Fill required details and select a risk
+Click on Generate Report
+Verify report is successfully downloaded
+Release Plan
+Deployment via standard production pipeline
+Executed during approved change window
+Post-validation confirmation before closure
