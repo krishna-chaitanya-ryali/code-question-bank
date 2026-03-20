@@ -1,5 +1,8 @@
-low-risk updates and does not impact any critical services or ongoing operations.
-The change has been carefully reviewed and planned to ensure:
-No service disruption
-No dependency on impacted systems
-Execution within a controlled window
+Hi Mateusz,
+Thanks for the feedback — understood your concern.
+On the user recertification topic, from the RAP side everything has been verified and deployed successfully. The current dependency is primarily on the ERR/Java side, and Nitin has been coordinating closely with that team. I’ll stay aligned and continue supporting wherever needed from RAP.
+Regarding the release today, the change request has already been created and shared with Nitin. I’ll ensure I’m actively involved during the scheduled execution.
+On overall ownership, I am currently handling production fixes, enhancements, and CR activities in parallel. I understand your point on visibility and will make sure to be more proactive and visible in driving items going forward.
+For Anish, I’ll continue working with him to get him better aligned and more engaged.
+Also, it would be helpful to align on priorities (development vs production support), as managing both simultaneously is becoming challenging. We can discuss this further in our upcoming 1:1.
+Let me know if you’d like to connect today — happy to walk through everything.
