@@ -1,49 +1,29 @@
-✅ COMPLETE 1:1 SCRIPT WITH MATT
-🔹 1️⃣ Opening (Confident + Calm)
-Hi Matt, thanks for taking the time. I wanted to align on a few things regarding RAP ownership, current priorities, and how we can improve delivery going forward.
-🔹 2️⃣ Acknowledge His Feedback (Very Important)
-I went through your feedback regarding ownership and visibility. I understand your concern, and I wanted to share my perspective and align better.
-🔹 3️⃣ Show Your Work (Without Sounding Defensive)
-From my side, I’ve been actively handling production issues, CR deliveries, and enhancements in parallel to ensure the system remains stable and releases go smoothly.
-🔹 4️⃣ Leave / Issue Point (Your Contribution – Smartly)
-During my recent leave, I noticed a few access-related issues were pending. Once I returned, I worked on resolving them to stabilize the system. It highlighted that clearer ownership and validation across teams would help avoid such situations.
-🔹 5️⃣ User Recertification / Firefighting (CRITICAL PART)
-Regarding user recertification, from the RAP side everything was validated and deployed successfully. Some of the challenges were due to dependencies on other systems. From my side, I’ve been supporting wherever required to help move things forward.
-🔹 6️⃣ IMPORTANT – Fix Ownership Perception
-Going forward, I’ll ensure better visibility and communication from my side so that ownership and contributions are clearly aligned.
-🔹 7️⃣ Technical Reality (Anish Work – VERY CAREFUL)
-On the metric auto cascade work, I had a chance to review the current implementation. From what I observed, the approach doesn’t fully align with our architecture and coding standards.
-Pause.
-So instead of incremental fixes, it may require a more structured rework to ensure correctness, maintainability, and proper integration with the system.
-I’m currently reviewing it in detail and planning the best way to stabilize and move it forward.
-🔹 8️⃣ PRIORITY DISCUSSION (Your Strongest Point)
-Currently I’m handling production issues, enhancements, and CRs in parallel. To ensure better efficiency and delivery, it would really help if we can align on clear priorities — whether the focus should be production stability or feature delivery.
-🔹 9️⃣ TEAM SUPPORT (Anish – Leadership Tone)
-For Anish, I’ve been supporting him and will continue helping him get aligned. With clearer expectations and guidance, I believe we can improve overall delivery.
-🔹 🔟 Growth / Soft Release Hint (VERY IMPORTANT)
-Also, I’ve been working on RAP for quite some time now, so I’m open to contributing to other areas or modules as well if there are opportunities.
-👉 (This line = indirect project release signal)
-🔹 1️⃣1️⃣ Strong Closing
-Overall, my goal is to ensure stability, improve delivery, and contribute effectively wherever the team needs. I’m happy to align closely on priorities and expectations going forward.
-🔥 BONUS (If Conversation Gets Tough)
-If Matt pushes or questions:
-👉 Use this line:
-My intention is to ensure the solution is stable and production-ready, even if it requires reworking parts of the implementation.
-⚠️ FINAL REMINDERS
-Before you go:
-✔ Speak slowly
-✔ Don’t interrupt
-✔ Don’t argue
-✔ Don’t blame anyone directly
-✔ Keep calm tone
-🧠 What This Will Do
-After this conversation, Matt will think:
-✔ Krishna is mature
-✔ Krishna understands system deeply
-✔ Krishna is handling complexity
-✔ Krishna is not blaming — he is solving
-👉 This is 40 LPA level communication
-💪 Final Note
-Krishna, this is a very important conversation for your confidence.
-You are not going there to defend yourself.
-👉 You are going there to position yourself as a senior engineer
+JIRA TICKET – DB COPY REQUEST
+Summary
+Request to copy production schema/data to UAT environment
+Description
+This ticket is raised to request DBA/TPA support for copying the latest production schema/data into the UAT environment.
+Requirement:
+We need to copy the latest production data from the production database to the UAT database for testing and validation purposes.
+Details:
+Production DB: gbl25188882
+UAT DB: gbl25188875
+Schemas involved:
+RAPUSER_ERR
+RAPUSER_PROD
+The request is to refresh the above schemas in UAT with the latest data from production to ensure consistency for ongoing testing activities.
+Purpose / Justification
+To ensure UAT environment has the latest production data
+To support testing and validation activities
+To maintain data consistency across environments
+Expected Outcome
+UAT schemas are refreshed with latest production data
+Data is available for testing without issues
+Notes
+Kindly ensure appropriate masking/anonymization if required as per data policies
+Please confirm once the activity is completed
+Priority
+Medium (can adjust based on urgency)
+💡 Optional (if you want to sound more polished)
+Add this line at end:
+“This is a standard environment refresh request and does not involve any application changes.”
