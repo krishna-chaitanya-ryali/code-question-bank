@@ -1,40 +1,14 @@
-cascade_to_child = data.get("CASCADE_TO_CHILD")  # YES / NO
-selected_locations = data.get("CASCADED_LOCATIONS", [])
+cascaded_location_ids = data.get("CASCADED_LOCATIONS", "")
 
+if isinstance(cascaded_location_ids, str):
+    cascaded_location_ids = [
+        int(x.strip()) for x in cascaded_location_ids.split(",") if x.strip()
+    ]
 
-if cascade_to_child == "YES":
-    
-    if not selected_locations:
-        raise Exception("Cascade is YES but no locations selected")
+values = []
 
-    values = []
-    for rmm_id in selected_locations:
-        location_type = get_location_type(rmm_id)
-        values.append((METRIC_DETAIL_ID, rmm_id, location_type, userid))
+for rmm_id in cascaded_location_ids:
+    location_type = "MARKET"  # or your logic
+    values.append((METRIC_DETAIL_ID, rmm_id, location_type, userid))
 
-    cursor.executemany(insert_query, values)
-
-
-def handle_cascade_locations(metric_id, cascade_flag, locations, user):
-    
-    if cascade_flag == "YES":
-        if not locations:
-            raise ValueError("Locations required when cascade is YES")
-
-        values = []
-        for rmm_id in locations:
-            location_type = get_location_type(rmm_id)
-            values.append((metric_id, rmm_id, location_type, user))
-
-        cursor.executemany(insert_query, values)
-
-    elif cascade_flag == "NO":
-        return
-
-    else:
-        raise ValueError("Invalid cascade flag")
-
-else:
-    # Cascade = NO
-    # Ensure no data inserted
-    pass
+self.bulk_update_data(insert_query, values)
