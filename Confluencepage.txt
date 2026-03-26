@@ -1,14 +1,44 @@
-cascaded_location_ids = data.get("CASCADED_LOCATIONS", "")
+Hi [Name],
 
-if isinstance(cascaded_location_ids, str):
-    cascaded_location_ids = [
-        int(x.strip()) for x in cascaded_location_ids.split(",") if x.strip()
-    ]
+Good morning.
 
-values = []
+As discussed in our earlier meeting, we are sharing the details of the RMM (Pack) demising process along with the respective SQL queries for your review.
 
-for rmm_id in cascaded_location_ids:
-    location_type = "MARKET"  # or your logic
-    values.append((METRIC_DETAIL_ID, rmm_id, location_type, userid))
+---
 
-self.bulk_update_data(insert_query, values)
+Current Process
+
+- Update user access to read-only in:
+  - MAP_RAP_USER_ROLE
+  - METRIC_ACCESS
+- The RMM is retained in the menu by renaming it as “Inactive”.
+
+---
+
+Proposed Process
+
+- Continue updating user access to read-only in both tables.
+- Mark the RMM as inactive in RAP_RMM_GROUP by setting:
+  - ACTIVE = 'N'
+- With this change, the RMM will no longer be visible in the menu.
+
+---
+
+We have attached the relevant SQL queries for the above process.
+
+Request you to kindly review and confirm if there will be any impact on downstream systems, or if any additional considerations are required from our side.
+
+Please let us know in case you would like to discuss this further.
+
+Thanks & Regards,
+Krishna Chaitanya
+
+---
+
+This version:
+
+- ✔ Clearly says “as discussed earlier”
+- ✔ Positions this as a follow-up (not new info)
+- ✔ Keeps it clean and to the point
+
+If you want, I can make it even shorter (5–6 lines version) for quick email.
