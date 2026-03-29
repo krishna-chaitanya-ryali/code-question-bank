@@ -1,44 +1,41 @@
-Hi [Name],
-
-Good morning.
-
-As discussed in our earlier meeting, we are sharing the details of the RMM (Pack) demising process along with the respective SQL queries for your review.
-
----
-
-Current Process
-
-- Update user access to read-only in:
-  - MAP_RAP_USER_ROLE
-  - METRIC_ACCESS
-- The RMM is retained in the menu by renaming it as “Inactive”.
-
----
-
-Proposed Process
-
-- Continue updating user access to read-only in both tables.
-- Mark the RMM as inactive in RAP_RMM_GROUP by setting:
-  - ACTIVE = 'N'
-- With this change, the RMM will no longer be visible in the menu.
-
----
-
-We have attached the relevant SQL queries for the above process.
-
-Request you to kindly review and confirm if there will be any impact on downstream systems, or if any additional considerations are required from our side.
-
-Please let us know in case you would like to discuss this further.
-
-Thanks & Regards,
-Krishna Chaitanya
-
----
-
-This version:
-
-- ✔ Clearly says “as discussed earlier”
-- ✔ Positions this as a follow-up (not new info)
-- ✔ Keeps it clean and to the point
-
-If you want, I can make it even shorter (5–6 lines version) for quick email.
+Short Description
+Production database update to inactivate selected locations in RAP application
+Description
+This change request is raised to inactivate selected locations in the RAP application based on the approved list.
+The update ensures that these locations are:
+Removed from the RAP menu
+Not available in the Access Request form
+Not visible in reports (including security reports)
+This is a data-only update and does not involve any application code or schema changes.
+Reason for Change
+To remove inactive locations from the system
+To ensure only active locations are available for selection
+To maintain data accuracy and consistency
+Implementation Plan
+Obtain approved change window and DB access.
+Identify locations to be inactivated (as per provided list).
+Take backup of affected records.
+Execute SQL update queries to mark locations as inactive.
+Verify updates in the database.
+Commit changes.
+Customer / Business Impact
+No downtime expected
+No negative user impact
+Improves data accuracy in UI and reports
+Technical Impact
+No application restart required
+No schema changes
+Limited to specific location records
+Backout Plan
+Restore original status using backup data
+Revert updated records if required
+Post Implementation Verification
+Validate locations are inactive in DB
+Confirm locations are not visible in:
+RAP menu
+Access Request form
+Reports
+Release Plan
+Standalone production DB change
+Executed during approved window
+No application deployment involved
