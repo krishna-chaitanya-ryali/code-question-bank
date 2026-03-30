@@ -1,41 +1,61 @@
-Short Description
-Production database update to inactivate selected locations in RAP application
-Description
-This change request is raised to inactivate selected locations in the RAP application based on the approved list.
-The update ensures that these locations are:
-Removed from the RAP menu
-Not available in the Access Request form
-Not visible in reports (including security reports)
-This is a data-only update and does not involve any application code or schema changes.
-Reason for Change
-To remove inactive locations from the system
-To ensure only active locations are available for selection
-To maintain data accuracy and consistency
-Implementation Plan
-Obtain approved change window and DB access.
-Identify locations to be inactivated (as per provided list).
-Take backup of affected records.
-Execute SQL update queries to mark locations as inactive.
-Verify updates in the database.
-Commit changes.
-Customer / Business Impact
-No downtime expected
-No negative user impact
-Improves data accuracy in UI and reports
-Technical Impact
-No application restart required
-No schema changes
-Limited to specific location records
-Backout Plan
-Restore original status using backup data
-Revert updated records if required
-Post Implementation Verification
-Validate locations are inactive in DB
-Confirm locations are not visible in:
-RAP menu
-Access Request form
-Reports
-Release Plan
-Standalone production DB change
-Executed during approved window
-No application deployment involved
+🔵 1. Create Cascade Status Table
+Title: Create METRIC_CASCADE_STATUS table
+Description:
+Store cascade lifecycle:
+PENDING / ACCEPTED / REJECTED
+Columns:
+METRIC_DETAIL_ID
+RMM_ID
+STATUS
+GO_LIVE_DATE
+REJECTION_COMMENT
+Story Points: 3
+🔵 2. Enhance Cascade Insert Logic to Initialize Status
+Title: Insert default cascade status during metric creation
+Description:
+When cascade happens:
+Insert into STATUS table
+Default = PENDING
+Story Points: 4
+🔵 3. Accept Cascade API
+Title: Implement Accept Cascade functionality
+Description:
+Update:
+STATUS → ACCEPTED
+GO_LIVE_DATE
+Story Points: 3
+🔵 4. Reject Cascade API
+Title: Implement Reject Cascade functionality
+Description:
+Update:
+STATUS → REJECTED
+Store rejection comment
+Story Points: 3
+🔵 5. Dispensation Handling (Basic Backend)
+Title: Create dispensation data model and API
+Description:
+Store rejection-related info
+(File upload can be placeholder for now)
+Story Points: 5
+🔵 6. Enhance Retrieval API with Status
+Title: Add cascade status to retrieval API
+Description:
+Return:
+STATUS
+GO_LIVE_DATE
+Join with STATUS table
+Story Points: 4
+🔵 7. Bulk Accept / Reject API
+Title: Implement bulk cascade action API
+Description:
+Accept/Reject multiple metrics at once
+Story Points: 4
+🔵 8. Cascade Validation Rules
+Title: Implement validation logic for cascade workflow
+Description:
+Cascade YES → locations mandatory
+Reject → comment mandatory
+Story Points: 3
+🔵 9. Basic Audit Logging (Optional if time permits)
+Title: Track cascade actions
+Story Points: 2
