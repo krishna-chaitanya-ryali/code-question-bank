@@ -1,117 +1,107 @@
-Ticket 1: Cascade Mapping Handling in Add/Edit Flow
-Story Points: 2
-Description:
-Enhance existing Add/Edit metric functionality to support cascading locations storage.
-Scope:
-Insert selected RMM IDs into METRIC_CASCADE_LOCATIONS
-Support multiple locations (bulk insert)
-Store:
-METRIC_DETAIL_ID
-RMM_ID
-LOCATION_TYPE
-Audit fields
-Acceptance Criteria:
-Multiple locations are stored correctly
-Data persists correctly for edit flow
-No duplicate entries for same metric/location
-🟢 Ticket 2: Remove Flow Enhancement with Cascade Support
-Story Points: 2
-Description:
-Modify remove functionality to support cascade-enabled metrics.
-Scope:
-If cascade_to_child = YES:
-Open edit-like flow (backend support)
-Perform:
-Update metric details
-Insert new locations (if any)
-Perform soft delete
-Move removed metrics into “To Be Removed” section
-Acceptance Criteria:
-Update + Remove works correctly
-Removed metrics appear in “To Be Removed”
-Existing remove flow unchanged for non-cascade
-🟢 Ticket 3: To Be Removed → Re-Cascade Flow
-Story Points: 2
-Description:
-Enable cascading of metrics from “To Be Removed” section back to parent hierarchy.
-Scope:
-Handle cascade action from “To Be Removed”
-Insert into cascade (parent-level processing)
-Trigger review flow
-Allow reactivation into dashboard
-Acceptance Criteria:
-Metrics can be re-cascaded
-Data flows to parent correctly
-Metric reappears in dashboard after approval
-🟢 Ticket 4: getCascadeMetrics API Development
-Story Points: 2
-Description:
-Develop/Enhance API to provide all cascade-related data for Management tab.
-Scope:
-Create API:
-
-getCascadeMetrics
-Return:
-cascaded_to_child
-cascaded_from_parent
-to_be_removed
-Aggregate data from multiple tables
-Acceptance Criteria:
-API returns all 3 sections correctly
-Data matches UI expectations
-Handles empty states
-🟢 Ticket 5: Cascade Filtering Logic (Multi-location Only)
-Story Points: 1
-Description:
-Filter metrics to show only those cascaded to more than one location.
-Scope:
-Use:
-
+Confluence Page: Metric Auto Cascade – Backend Progress Update
+🔷 1. Overview
+This document summarizes the backend progress for the Metric Auto Cascade enhancement.
+The focus so far has been on:
+Cascade-enabled Add/Edit/Remove flows
+Data model changes
+API enhancements
+Initial integration testing
+🔷 2. Completed Work ✅
+🟢 2.1 Database Enhancements
+Added new columns in RAP_METRIC_DETAILS:
+CASCADED_LOCATIONS
+METRIC_APPLICABILITY
+METRIC_NAME_CASCADE
+THRESHOLD_CASCADE
+Created mapping table:
 METRIC_CASCADE_LOCATIONS
-Apply:
+Established FK relationship with RAP_METRIC_DETAILS.METRIC_DETAIL_ID
+🟢 2.2 Add Metric (Cascade Enabled)
+Enhanced:
+Add New Option to DB API
+Retrieve JSON Info API
+Cascade-related fields are:
+Stored correctly
+Retrieved correctly
+Functionality tested and working in DEV
+🟢 2.3 Edit Metric (Cascade Enabled)
+Updated:
+cascade_get_metric_details route
+Query modifications (e.g., Query #522)
+Cascade fields retrieved during edit:
+Metric Applicability
+Metric Name Cascade
+Threshold Cascade
+Update route enhanced:
+cascade_admin_update_metric_name_details_tbl
+Edit flow working successfully
+👉 Pending in Edit:
+Insert/update handling for CASCADED_LOCATIONS (multi-location updates)
+🟢 2.4 Remove Flow (Cascade Support)
+Enhanced remove logic:
+Update → Remove sequence implemented
+Changes applied in:
+Retrieve JSON API (Query #7)
+Removal flow:
+Updates metric details first
+Then performs soft delete
+✔️ Tested and working in DEV
+🟢 2.5 Deployment & Testing
+All above changes:
+Deployed to DEV environment
+Successfully tested for:
+Add
+Edit
+Remove (basic cascade flow)
+🔶 3. In Progress 🚧
+🟡 3.1 Metric Assignment Tab (Management Section)
+Currently working on backend support for:
+🔹 To Be Removed Section
+Populate metrics dynamically
+Ensure correct mapping with remove flow
+🔹 Cascaded to Child
+Show only metrics where:
 
-GROUP BY METRIC_DETAIL_ID
-HAVING COUNT(RMM_ID) > 1
-Integrate into:
-Cascade to Child
-Cascade to Parent
-Acceptance Criteria:
-Only multi-location cascaded metrics are shown
-Single-location metrics excluded
-🟢 Ticket 6: Bulk Operation Support (Insert/Update)
-Story Points: 1
-Description:
-Ensure bulk operations work efficiently for cascade operations.
-Scope:
-Use executemany for inserts
-Optimize DB calls
-Handle list of locations properly
-Acceptance Criteria:
-Bulk insert works without failure
-Performance is optimized
-🟢 Ticket 7: Data Model Validation & FK Integrity
-Story Points: 1
-Description:
-Validate schema and relationships for cascade implementation.
-Scope:
-Verify FK:
-
-METRIC_DETAIL_ID → RAP_METRIC_DETAILS.METRIC_DETAIL_ID
-Validate constraints
-Ensure ON DELETE CASCADE works
-Acceptance Criteria:
-No FK violations
-Data consistency maintained
-🟢 Ticket 8: Investigation – Cascade to Parent Data Handling
-Story Points: 1
-Description:
-Investigate how cascade-to-parent flow should be stored and managed.
-Scope:
-Decide:
-New table OR reuse existing?
-Define structure for:
-Parent cascade tracking
-Status handling
-Acceptance Criteria:
-Clear design decision documented
-Approach finalized for implementation
+cascaded locations count > 1
+Query-level filtering in progress
+🟡 3.2 API Enhancements
+Working on:
+Aggregated response for:
+Cascaded to Child
+Cascaded from Parent
+To Be Removed
+🔴 4. Pending / Next Steps
+Handle multi-location updates in edit flow (CASCADED_LOCATIONS)
+Complete Metric Assignment API (getCascadeMetrics)
+Implement filtering logic (multi-location cascade)
+Backend support for:
+To Be Removed → Cascade flow
+Further alignment with frontend once available
+🔷 5. Summary
+Core backend foundation for cascade is completed
+Add/Edit/Remove flows are working with cascade support
+Current focus is on:
+Metric Assignment tab
+Aggregated APIs
+Workflow completion
+📧 Mail Draft to Matt & Nitin
+Email
+Subject
+Metric Auto Cascade – Backend Progress Update
+Hi Matt / Nitin,
+Please find below the update on the backend progress for the Metric Auto Cascade enhancement.
+We have completed the core backend implementation for cascade-enabled Add, Edit, and Remove functionalities. This includes database changes, API enhancements, and initial testing in the DEV environment.
+Specifically:
+Cascade-related fields have been added and integrated into RAP_METRIC_DETAILS
+Mapping table for cascaded locations has been created with proper relationships
+Add and Edit flows are fully working with cascade fields
+Remove flow has been enhanced to support cascade logic (update followed by removal)
+All changes have been deployed and tested successfully in DEV
+Currently, we are working on the Metric Assignment section under the Management tab. This includes:
+Populating the “To Be Removed” section
+Filtering cascaded metrics (based on multiple locations)
+Enhancing APIs to provide aggregated cascade data
+Next steps involve completing the assignment view APIs and aligning with frontend integration once available.
+Please let me know if you would like a walkthrough of the current implementation.
+Thanks,
+Krishna
