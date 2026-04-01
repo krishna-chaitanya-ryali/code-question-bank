@@ -1,32 +1,50 @@
+WITH mrur_all AS (
+    SELECT user_id, rap_user_role_id, rmm_id
+    FROM rapuser.map_rap_user_role
+    UNION ALL
+    SELECT user_id, rap_user_role_id, rmm_id
+    FROM rapuser.map_rap_user_role_deleted
+)
 
 SELECT 
     ut.LINEMANAGER_ID,
-    ut.LM_NAME,
-    ut.LM_MAIL,
-    COUNT(*) AS RESPONSE_COUNT
-FROM USER_TAB ut
-JOIN RECERT_RESPONSE rr 
-    ON rr.REPORTEES_ID = ut.EMP_ID
-WHERE rr.ACCESS_STATUS IN ('Maintain', 'Revoke')
-AND ut.LINEMANAGER_ID IS NOT NULL
-GROUP BY 
-    ut.LINEMANAGER_ID,
-    ut.LM_NAME,
-    ut.LM_MAIL;
+    ut.LINEMANAGER_NAME,
+    ut.LINEMANAGER_MAIL_ID,
 
-
-SELECT 
-    ut.LINEMANAGER_ID,
-    ut.LM_NAME,
-    ut.LM_MAIL,
     COUNT(DISTINCT ut.EMP_ID) AS TOTAL_REPORTEES,
-    COUNT(DISTINCT rr.REPORTEES_ID) AS RESPONDED_REPORTEES
-FROM USER_TAB ut
-LEFT JOIN RECERT_RESPONSE rr 
+
+    COUNT(DISTINCT CASE 
+        WHEN rr.REPORTEES_ID IS NOT NULL 
+        THEN ut.EMP_ID 
+    END) AS RESPONDED_REPORTEES
+
+FROM RAPUSER.USER_TAB ut
+
+JOIN mrur_all mrur
+    ON ut.user_id = mrur.user_id
+
+JOIN rapuser.user_role ur
+    ON mrur.rap_user_role_id = ur.user_role_id
+
+JOIN rapuser.rap_rmm_group rmg
+    ON mrur.rmm_id = rmg.rmm_id
+   AND rmg.active = 'Y'
+
+LEFT JOIN RAPUSER.RECERT_RESPONSE rr
     ON rr.REPORTEES_ID = ut.EMP_ID
-    AND rr.ACCESS_STATUS IN ('Maintain', 'Revoke')
+   AND rr.rmm_id = rmg.rmm_id
+   AND rr.access_level = ur.user_role_name
+   AND rr.review_status = 'Completed'
+
 WHERE ut.LINEMANAGER_ID IS NOT NULL
+
 GROUP BY 
     ut.LINEMANAGER_ID,
-    ut.LM_NAME,
-    ut.LM_MAIL;
+    ut.LINEMANAGER_NAME,
+    ut.LINEMANAGER_MAIL_ID
+
+HAVING COUNT(DISTINCT ut.EMP_ID)
+     = COUNT(DISTINCT CASE 
+         WHEN rr.REPORTEES_ID IS NOT NULL 
+         THEN ut.EMP_ID 
+       END);
