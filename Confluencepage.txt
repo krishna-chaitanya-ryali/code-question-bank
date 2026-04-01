@@ -1,107 +1,32 @@
-Confluence Page: Metric Auto Cascade – Backend Progress Update
-🔷 1. Overview
-This document summarizes the backend progress for the Metric Auto Cascade enhancement.
-The focus so far has been on:
-Cascade-enabled Add/Edit/Remove flows
-Data model changes
-API enhancements
-Initial integration testing
-🔷 2. Completed Work ✅
-🟢 2.1 Database Enhancements
-Added new columns in RAP_METRIC_DETAILS:
-CASCADED_LOCATIONS
-METRIC_APPLICABILITY
-METRIC_NAME_CASCADE
-THRESHOLD_CASCADE
-Created mapping table:
-METRIC_CASCADE_LOCATIONS
-Established FK relationship with RAP_METRIC_DETAILS.METRIC_DETAIL_ID
-🟢 2.2 Add Metric (Cascade Enabled)
-Enhanced:
-Add New Option to DB API
-Retrieve JSON Info API
-Cascade-related fields are:
-Stored correctly
-Retrieved correctly
-Functionality tested and working in DEV
-🟢 2.3 Edit Metric (Cascade Enabled)
-Updated:
-cascade_get_metric_details route
-Query modifications (e.g., Query #522)
-Cascade fields retrieved during edit:
-Metric Applicability
-Metric Name Cascade
-Threshold Cascade
-Update route enhanced:
-cascade_admin_update_metric_name_details_tbl
-Edit flow working successfully
-👉 Pending in Edit:
-Insert/update handling for CASCADED_LOCATIONS (multi-location updates)
-🟢 2.4 Remove Flow (Cascade Support)
-Enhanced remove logic:
-Update → Remove sequence implemented
-Changes applied in:
-Retrieve JSON API (Query #7)
-Removal flow:
-Updates metric details first
-Then performs soft delete
-✔️ Tested and working in DEV
-🟢 2.5 Deployment & Testing
-All above changes:
-Deployed to DEV environment
-Successfully tested for:
-Add
-Edit
-Remove (basic cascade flow)
-🔶 3. In Progress 🚧
-🟡 3.1 Metric Assignment Tab (Management Section)
-Currently working on backend support for:
-🔹 To Be Removed Section
-Populate metrics dynamically
-Ensure correct mapping with remove flow
-🔹 Cascaded to Child
-Show only metrics where:
 
-cascaded locations count > 1
-Query-level filtering in progress
-🟡 3.2 API Enhancements
-Working on:
-Aggregated response for:
-Cascaded to Child
-Cascaded from Parent
-To Be Removed
-🔴 4. Pending / Next Steps
-Handle multi-location updates in edit flow (CASCADED_LOCATIONS)
-Complete Metric Assignment API (getCascadeMetrics)
-Implement filtering logic (multi-location cascade)
-Backend support for:
-To Be Removed → Cascade flow
-Further alignment with frontend once available
-🔷 5. Summary
-Core backend foundation for cascade is completed
-Add/Edit/Remove flows are working with cascade support
-Current focus is on:
-Metric Assignment tab
-Aggregated APIs
-Workflow completion
-📧 Mail Draft to Matt & Nitin
-Email
-Subject
-Metric Auto Cascade – Backend Progress Update
-Hi Matt / Nitin,
-Please find below the update on the backend progress for the Metric Auto Cascade enhancement.
-We have completed the core backend implementation for cascade-enabled Add, Edit, and Remove functionalities. This includes database changes, API enhancements, and initial testing in the DEV environment.
-Specifically:
-Cascade-related fields have been added and integrated into RAP_METRIC_DETAILS
-Mapping table for cascaded locations has been created with proper relationships
-Add and Edit flows are fully working with cascade fields
-Remove flow has been enhanced to support cascade logic (update followed by removal)
-All changes have been deployed and tested successfully in DEV
-Currently, we are working on the Metric Assignment section under the Management tab. This includes:
-Populating the “To Be Removed” section
-Filtering cascaded metrics (based on multiple locations)
-Enhancing APIs to provide aggregated cascade data
-Next steps involve completing the assignment view APIs and aligning with frontend integration once available.
-Please let me know if you would like a walkthrough of the current implementation.
-Thanks,
-Krishna
+SELECT 
+    ut.LINEMANAGER_ID,
+    ut.LM_NAME,
+    ut.LM_MAIL,
+    COUNT(*) AS RESPONSE_COUNT
+FROM USER_TAB ut
+JOIN RECERT_RESPONSE rr 
+    ON rr.REPORTEES_ID = ut.EMP_ID
+WHERE rr.ACCESS_STATUS IN ('Maintain', 'Revoke')
+AND ut.LINEMANAGER_ID IS NOT NULL
+GROUP BY 
+    ut.LINEMANAGER_ID,
+    ut.LM_NAME,
+    ut.LM_MAIL;
+
+
+SELECT 
+    ut.LINEMANAGER_ID,
+    ut.LM_NAME,
+    ut.LM_MAIL,
+    COUNT(DISTINCT ut.EMP_ID) AS TOTAL_REPORTEES,
+    COUNT(DISTINCT rr.REPORTEES_ID) AS RESPONDED_REPORTEES
+FROM USER_TAB ut
+LEFT JOIN RECERT_RESPONSE rr 
+    ON rr.REPORTEES_ID = ut.EMP_ID
+    AND rr.ACCESS_STATUS IN ('Maintain', 'Revoke')
+WHERE ut.LINEMANAGER_ID IS NOT NULL
+GROUP BY 
+    ut.LINEMANAGER_ID,
+    ut.LM_NAME,
+    ut.LM_MAIL;
