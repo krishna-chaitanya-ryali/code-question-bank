@@ -1,50 +1,5 @@
-WITH mrur_all AS (
-    SELECT user_id, rap_user_role_id, rmm_id
-    FROM rapuser.map_rap_user_role
-    UNION ALL
-    SELECT user_id, rap_user_role_id, rmm_id
-    FROM rapuser.map_rap_user_role_deleted
-)
-
-SELECT 
-    ut.LINEMANAGER_ID,
-    ut.LINEMANAGER_NAME,
-    ut.LINEMANAGER_MAIL_ID,
-
-    COUNT(DISTINCT ut.EMP_ID) AS TOTAL_REPORTEES,
-
-    COUNT(DISTINCT CASE 
-        WHEN rr.REPORTEES_ID IS NOT NULL 
-        THEN ut.EMP_ID 
-    END) AS RESPONDED_REPORTEES
-
-FROM RAPUSER.USER_TAB ut
-
-JOIN mrur_all mrur
-    ON ut.user_id = mrur.user_id
-
-JOIN rapuser.user_role ur
-    ON mrur.rap_user_role_id = ur.user_role_id
-
-JOIN rapuser.rap_rmm_group rmg
-    ON mrur.rmm_id = rmg.rmm_id
-   AND rmg.active = 'Y'
-
-LEFT JOIN RAPUSER.RECERT_RESPONSE rr
-    ON rr.REPORTEES_ID = ut.EMP_ID
-   AND rr.rmm_id = rmg.rmm_id
-   AND rr.access_level = ur.user_role_name
-   AND rr.review_status = 'Completed'
-
-WHERE ut.LINEMANAGER_ID IS NOT NULL
-
-GROUP BY 
-    ut.LINEMANAGER_ID,
-    ut.LINEMANAGER_NAME,
-    ut.LINEMANAGER_MAIL_ID
-
-HAVING COUNT(DISTINCT ut.EMP_ID)
-     = COUNT(DISTINCT CASE 
-         WHEN rr.REPORTEES_ID IS NOT NULL 
-         THEN ut.EMP_ID 
-       END);
+Updates have been completed as per the requirements:
+Inactive Locations Removal: All inactive locations have been removed from RAP and the Consolidated Report Section (CRS).
+Access Request Form Update: Inactive locations have been removed from the Access Request Form. Additionally, all standalone dashboards have been included under a newly introduced “Other” section for better visibility and access.
+Security Report Behavior: Security reports will no longer display inactive locations. Standalone dashboards are also included via the “Other” section to ensure consistent functionality.
+Note: Since standalone locations are not part of the main hierarchy, they have been grouped under the “Other” tab to ensure they are available across both Access Request Form and Security
