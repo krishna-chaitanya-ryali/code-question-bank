@@ -1,8 +1,5 @@
-Updates have been completed as per the requirements:
-Inactive Locations Removal: All inactive locations have been removed from RAP and the Consolidated Report Section (CRS).
-Access Request Form Update: Inactive locations have been removed from the Access Request Form. Additionally, all standalone dashboards have been included under a newly introduced “Other” section for better visibility and access.
-Security Report Behavior: Security reports will no longer display inactive locations. Standalone dashboards are also included via the “Other” section to ensure consistent functionality.
-Note: Since standalone locations are not part of the main hierarchy, they have been grouped under the “Other” tab to ensure they are available across both Access Request Form and Security
-
-
-Name change from “Contractual Risk” to “Contract Risk” has been updated. This is a display-level change with no impact on existing functionality
+CIRCO-related changes: No updates have been made, as CIRCO is not part of the current requirement.
+Demised Locations: Demised locations can be verified in both the Consolidated Report Section and dashboards.
+Standalone Locations: As discussed, no direct changes were made. Instead, an “Other” tab has been introduced under Global Business, and all standalone locations are mapped under this section to ensure they are accessible in the Access Request Form.
+Please note that standalone locations need to be properly tagged (e.g., under Global Business/Region). Without tagging, they will not be available in the Access Request Form or reflected in the Security Report.
+Security Report Validation: It is recommended to validate these changes in Production, as UAT data may differ and may not reflect the exact behavior due to data inconsistencies.
