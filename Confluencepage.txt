@@ -1,5 +1,4 @@
-CIRCO-related changes: No updates have been made, as CIRCO is not part of the current requirement.
-Demised Locations: Demised locations can be verified in both the Consolidated Report Section and dashboards.
-Standalone Locations: As discussed, no direct changes were made. Instead, an “Other” tab has been introduced under Global Business, and all standalone locations are mapped under this section to ensure they are accessible in the Access Request Form.
-Please note that standalone locations need to be properly tagged (e.g., under Global Business/Region). Without tagging, they will not be available in the Access Request Form or reflected in the Security Report.
-Security Report Validation: It is recommended to validate these changes in Production, as UAT data may differ and may not reflect the exact behavior due to data inconsistencies.
+Just a thought — currently, allocation changes are being added continuously in Confluence, which may require us to raise CRs frequently (almost daily).
+Since we already completed most of the activities on Friday and are targeting the second trigger on 8th April, my suggestion is to consolidate all remaining changes and execute them together by 7th EOD.
+This will help us avoid multiple CRs and exception requests, especially since DB-related CRs require ~24 hours and we’ve already completed the backup CRs.
+Let me know your thoughts.
