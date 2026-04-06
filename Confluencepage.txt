@@ -1,4 +1,11 @@
-Just a thought — currently, allocation changes are being added continuously in Confluence, which may require us to raise CRs frequently (almost daily).
-Since we already completed most of the activities on Friday and are targeting the second trigger on 8th April, my suggestion is to consolidate all remaining changes and execute them together by 7th EOD.
-This will help us avoid multiple CRs and exception requests, especially since DB-related CRs require ~24 hours and we’ve already completed the backup CRs.
-Let me know your thoughts.
+SELECT DISTINCT r.LINEMANAGER_ID
+FROM RAPUSER.RECERTIFICATION_EMAIL_LIST r
+WHERE r.MAIL_SENT_COUNT = 1
+  AND r.LINEMANAGER_ID IS NOT NULL
+  AND r.SYSTEM_REVOKE_DONE_IND = 'N'
+  AND NOT EXISTS (
+        SELECT 1
+        FROM RAPUSER.USER_TAB ut
+        WHERE ut.LINEMANAGER_ID = r.LINEMANAGER_ID
+          AND ut.CREAT_DT >= DATE '2026-03-16'
+  );
