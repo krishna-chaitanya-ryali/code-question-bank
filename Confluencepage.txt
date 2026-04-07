@@ -1,33 +1,37 @@
 Short Description
-Production database update to modify line manager details for selected users
+Production database update to demise and reactivate selected URL locations
 Description
-This change request is raised to update line manager details for selected users based on an approved user request.
-The change involves updating existing records to reflect the correct line manager information. This is a data-only update and does not involve any application code or schema changes.
+This change request is raised to update the status of selected URL locations in the production database.
+The activity includes:
+Marking certain URL locations as demised (inactive)
+Reactivating selected URL locations as required
+These updates are based on approved user inputs and are required to ensure correct visibility and usage of URL locations in the application.
+This is a data-only update and does not involve any application code or schema changes.
 Reason for Change
-To update line manager details as per user request
-To ensure accurate reporting and hierarchy information
-To maintain data consistency
+To update URL location status as per user request
+To ensure only valid locations are active in the system
+To maintain accurate and consistent data
 Implementation Plan
-Obtain approved change window and database access.
-Identify the users for whom line manager details need to be updated.
+Obtain approved change window and DB access.
+Identify URL locations to be demised/reactivated.
 Take backup of existing records.
-Execute SQL update queries to modify line manager details.
+Execute SQL update queries to modify location status.
 Verify the updates.
 Commit changes.
 Customer / Business Impact
 No downtime expected
-No impact to users
-Improves accuracy of reporting structure
+No negative user impact
+Ensures correct location visibility
 Technical Impact
 No application restart required
 No schema changes
-Limited to specific user records
+Limited to specific records
 Backout Plan
-Restore original values using backup data
+Restore original status using backup data
 Revert updates if required
 Post Implementation Verification
-Validate updated line manager details in database
-Confirm changes reflect correctly
+Validate location status in database
+Confirm correct visibility in application
 Release Plan
-Standalone production database change
-Executed during approved change window
+Standalone production DB change
+Executed during approved window
