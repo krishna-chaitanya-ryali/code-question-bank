@@ -1,3 +1,4 @@
-Additionally, I wanted to check if there are any possibilities for internal conversion or longer-term opportunities within the team. I would be open to considering that as well.
-
-Additionally, I wanted to mention that from my current organization’s side, there are no constraints at this point regarding internal conversion, if such an opportunity is explored.
+Just wanted to check on the current approach for handling these delegation/record updates. Since new records are still getting added, we are ending up raising CRs and updating details almost on a daily basis.
+Do we have a defined cut-off or plan for this activity? For example, are we targeting to continue this till 15th April (recertification) or is there a plan to consolidate and execute in one go?
+From a process perspective, handling this daily is becoming a bit repetitive. Alternatively, for missed accesses, users could also raise access requests which can be approved by respective pack owners.
+Just sharing this as a suggestion—happy to align based on the agreed approach.
