@@ -1,14 +1,4 @@
-Hi Matt,
-
-I wanted to provide a quick update on the progress for the Metric Auto Cascade work.
-
-Over the past week, a significant portion of time has been spent on user certification activities, including CR creation, resolving issues, CAB discussions, and audit-related follow-ups. In addition, I worked on a couple of high-priority short-term requests that required immediate attention.
-
-Due to these parallel priorities, progress on the Metric Auto Cascade feature has been limited this week.
-
-That said, the backend foundation for the feature is already in place, and I’m confident that we can make steady progress going forward. It would be helpful if we can prioritize dedicated time for this feature, as focused effort will enable us to deliver it more efficiently and within expected timelines.
-
-Please let me know your thoughts, and I’m happy to align accordingly.
-
-Thanks,
-Krishna
+Hi Matt, I wanted to discuss something important regarding my current role.
+I’ve been working on the RAP platform for several years now, handling production support, releases, and enhancements consistently.
+At this point, I would like to request a transition out of this project. I feel I have reached a stage where I would benefit from working on a different area or project to expand my experience and take on new challenges.
+I will, of course, ensure a smooth transition and complete my current responsibilities.
