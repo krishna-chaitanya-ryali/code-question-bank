@@ -1,4 +1,6 @@
-Just wanted to check on the current approach for handling these delegation/record updates. Since new records are still getting added, we are ending up raising CRs and updating details almost on a daily basis.
-Do we have a defined cut-off or plan for this activity? For example, are we targeting to continue this till 15th April (recertification) or is there a plan to consolidate and execute in one go?
-From a process perspective, handling this daily is becoming a bit repetitive. Alternatively, for missed accesses, users could also raise access requests which can be approved by respective pack owners.
-Just sharing this as a suggestion—happy to align based on the agreed approach.
+Thanks Rajeev, noted.
+Just to clarify from our side — delegation functionality was not part of the initial discussion for this phase, so currently handling this manually on a daily basis is becoming quite effort-intensive.
+Also, if we continue processing these requests daily until recertification, we may need to prioritize this activity over other planned items (like metric cascade, etc.), as this requires manual effort and careful tracking to avoid missing any delegations.
+Additionally, just an observation — if a large number of line managers are unable to complete the recertification, we may continue receiving such requests frequently, which could impact the effectiveness of the recertification process itself.
+From a planning perspective, it would help if we align on whether we should continue focusing on these delegation updates as a priority during this period.
+If the expectation is to handle this on a daily basis, we are fine to proceed accordingly, but just wanted to highlight the impact and confirm alignment.
