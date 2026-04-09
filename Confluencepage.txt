@@ -1,6 +1,31 @@
-Thanks Rajeev, noted.
-Just to clarify from our side — delegation functionality was not part of the initial discussion for this phase, so currently handling this manually on a daily basis is becoming quite effort-intensive.
-Also, if we continue processing these requests daily until recertification, we may need to prioritize this activity over other planned items (like metric cascade, etc.), as this requires manual effort and careful tracking to avoid missing any delegations.
-Additionally, just an observation — if a large number of line managers are unable to complete the recertification, we may continue receiving such requests frequently, which could impact the effectiveness of the recertification process itself.
-From a planning perspective, it would help if we align on whether we should continue focusing on these delegation updates as a priority during this period.
-If the expectation is to handle this on a daily basis, we are fine to proceed accordingly, but just wanted to highlight the impact and confirm alignment.
+✅ CHANGE REQUEST – Delegation / Line Manager Update
+Short Description
+Production database update to modify delegation and line manager details for selected users
+Description
+This change request is raised to update delegation and line manager details for selected users based on approved user requests.
+The change involves updating existing records to reflect correct delegation assignments and reporting hierarchy. These are data-only updates and do not involve any application code or database schema changes.
+Reason for Change
+To update delegation and line manager details as per user request
+To ensure correct approval flow and reporting structure
+To maintain data accuracy and consistency
+Implementation Plan
+Obtain approved change window and database access.
+Identify affected users and required updates.
+Take backup of existing records.
+Execute SQL update queries to modify delegation and line manager details.
+Verify updated records.
+Commit changes.
+Customer / Business Impact
+No downtime expected
+No negative impact to users
+Ensures smooth approval and access flow
+Technical Impact
+No application restart required
+No schema changes
+Limited to specific user records
+Backout Plan
+Restore original values using backup data
+Revert updates if required
+Post Implementation Verification
+Validate updated delegation and line manager details
+Confirm approval flow works as expected
