@@ -1,4 +1,4 @@
-Additionally:
-Since UAT is now an exact copy of Production, it should be used for real-time scenario validation and business testing.
-Earlier DR was used for such purposes, but going forward DR will be reserved strictly for recovery scenarios when Production is down.
-This will help us maintain data consistency and ensure UAT reflects real production-like behavior
+Hi Team,
+Just a quick update — I have disabled email functionality in both DEV and UAT environments.
+Since these environments now contain production-like (real user) data, there was a risk of triggering unintended emails during testing (e.g., access requests, workflows, etc.).
+This change is to ensure no emails are accidentally sent to actual users while we perform development/testing activities.
