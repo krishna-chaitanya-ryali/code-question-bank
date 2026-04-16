@@ -1,21 +1,8 @@
-Jira Update / Activity Details:
-We need to refresh (downgrade) the RAPUSER schema from Production to UAT and DEV environments.
-Steps to be performed:
-Backup Existing Schemas
-Take a full backup of the existing schemas:
-RAPUSER in UAT
-RAPUSER in DEV
-Backup should be stored with appropriate naming convention, e.g.:
-RAPUSER_BKP_<date>
-Refresh from Production
-Import/replace the Production RAPUSER schema data into:
-UAT RAPUSER schema
-DEV RAPUSER schema
-Additional Schema Creation
-Post refresh, create a new schema:
-RAPUSER_ETL
-Populate RAPUSER_ETL with the same data as Production RAPUSER schema
-Summary:
-Backup existing UAT & DEV schemas
-Replace UAT & DEV RAPUSER with Production data
-Create and populate RAPUSER_ETL with Production data
+Team,
+We have refreshed both DEV and UAT environments with the latest Production data.
+Going forward, please ensure the following:
+All development activities must be done only in the DEV environment (DEV server/DB).
+Do not use UAT for development or point local setups directly to the UAT database.
+Move changes to UAT only when they are ready for business validation/UAT testing.
+This will help us maintain data consistency and avoid unintended issues in UAT.
+Please ensure this is followed strictly. Thanks
