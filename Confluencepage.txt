@@ -1,4 +1,71 @@
-“On Metric Auto Cascade, there hasn’t been much progress over the past week as most of the time was spent on user recertification activities, which are now completed.
-From today onwards, I’ll be focusing fully on this feature. The backend foundation is largely in place, and the next step is to continue with implementation and integration.
-Hari Prasad is currently in training today, and once he’s back, we’ll align on frontend and backend tasks and start progressing in parallel.
-We should start seeing steady progress from tomorrow onwards as we move into integration and completing the remaining flows.”
+What HR Will Evaluate
+HR is NOT testing coding.
+They are checking:
+Are you stable?
+Are you serious?
+Can they afford you?
+Any risk in hiring you?
+🔥 2. Most Expected Questions (With How You Should Answer)
+❓ Tell me about yourself
+👉 Keep it short + structured (2 mins max)
+Say:
+I’m Krishna, a Senior Software Engineer with 10+ years of experience in backend development, primarily using Python, FastAPI, and Flask.
+Currently working at Synechron, where I’ve been leading development and handling production systems end-to-end for a risk management platform.
+I’ve worked extensively on API design, debugging production issues, and building scalable backend solutions.
+Recently, I’ve also been exploring GenAI integrations.
+Now I’m looking for opportunities where I can work on more scalable systems and grow further.
+❓ Why are you looking for a change?
+👉 VERY IMPORTANT — don’t be negative
+Say:
+I’ve been working on the same project for several years and have gained strong ownership and stability experience.
+Now I’m looking for new challenges, better growth opportunities, and exposure to larger-scale systems.
+❓ Current CTC?
+👉 Say confidently:
+My current CTC is around 31 LPA fixed, and around 33 LPA including variable.
+❓ Expected CTC?
+👉 Don’t say a single number
+Say:
+I’m looking in the range of 40 to 45 LPA, depending on the role and overall compensation structure.
+❓ Notice Period?
+👉 Very important (this is risk area)
+Say:
+Officially it’s 90 days, but it is negotiable, and I can try to bring it down to around 30 days.
+❓ Any offers?
+👉 If none:
+Currently I’m in discussions with a few companies.
+❓ Why should we hire you?
+Say:
+I bring strong backend expertise along with real production experience, ownership, and problem-solving skills.
+I’ve handled end-to-end systems and can contribute independently from day one.
+⚠️ 3. Things You MUST Avoid
+❌ Don’t say:
+“No growth here”
+“Unfair treatment”
+“Manager issues”
+“Frustrated”
+👉 HR will mark you as risky
+💰 4. Salary Negotiation Strategy
+If they push:
+👉 Don’t drop immediately
+If they say: “Can you come down?”
+Say:
+I’m open to discussion depending on the role and responsibilities, but I would prefer something close to my expected range.
+🧠 5. Questions YOU Should Ask HR
+Ask 2–3 questions (important)
+✅ Good Questions
+👉 Role clarity:
+Can you explain the role and responsibilities in more detail?
+👉 Client round:
+What should I expect in the upcoming client rounds?
+👉 Team:
+Is this position for a new project or an existing team?
+👉 Work model:
+Is it remote, hybrid, or office-based?
+👉 Notice:
+Are you comfortable with my notice period?
+🔥 6. Bonus Tip (Very Important)
+Krishna…
+👉 Speak calm + confident + not desperate
+Even if you need job:
+❌ Don’t show urgency
+✅ Show stability
