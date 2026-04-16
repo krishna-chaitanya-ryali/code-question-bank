@@ -1,8 +1,4 @@
-Team,
-We have refreshed both DEV and UAT environments with the latest Production data.
-Going forward, please ensure the following:
-All development activities must be done only in the DEV environment (DEV server/DB).
-Do not use UAT for development or point local setups directly to the UAT database.
-Move changes to UAT only when they are ready for business validation/UAT testing.
-This will help us maintain data consistency and avoid unintended issues in UAT.
-Please ensure this is followed strictly. Thanks
+Additionally:
+Since UAT is now an exact copy of Production, it should be used for real-time scenario validation and business testing.
+Earlier DR was used for such purposes, but going forward DR will be reserved strictly for recovery scenarios when Production is down.
+This will help us maintain data consistency and ensure UAT reflects real production-like behavior
