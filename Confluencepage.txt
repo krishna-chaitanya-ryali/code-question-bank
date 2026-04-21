@@ -1,19 +1,57 @@
-LEFT JOIN (
-    SELECT 
-        METRIC_DETAIL_ID,
-        LISTAGG(RMM_ID, ',') WITHIN GROUP (ORDER BY RMM_ID) AS CASCADED_RMM_IDS
-    FROM RAPUSER.METRIC_CASCADE_LOCATIONS
-    GROUP BY METRIC_DETAIL_ID
-) MCL_AGG
-ON MCL_AGG.METRIC_DETAIL_ID = RMDT.METRIC_DETAIL_ID
+selected_rmm_ids = vInfo.get("RMM_IDS", [])   # list from FE
+metric_detail_id = vInfo.get("METRIC_DETAIL_ID")
+cascade_flag = tab1.get("CASCADE_TO_CHAIN")   # or correct field name
+
+if cascade_flag == "Yes":
+
+existing = sql_getData(<query_id>, [metric_detail_id])
+existing_rmm_ids = [row["RMM_ID"] for row in existing]
+
+
+to_insert = set(selected_rmm_ids) - set(existing_rmm_ids)
+to_delete = set(existing_rmm_ids) - set(selected_rmm_ids)
+
+for rmm_id in to_delete:
+    sql_execute(<delete_query_id>, [metric_detail_id, rmm_id])
 
 
 
-MCL_AGG.CASCADED_RMM_IDS
+for rmm_id in to_insert:
+    sql_execute(<insert_query_id>, [metric_detail_id, rmm_id, "CHILD"])
 
-rmm_ids = data.get("CASCADED_RMM_IDS")
 
-if rmm_ids:
-    data["cascaded_to_child_metrics"] = [int(x) for x in rmm_ids.split(",")]
-else:
-    data["cascaded_to_child_metrics"] = []
+INSERT INTO RAPUSER.METRIC_CASCADE_LOCATIONS
+(METRIC_DETAIL_ID, RMM_ID, LOCATION_TYPE, CREAT_BY)
+VALUES (:1, :2, 'CHILD', :3)
+
+
+
+DELETE FROM RAPUSER.METRIC_CASCADE_LOCATIONS
+WHERE METRIC_DETAIL_ID = :1
+AND RMM_ID = :2
+AND LOCATION_TYPE = 'CHILD'
+
+
+SELECT RMM_ID
+FROM RAPUSER.METRIC_CASCADE_LOCATIONS
+WHERE METRIC_DETAIL_ID = :1
+AND LOCATION_TYPE = 'CHILD'
+
+
+
+if cascade_flag == "No":
+    sql_execute(delete_all_query, [metric_detail_id])
+
+
+
+rec = admin_update_record_metric_details(...)
+
+if rec success:
+
+    if cascade_flag == "Yes":
+        # sync insert + delete
+
+    else:
+        # delete all cascade entries
+
+
