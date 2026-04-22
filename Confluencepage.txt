@@ -113,4 +113,49 @@ response = build_response(cascade_to_child, cascade_from_parent)
 
 return jsonify(response)
 
+def cascade_metrics_action(vInfo):
+    try:
+        rmm_id = vInfo.get("rmm_id")
+        instance_id = vInfo.get("instanceid")
+        user_id = vInfo.get("user_id")
+        metric_ids = vInfo.get("metric_detail_ids", [])
+
+        if not metric_ids:
+            return jsonify({"status": "error", "message": "No metrics selected"})
+
+        if not rmm_id or not instance_id or not user_id:
+            return jsonify({"status": "error", "message": "Missing required fields"})
+
+        for metric_id in metric_ids:
+            sql_execute(
+                """
+                INSERT INTO METRIC_CASCADE_ACTIONS (
+                    METRIC_DETAIL_ID,
+                    PARENT_RMM_ID,
+                    ACTION_TYPE,
+                    ACTION_BY,
+                    ACTION_DT
+                ) VALUES (
+                    :1, :2, 'CASCADE', :3, CURRENT_TIMESTAMP
+                )
+                """,
+                [metric_id, rmm_id, user_id]
+            )
+
+        db.commit()
+
+        return jsonify({
+            "status": "success",
+            "message": "Metrics cascaded successfully"
+        })
+
+    except Exception as e:
+        db.rollback()
+        log_error.error(f"Error in cascade_metrics_action: {str(e)}")
+        return jsonify({
+            "status": "error",
+            "message": "Failed to cascade metrics"
+        })
+
+
 
