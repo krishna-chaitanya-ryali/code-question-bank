@@ -1,34 +1,35 @@
+def build_metric_assignment_response(vRecs):
+    response = []
+
+    for record in vRecs:
+        response.append({
+            "metric_detail_id": record.get("METRIC_DETAIL_ID"),
+            "metric_name": record.get("METRIC_NAME"),
+            "metric_name_cascade": record.get("METRIC_NAME_CASCADE"),
+            "threshold_cascade": record.get("THRESHOLD_CASCADE"),
+            "metric_applicability": record.get("METRIC_APPLICABILITY")
+        })
+
+    return response
+
 SELECT 
     RMDT.METRIC_DETAIL_ID,
     RMDT.METRICS_DISPLAY AS METRIC_NAME,
     RMDT.METRIC_NAME_CASCADE,
     RMDT.THRESHOLD_CASCADE,
     RMDT.METRIC_APPLICABILITY
-FROM RAP_METRICS_DETAILS RMDT
-WHERE RMDT.RMM_ID = :rmm_id
-  AND RMDT.METRIC_FLAG <> 'removed'
-  AND EXISTS (
-        SELECT 1 
-        FROM METRIC_CASCADE_LOCATIONS MCL
-        WHERE MCL.METRIC_DETAIL_ID = RMDT.METRIC_DETAIL_ID
-  )
+FROM MEET_INSTC MI
+JOIN RAP ON MI.MEET_INSTC_ID = RAP.RAP_INSTANCE_ID
+JOIN RAP_METRICS_DETAILS RMDT ON RAP.RAP_ID = RMDT.RAP_ID
 
+WHERE MI.RMM_ID = :rmm_id
+AND MI.MEET_INSTC_ID = :meet_instc_id
+AND RMDT.METRIC_FLAG <> 'removed'
 
-LEFT JOIN (
-    SELECT 
-        METRIC_DETAIL_ID,
-        LISTAGG(RMM_ID, ',') WITHIN GROUP (ORDER BY RMM_ID) AS CASCADED_RMMS
-    FROM METRIC_CASCADE_LOCATIONS
-    GROUP BY METRIC_DETAIL_ID
-) MCL_AGG
-ON RMDT.METRIC_DETAIL_ID = MCL_AGG.METRIC_DETAIL_ID
-
-
-
-for record in result:
-    rmm_ids = record.get("CASCADED_RMMS")
-
-    record["cascaded_locations"] = (
-        [int(x) for x in rmm_ids.split(",") if x.strip()]
-        if rmm_ids else []
-    )
+AND EXISTS (
+    SELECT 1
+    FROM METRIC_CASCADE_LOCATIONS MCL
+    WHERE MCL.METRIC_DETAIL_ID = RMDT.METRIC_DETAIL_ID
+    AND MCL.RMM_ID = :rmm_id   -- 🔥 KEY FILTER
+    AND NVL(MCL.ACTIVE, 1) = 1 -- if you're using soft delete
+)
