@@ -1,57 +1,34 @@
-selected_rmm_ids = vInfo.get("RMM_IDS", [])   # list from FE
-metric_detail_id = vInfo.get("METRIC_DETAIL_ID")
-cascade_flag = tab1.get("CASCADE_TO_CHAIN")   # or correct field name
-
-if cascade_flag == "Yes":
-
-existing = sql_getData(<query_id>, [metric_detail_id])
-existing_rmm_ids = [row["RMM_ID"] for row in existing]
-
-
-to_insert = set(selected_rmm_ids) - set(existing_rmm_ids)
-to_delete = set(existing_rmm_ids) - set(selected_rmm_ids)
-
-for rmm_id in to_delete:
-    sql_execute(<delete_query_id>, [metric_detail_id, rmm_id])
-
+SELECT 
+    RMDT.METRIC_DETAIL_ID,
+    RMDT.METRICS_DISPLAY AS METRIC_NAME,
+    RMDT.METRIC_NAME_CASCADE,
+    RMDT.THRESHOLD_CASCADE,
+    RMDT.METRIC_APPLICABILITY
+FROM RAP_METRICS_DETAILS RMDT
+WHERE RMDT.RMM_ID = :rmm_id
+  AND RMDT.METRIC_FLAG <> 'removed'
+  AND EXISTS (
+        SELECT 1 
+        FROM METRIC_CASCADE_LOCATIONS MCL
+        WHERE MCL.METRIC_DETAIL_ID = RMDT.METRIC_DETAIL_ID
+  )
 
 
-for rmm_id in to_insert:
-    sql_execute(<insert_query_id>, [metric_detail_id, rmm_id, "CHILD"])
-
-
-INSERT INTO RAPUSER.METRIC_CASCADE_LOCATIONS
-(METRIC_DETAIL_ID, RMM_ID, LOCATION_TYPE, CREAT_BY)
-VALUES (:1, :2, 'CHILD', :3)
-
-
-
-DELETE FROM RAPUSER.METRIC_CASCADE_LOCATIONS
-WHERE METRIC_DETAIL_ID = :1
-AND RMM_ID = :2
-AND LOCATION_TYPE = 'CHILD'
-
-
-SELECT RMM_ID
-FROM RAPUSER.METRIC_CASCADE_LOCATIONS
-WHERE METRIC_DETAIL_ID = :1
-AND LOCATION_TYPE = 'CHILD'
+LEFT JOIN (
+    SELECT 
+        METRIC_DETAIL_ID,
+        LISTAGG(RMM_ID, ',') WITHIN GROUP (ORDER BY RMM_ID) AS CASCADED_RMMS
+    FROM METRIC_CASCADE_LOCATIONS
+    GROUP BY METRIC_DETAIL_ID
+) MCL_AGG
+ON RMDT.METRIC_DETAIL_ID = MCL_AGG.METRIC_DETAIL_ID
 
 
 
-if cascade_flag == "No":
-    sql_execute(delete_all_query, [metric_detail_id])
+for record in result:
+    rmm_ids = record.get("CASCADED_RMMS")
 
-
-
-rec = admin_update_record_metric_details(...)
-
-if rec success:
-
-    if cascade_flag == "Yes":
-        # sync insert + delete
-
-    else:
-        # delete all cascade entries
-
-
+    record["cascaded_locations"] = (
+        [int(x) for x in rmm_ids.split(",") if x.strip()]
+        if rmm_ids else []
+    )
