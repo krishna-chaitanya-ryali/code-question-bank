@@ -1,29 +1,38 @@
-ALTER TABLE METRIC_CASCADE_ACTIONS ADD (
-    STATUS VARCHAR2(50),
-    CHILD_RMM_ID NUMBER
-);
+SELECT 
+    RMDT.METRIC_DETAIL_ID,
 
+    CASE 
+        WHEN RMDT.METRICS_DISPLAY IS NULL 
+        THEN RMPM.METRICS_DISP 
+        ELSE RMDT.METRICS_DISPLAY 
+    END AS METRIC_NAME,
 
-INSERT INTO METRIC_CASCADE_ACTIONS (
-    METRIC_DETAIL_ID,
-    PARENT_RMM_ID,
-    CHILD_RMM_ID,
-    ACTION_TYPE,
-    ACTION_BY,
-    ACTION_DT,
-    STATUS
-)
-VALUES (
-    :metric_id,
-    :parent_rmm,
-    :child_rmm,
-    'CASCADE',
-    :user_id,
-    CURRENT_TIMESTAMP,
-    'AWAITING_ACCEPTANCE'
-)
+    RMDT.METRIC_NAME_CASCADE,
+    RMDT.THRESHOLD_CASCADE,
+    RMDT.METRIC_APPLICABILITY,
 
+    MCA.CASCADE_DT,
+    MCA.ACTION_BY,
+    NVL(MCA.STATUS, 'AWAITING_ACCEPTANCE') AS STATUS
 
+FROM MEET_INSTC MI
+
+JOIN RAP 
+    ON MI.MEET_INSTC_ID = RAP.RAP_INSTANCE_ID
+
+JOIN RAP_METRICS_DETAILS RMDT 
+    ON RAP.RAP_ID = RMDT.RAP_ID
+
+-- 🔥 fallback name source
+JOIN RAP_METRICS_PACK_MAPPING RMPM
+    ON RMDT.RAP_METRICS_MAPPING_ID = RMPM.RAP_METRICS_MAPPING_ID
+
+-- 🔥 ensures metric is cascaded to THIS child
+JOIN METRIC_CASCADE_LOCATIONS MCL
+    ON MCL.METRIC_DETAIL_ID = RMDT.METRIC_DETAIL_ID
+    AND MCL.RMM_ID = :rmm_id
+
+-- 🔥 latest cascade action per metric per child
 LEFT JOIN (
     SELECT 
         METRIC_DETAIL_ID,
@@ -35,141 +44,11 @@ LEFT JOIN (
     WHERE ACTION_TYPE = 'CASCADE'
     GROUP BY METRIC_DETAIL_ID, CHILD_RMM_ID
 ) MCA
-ON MCA.METRIC_DETAIL_ID = RMDT.METRIC_DETAIL_ID
-AND MCA.CHILD_RMM_ID = :rmm_id
+    ON MCA.METRIC_DETAIL_ID = RMDT.METRIC_DETAIL_ID
+    AND MCA.CHILD_RMM_ID = MCL.RMM_ID   -- 🔥 CRITICAL FIX
 
+WHERE MI.RMM_ID = :rmm_id
+AND MI.MEET_INSTC_ID = :meet_instc_id
+AND RMDT.METRIC_FLAG <> 'removed'
 
-"STATUS": record.get("STATUS") or "Awaiting Acceptance"
-
-
-cascade_from_parent_metrics.append({
-    "METRIC_DETAIL_ID": record.get("METRIC_DETAIL_ID"),
-    "METRIC_NAME": record.get("METRIC_NAME"),
-    "METRIC_NAME_CASCADE": record.get("METRIC_NAME_CASCADE"),
-    "THRESHOLD_CASCADE": record.get("THRESHOLD_CASCADE"),
-    "METRIC_APPLICABILITY": record.get("METRIC_APPLICABILITY"),
-    "CASCADE_DT": record.get("CASCADE_DT"),
-    "ACTION_BY": record.get("ACTION_BY"),
-    "STATUS": record.get("STATUS") or "Awaiting Acceptance"
-})
-
-INSERT INTO METRIC_CASCADE_ACTIONS (
-    METRIC_DETAIL_ID,
-    PARENT_RMM_ID,
-    CHILD_RMM_ID,
-    ACTION_TYPE,
-    ACTION_BY,
-    ACTION_DT,
-    STATUS
-)
-VALUES (
-    :metric_id,
-    :parent_rmm,
-    :child_rmm,
-    'REVIEW',
-    :user_id,
-    CURRENT_TIMESTAMP,
-    'ACCEPTED'
-)
-
-
-≠==========
-
-def cascade_metrics_action(vInfo):
-    try:
-        parent_rmm_id = vInfo.get("rmm_id")
-        instance_id = vInfo.get("instanceid")
-        user_id = str(myinfo())
-        metric_ids = vInfo.get("selectedMetrics", [])
-
-        # -------------------------------
-        # VALIDATIONS
-        # -------------------------------
-        if not metric_ids:
-            return jsonify({
-                "status": "error",
-                "message": "No metrics selected"
-            })
-
-        if not parent_rmm_id or not instance_id or not user_id:
-            return jsonify({
-                "status": "error",
-                "message": "Missing required fields"
-            })
-
-        # -------------------------------
-        # MAIN LOGIC
-        # -------------------------------
-        for metric_id in metric_ids:
-
-            # 🔹 STEP 1: Get child RMM IDs from MCL
-            child_rmm_rows = sql_getData(380, [metric_id])  
-            # Query 380:
-            # SELECT RMM_ID FROM METRIC_CASCADE_LOCATIONS WHERE METRIC_DETAIL_ID = :1
-
-            if not child_rmm_rows:
-                continue
-
-            # 🔹 STEP 2: Insert for each child
-            for row in child_rmm_rows:
-                child_rmm_id = row.get("RMM_ID")
-
-                # 🔹 OPTIONAL: prevent duplicate cascade
-                existing = sql_getData(381, [metric_id, child_rmm_id])
-                # Query 381:
-                # SELECT 1 FROM METRIC_CASCADE_ACTIONS
-                # WHERE METRIC_DETAIL_ID = :1 AND CHILD_RMM_ID = :2
-                # AND STATUS = 'AWAITING_ACCEPTANCE'
-
-                if existing:
-                    continue
-
-                # 🔹 STEP 3: Insert action
-                sql_insertData(
-                    379,  # your insert query id
-                    "ACTION_ID",
-                    [
-                        metric_id,
-                        parent_rmm_id,
-                        child_rmm_id,
-                        user_id
-                    ]
-                )
-
-        return jsonify({
-            "status": "success",
-            "message": "Metrics cascaded successfully"
-        })
-
-    except Exception as e:
-        log_error.error(f"Error in cascade_metrics_action: {str(e)}")
-        return jsonify({
-            "status": "error",
-            "message": "Failed to cascade metrics"
-        })
-
-
-
-INSERT INTO METRIC_CASCADE_ACTIONS (
-    METRIC_DETAIL_ID,
-    PARENT_RMM_ID,
-    CHILD_RMM_ID,
-    ACTION_TYPE,
-    ACTION_BY,
-    ACTION_DT,
-    STATUS
-)
-VALUES (
-    :1, :2, :3,
-    'CASCADE',
-    :4,
-    CURRENT_TIMESTAMP,
-    'AWAITING_ACCEPTANCE'
-)
-
-
-SELECT RMM_ID
-FROM METRIC_CASCADE_LOCATIONS
-WHERE METRIC_DETAIL_ID = :1
-
-
+ORDER BY METRIC_NAME
