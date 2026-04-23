@@ -71,3 +71,105 @@ VALUES (
     CURRENT_TIMESTAMP,
     'ACCEPTED'
 )
+
+
+≠==========
+
+def cascade_metrics_action(vInfo):
+    try:
+        parent_rmm_id = vInfo.get("rmm_id")
+        instance_id = vInfo.get("instanceid")
+        user_id = str(myinfo())
+        metric_ids = vInfo.get("selectedMetrics", [])
+
+        # -------------------------------
+        # VALIDATIONS
+        # -------------------------------
+        if not metric_ids:
+            return jsonify({
+                "status": "error",
+                "message": "No metrics selected"
+            })
+
+        if not parent_rmm_id or not instance_id or not user_id:
+            return jsonify({
+                "status": "error",
+                "message": "Missing required fields"
+            })
+
+        # -------------------------------
+        # MAIN LOGIC
+        # -------------------------------
+        for metric_id in metric_ids:
+
+            # 🔹 STEP 1: Get child RMM IDs from MCL
+            child_rmm_rows = sql_getData(380, [metric_id])  
+            # Query 380:
+            # SELECT RMM_ID FROM METRIC_CASCADE_LOCATIONS WHERE METRIC_DETAIL_ID = :1
+
+            if not child_rmm_rows:
+                continue
+
+            # 🔹 STEP 2: Insert for each child
+            for row in child_rmm_rows:
+                child_rmm_id = row.get("RMM_ID")
+
+                # 🔹 OPTIONAL: prevent duplicate cascade
+                existing = sql_getData(381, [metric_id, child_rmm_id])
+                # Query 381:
+                # SELECT 1 FROM METRIC_CASCADE_ACTIONS
+                # WHERE METRIC_DETAIL_ID = :1 AND CHILD_RMM_ID = :2
+                # AND STATUS = 'AWAITING_ACCEPTANCE'
+
+                if existing:
+                    continue
+
+                # 🔹 STEP 3: Insert action
+                sql_insertData(
+                    379,  # your insert query id
+                    "ACTION_ID",
+                    [
+                        metric_id,
+                        parent_rmm_id,
+                        child_rmm_id,
+                        user_id
+                    ]
+                )
+
+        return jsonify({
+            "status": "success",
+            "message": "Metrics cascaded successfully"
+        })
+
+    except Exception as e:
+        log_error.error(f"Error in cascade_metrics_action: {str(e)}")
+        return jsonify({
+            "status": "error",
+            "message": "Failed to cascade metrics"
+        })
+
+
+
+INSERT INTO METRIC_CASCADE_ACTIONS (
+    METRIC_DETAIL_ID,
+    PARENT_RMM_ID,
+    CHILD_RMM_ID,
+    ACTION_TYPE,
+    ACTION_BY,
+    ACTION_DT,
+    STATUS
+)
+VALUES (
+    :1, :2, :3,
+    'CASCADE',
+    :4,
+    CURRENT_TIMESTAMP,
+    'AWAITING_ACCEPTANCE'
+)
+
+
+SELECT RMM_ID
+FROM METRIC_CASCADE_LOCATIONS
+WHERE METRIC_DETAIL_ID = :1
+
+
