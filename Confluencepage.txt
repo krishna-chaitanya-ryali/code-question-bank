@@ -1,270 +1,73 @@
+ALTER TABLE METRIC_CASCADE_ACTIONS ADD (
+    STATUS VARCHAR2(50),
+    CHILD_RMM_ID NUMBER
+);
+
+
 INSERT INTO METRIC_CASCADE_ACTIONS (
     METRIC_DETAIL_ID,
     PARENT_RMM_ID,
+    CHILD_RMM_ID,
     ACTION_TYPE,
-    ACTION_BY
+    ACTION_BY,
+    ACTION_DT,
+    STATUS
 )
 VALUES (
-    :metric_detail_id,
-    :current_rmm_id,
+    :metric_id,
+    :parent_rmm,
+    :child_rmm,
     'CASCADE',
-    :user_id
-);
+    :user_id,
+    CURRENT_TIMESTAMP,
+    'AWAITING_ACCEPTANCE'
+)
 
-
--- Query 1: Parent → Child
-SELECT 
-    RMDT.METRIC_DETAIL_ID,
-    RMDT.METRICS_DISPLAY AS METRIC_NAME,
-    RMDT.METRIC_NAME_CASCADE,
-    RMDT.THRESHOLD_CASCADE,
-    RMDT.METRIC_APPLICABILITY,
-    MCA.CASCADE_DT,
-    MCA.ACTION_BY
-
-FROM MEET_INSTC MI
-JOIN RAP ON MI.MEET_INSTC_ID = RAP.RAP_INSTANCE_ID
-JOIN RAP_METRICS_DETAILS RMDT ON RAP.RAP_ID = RMDT.RAP_ID
 
 LEFT JOIN (
     SELECT 
         METRIC_DETAIL_ID,
+        CHILD_RMM_ID,
         MAX(ACTION_DT) AS CASCADE_DT,
-        MAX(ACTION_BY) KEEP (DENSE_RANK LAST ORDER BY ACTION_DT) AS ACTION_BY
+        MAX(ACTION_BY) KEEP (DENSE_RANK LAST ORDER BY ACTION_DT) AS ACTION_BY,
+        MAX(STATUS) KEEP (DENSE_RANK LAST ORDER BY ACTION_DT) AS STATUS
     FROM METRIC_CASCADE_ACTIONS
     WHERE ACTION_TYPE = 'CASCADE'
-    GROUP BY METRIC_DETAIL_ID
-) MCA ON MCA.METRIC_DETAIL_ID = RMDT.METRIC_DETAIL_ID
-
-WHERE MI.RMM_ID = :current_rmm_id
-AND MI.MEET_INSTC_ID = :meet_instc_id
-AND RMDT.METRIC_FLAG <> 'removed'
-
-AND EXISTS (
-    SELECT 1
-    FROM METRIC_CASCADE_LOCATIONS MCL
-    WHERE MCL.METRIC_DETAIL_ID = RMDT.METRIC_DETAIL_ID
-);
-
-
-
-SELECT 
-    RMDT.METRIC_DETAIL_ID,
-    RMDT.METRICS_DISPLAY AS METRIC_NAME,
-    RMDT.METRIC_NAME_CASCADE,
-    RMDT.THRESHOLD_CASCADE,
-    RMDT.METRIC_APPLICABILITY,
-    MCA.CASCADE_DT,
-    MCA.ACTION_BY
-
-FROM MEET_INSTC MI
-JOIN RAP ON MI.MEET_INSTC_ID = RAP.RAP_INSTANCE_ID
-JOIN RAP_METRICS_DETAILS RMDT ON RAP.RAP_ID = RMDT.RAP_ID
-
-LEFT JOIN (
-    SELECT 
-        METRIC_DETAIL_ID,
-        MAX(ACTION_DT) AS CASCADE_DT,
-        MAX(ACTION_BY) KEEP (DENSE_RANK LAST ORDER BY ACTION_DT) AS ACTION_BY
-    FROM METRIC_CASCADE_ACTIONS
-    WHERE ACTION_TYPE = 'CASCADE'
-    GROUP BY METRIC_DETAIL_ID
-) MCA ON MCA.METRIC_DETAIL_ID = RMDT.METRIC_DETAIL_ID
-
-WHERE MI.RMM_ID = :child_rmm_id
-AND MI.MEET_INSTC_ID = :meet_instc_id
-AND RMDT.METRIC_FLAG <> 'removed'
-
-AND EXISTS (
-    SELECT 1
-    FROM METRIC_CASCADE_LOCATIONS MCL
-    WHERE MCL.METRIC_DETAIL_ID = RMDT.METRIC_DETAIL_ID
-    AND MCL.RMM_ID = :child_rmm_id   -- 🔥 KEY DIFFERENCE
-);
-
-
-def build_response(child_data, parent_data):
-
-    def format_data(records):
-        return [
-            {
-                "metric_detail_id": r.get("METRIC_DETAIL_ID"),
-                "metric_name": r.get("METRIC_NAME"),
-                "metric_name_cascade": r.get("METRIC_NAME_CASCADE"),
-                "threshold_cascade": r.get("THRESHOLD_CASCADE"),
-                "metric_applicability": r.get("METRIC_APPLICABILITY"),
-                "cascade_date": r.get("CASCADE_DT"),
-                "actioned_by": r.get("ACTION_BY")
-            }
-            for r in records
-        ]
-
-    return {
-        "cascade_to_child": format_data(child_data),
-        "cascade_from_parent": format_data(parent_data)
-    }
-
-
-
-cascade_to_child = sql_getData(query1, [rmm_id, meet_instc_id])
-cascade_from_parent = sql_getData(query2, [rmm_id, meet_instc_id])
-
-response = build_response(cascade_to_child, cascade_from_parent)
-
-return jsonify(response)
-
-def cascade_metrics_action(vInfo):
-    try:
-        rmm_id = vInfo.get("rmm_id")
-        instance_id = vInfo.get("instanceid")
-        user_id = vInfo.get("user_id")
-        metric_ids = vInfo.get("metric_detail_ids", [])
-
-        if not metric_ids:
-            return jsonify({"status": "error", "message": "No metrics selected"})
-
-        if not rmm_id or not instance_id or not user_id:
-            return jsonify({"status": "error", "message": "Missing required fields"})
-
-        for metric_id in metric_ids:
-            sql_execute(
-                """
-                INSERT INTO METRIC_CASCADE_ACTIONS (
-                    METRIC_DETAIL_ID,
-                    PARENT_RMM_ID,
-                    ACTION_TYPE,
-                    ACTION_BY,
-                    ACTION_DT
-                ) VALUES (
-                    :1, :2, 'CASCADE', :3, CURRENT_TIMESTAMP
-                )
-                """,
-                [metric_id, rmm_id, user_id]
-            )
-
-        db.commit()
-
-        return jsonify({
-            "status": "success",
-            "message": "Metrics cascaded successfully"
-        })
-
-    except Exception as e:
-        db.rollback()
-        log_error.error(f"Error in cascade_metrics_action: {str(e)}")
-        return jsonify({
-            "status": "error",
-            "message": "Failed to cascade metrics"
-        })
-
-
-def get_cascade_metrics(vInfo):
-    try:
-        rmm_id = vInfo.get("rmm_id")
-        instance_id = vInfo.get("instanceid")
-
-        # -------------------------------
-        # 1️⃣ CASCADE TO CHILD
-        # -------------------------------
-        cascade_to_child_arr = sql_getData(378, [rmm_id, instance_id])
-
-        cascade_to_child_metrics = []
-
-        if cascade_to_child_arr and cascade_to_child_arr != -1:
-            for record in cascade_to_child_arr:
-                cascade_to_child_metrics.append({
-                    "METRIC_DETAIL_ID": record.get("METRIC_DETAIL_ID"),
-                    "METRIC_NAME": record.get("METRIC_NAME"),
-                    "METRIC_NAME_CASCADE": record.get("METRIC_NAME_CASCADE"),
-                    "THRESHOLD_CASCADE": record.get("THRESHOLD_CASCADE"),
-                    "METRIC_APPLICABILITY": record.get("METRIC_APPLICABILITY"),
-                    "CASCADE_DT": record.get("CASCADE_DT"),
-                    "ACTION_BY": record.get("ACTION_BY")
-                })
-
-        # -------------------------------
-        # 2️⃣ CASCADE FROM PARENT
-        # -------------------------------
-        cascade_from_parent_arr = sql_getData(379, [rmm_id, instance_id])
-
-        cascade_from_parent_metrics = []
-
-        if cascade_from_parent_arr and cascade_from_parent_arr != -1:
-            for record in cascade_from_parent_arr:
-                cascade_from_parent_metrics.append({
-                    "METRIC_DETAIL_ID": record.get("METRIC_DETAIL_ID"),
-                    "METRIC_NAME": record.get("METRIC_NAME"),
-                    "METRIC_NAME_CASCADE": record.get("METRIC_NAME_CASCADE"),
-                    "THRESHOLD_CASCADE": record.get("THRESHOLD_CASCADE"),
-                    "METRIC_APPLICABILITY": record.get("METRIC_APPLICABILITY"),
-                    "CASCADE_DT": record.get("CASCADE_DT"),
-                    "ACTION_BY": record.get("ACTION_BY")
-                })
-
-        # -------------------------------
-        # 3️⃣ TO BE REMOVED (optional)
-        # -------------------------------
-        to_be_removed_arr = sql_getData(380, [rmm_id, instance_id])
-
-        to_be_removed_metrics = []
-
-        if to_be_removed_arr and to_be_removed_arr != -1:
-            for record in to_be_removed_arr:
-                to_be_removed_metrics.append({
-                    "METRIC_DETAIL_ID": record.get("METRIC_DETAIL_ID"),
-                    "METRIC_NAME": record.get("METRIC_NAME"),
-                    "CASCADE_DT": record.get("CASCADE_DT"),
-                    "ACTION_BY": record.get("ACTION_BY")
-                })
-
-        # -------------------------------
-        # FINAL RESPONSE
-        # -------------------------------
-        return jsonify({
-            "cascade_to_child": cascade_to_child_metrics,
-            "cascade_from_parent": cascade_from_parent_metrics,
-            "to_be_removed": to_be_removed_metrics
-        })
-
-    except Exception as e:
-        log_error.error(f"Error | get_cascade_metrics | {str(e)}")
-        return jsonify({
-            "status": "error",
-            "message": "Error in getting cascade metrics"
-        })
-
-
-
-
-SELECT 
-    RMDT.METRIC_DETAIL_ID,
-    RMDT.METRICS_DISPLAY AS METRIC_NAME,
-    RMDT.METRIC_NAME_CASCADE,
-    RMDT.THRESHOLD_CASCADE,
-    RMDT.METRIC_APPLICABILITY,
-    MCA.CASCADE_DT,
-    MCA.ACTION_BY
-
-FROM RAP_METRICS_DETAILS RMDT
-
-JOIN METRIC_CASCADE_LOCATIONS MCL
-    ON MCL.METRIC_DETAIL_ID = RMDT.METRIC_DETAIL_ID
-
-LEFT JOIN (
-    SELECT 
-        METRIC_DETAIL_ID,
-        MAX(ACTION_DT) AS CASCADE_DT,
-        MAX(ACTION_BY) KEEP (DENSE_RANK LAST ORDER BY ACTION_DT) AS ACTION_BY
-    FROM METRIC_CASCADE_ACTIONS
-    WHERE ACTION_TYPE = 'CASCADE'
-    GROUP BY METRIC_DETAIL_ID
+    GROUP BY METRIC_DETAIL_ID, CHILD_RMM_ID
 ) MCA
 ON MCA.METRIC_DETAIL_ID = RMDT.METRIC_DETAIL_ID
-
-WHERE MCL.RMM_ID = :rmm_id
-AND RMDT.METRIC_FLAG <> 'removed'
+AND MCA.CHILD_RMM_ID = :rmm_id
 
 
+"STATUS": record.get("STATUS") or "Awaiting Acceptance"
 
 
+cascade_from_parent_metrics.append({
+    "METRIC_DETAIL_ID": record.get("METRIC_DETAIL_ID"),
+    "METRIC_NAME": record.get("METRIC_NAME"),
+    "METRIC_NAME_CASCADE": record.get("METRIC_NAME_CASCADE"),
+    "THRESHOLD_CASCADE": record.get("THRESHOLD_CASCADE"),
+    "METRIC_APPLICABILITY": record.get("METRIC_APPLICABILITY"),
+    "CASCADE_DT": record.get("CASCADE_DT"),
+    "ACTION_BY": record.get("ACTION_BY"),
+    "STATUS": record.get("STATUS") or "Awaiting Acceptance"
+})
 
+INSERT INTO METRIC_CASCADE_ACTIONS (
+    METRIC_DETAIL_ID,
+    PARENT_RMM_ID,
+    CHILD_RMM_ID,
+    ACTION_TYPE,
+    ACTION_BY,
+    ACTION_DT,
+    STATUS
+)
+VALUES (
+    :metric_id,
+    :parent_rmm,
+    :child_rmm,
+    'REVIEW',
+    :user_id,
+    CURRENT_TIMESTAMP,
+    'ACCEPTED'
+)
