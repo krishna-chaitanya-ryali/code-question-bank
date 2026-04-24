@@ -1,9 +1,9 @@
--- Query ID: GET_RMM_LEVEL
+-- GET_RMM_LEVEL
 SELECT RMM_LEVEL
 FROM RAP_RMM_GROUP
 WHERE RMM_ID = :1
 
--- Query ID: GET_VALID_CHILDREN
+-- GET_VALID_CHILDREN
 SELECT RMM_ID
 FROM RAP_RMM_GROUP
 WHERE PARENT_RMM_ID = :1
@@ -15,20 +15,20 @@ AND RMM_LEVEL = (
 )
 AND ACTIVE = 'Y'
 
-
--- Query ID: GET_MCL_LOCATIONS
+-- GET_MCL_LOCATIONS
 SELECT RMM_ID
 FROM METRIC_CASCADE_LOCATIONS
 WHERE METRIC_DETAIL_ID = :1
 
--- Query ID: CHECK_EXISTING_MCA
+-- CHECK_EXISTING_MCA
 SELECT 1
 FROM METRIC_CASCADE_ACTIONS
 WHERE METRIC_DETAIL_ID = :1
 AND CHILD_RMM_ID = :2
 AND STATUS = 'AWAITING_ACCEPTANCE'
 
--- Query ID: INSERT_MCA
+
+-- INSERT_MCA
 INSERT INTO METRIC_CASCADE_ACTIONS (
     METRIC_DETAIL_ID,
     PARENT_RMM_ID,
@@ -49,18 +49,21 @@ VALUES (
 )
 
 
+
 def get_rmm_level(rmm_id):
     res = sql_getData("GET_RMM_LEVEL", [rmm_id])
     return res[0]["RMM_LEVEL"] if res else None
 
 
+def get_allowed_children(rmm_id):
+    parent_level = get_rmm_level(rmm_id)
 
+    # ❌ Stop cascade at level 2 (LOB / Market)
+    if parent_level is None or parent_level >= 2:
+        return set()
 
-def get_valid_children(rmm_id):
     rows = sql_getData("GET_VALID_CHILDREN", [rmm_id])
     return set(r["RMM_ID"] for r in rows)
-
-
 
 
 def get_mcl_locations(metric_id):
@@ -75,41 +78,36 @@ def cascade_metrics_action(vInfo):
         meet_instc_id = vInfo.get("instanceid")
         user_id = str(myinfo())
 
-        MAX_CASCADE_LEVEL = 2  # 🔥 control here
-
         if not metric_ids:
-            return jsonify({"status": "error", "message": "No metrics selected"})
-
-        # 🔹 Step 1: Get parent level
-        parent_level = get_rmm_level(parent_rmm_id)
-
-        if parent_level is None:
-            return jsonify({"status": "error", "message": "Invalid parent RMM"})
-
-        # 🔹 Step 2: Block cascade if level exceeded
-        if parent_level >= MAX_CASCADE_LEVEL:
             return jsonify({
                 "status": "error",
-                "message": "Cascade not allowed at this level"
+                "message": "No metrics selected"
             })
 
-        # 🔹 Step 3: Get valid children
-        valid_children = get_valid_children(parent_rmm_id)
+        # 🔹 Step 1: Get allowed children (based on level logic)
+        valid_children = get_allowed_children(parent_rmm_id)
+
+        # If no children allowed → stop cascade
+        if not valid_children:
+            return jsonify({
+                "status": "error",
+                "message": "Cascade not allowed for this level"
+            })
 
         cascaded = []
         not_cascaded = []
 
-        # 🔹 Step 4: Process each metric
+        # 🔹 Step 2: Process each metric
         for metric_id in metric_ids:
 
-            # Get all configured locations
+            # Get all configured cascade locations (MCL)
             mcl_rmm_ids = get_mcl_locations(metric_id)
 
             for child_rmm_id in mcl_rmm_ids:
 
                 if child_rmm_id in valid_children:
 
-                    # Check duplicate
+                    # 🔹 Check duplicate
                     exists = sql_getData(
                         "CHECK_EXISTING_MCA",
                         [metric_id, child_rmm_id]
@@ -118,7 +116,7 @@ def cascade_metrics_action(vInfo):
                     if exists:
                         continue
 
-                    # Insert
+                    # 🔹 Insert cascade action
                     sql_insertData(
                         "INSERT_MCA",
                         "ACTION_ID",
@@ -136,12 +134,12 @@ def cascade_metrics_action(vInfo):
                 else:
                     not_cascaded.append(child_rmm_id)
 
-        # 🔹 Step 5: Prepare response
+        # 🔹 Step 3: Response
 
         if not_cascaded:
             return jsonify({
                 "status": "partial_success",
-                "message": "Cascade completed with some restrictions",
+                "message": "Cascade completed. Some locations were not cascaded due to hierarchy restrictions.",
                 "cascaded": list(set(cascaded)),
                 "not_cascaded": list(set(not_cascaded))
             })
@@ -157,6 +155,5 @@ def cascade_metrics_action(vInfo):
             "status": "error",
             "message": "Failed to cascade metrics"
         })
-
 
 
