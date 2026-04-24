@@ -1,127 +1,162 @@
-(
-'US GBM',
-'US CMB',
-'HBUS MSS',
-'Malta CIB',
-'Asia Pacific IWPB (excl. HK Retail)',
-'Malta IWPB',
-'United States IWPB',
-'MENAT IWPB',
-'Europe IWPB',
-'GPB',
-'Insurance',
-'Asset Management',
-'HAIL',
-'AMG Asia',
-'AMEU',
-'UK WPB',
-'Futures Commission Merchant Risk Committee',
-'Hong Kong',
-'Australia AUH',
-'Australia HBAU',
-'Australia SYH',
-'Sri Lanka',
-'Bangladesh',
-'Hang Seng',
-'Philippines',
-'China',
-'Indonesia',
-'Malaysia - HBMB',
-'Malaysia - HBMS',
-'HBSP',
-'Taiwan',
-'India',
-'Japan',
-'Korea',
-'Macau',
-'Mauritius HBMU',
-'Mauritius PTL',
-'New Zealand',
-'Singapore',
-'Thailand',
-'Vietnam KRI',
-'Vietnam',
-'HBEG',
-'HSBC SA',
-'HBTR',
-'HBME',
-'Channel Islands and Isle of Man',
-'Bermuda',
-'HSBC Continental Europe',
-'HSBC Israel',
-'Ireland HSSI RAS',
-'HCIB SDGM',
-'South Africa',
-'HCIB US Branch',
-'Brazil',
-'Chile',
-'Uruguay'
+-- Query ID: GET_RMM_LEVEL
+SELECT RMM_LEVEL
+FROM RAP_RMM_GROUP
+WHERE RMM_ID = :1
+
+-- Query ID: GET_VALID_CHILDREN
+SELECT RMM_ID
+FROM RAP_RMM_GROUP
+WHERE PARENT_RMM_ID = :1
+AND RMM_ID != :1
+AND RMM_LEVEL = (
+    SELECT RMM_LEVEL + 1 
+    FROM RAP_RMM_GROUP 
+    WHERE RMM_ID = :1
+)
+AND ACTIVE = 'Y'
+
+
+-- Query ID: GET_MCL_LOCATIONS
+SELECT RMM_ID
+FROM METRIC_CASCADE_LOCATIONS
+WHERE METRIC_DETAIL_ID = :1
+
+-- Query ID: CHECK_EXISTING_MCA
+SELECT 1
+FROM METRIC_CASCADE_ACTIONS
+WHERE METRIC_DETAIL_ID = :1
+AND CHILD_RMM_ID = :2
+AND STATUS = 'AWAITING_ACCEPTANCE'
+
+-- Query ID: INSERT_MCA
+INSERT INTO METRIC_CASCADE_ACTIONS (
+    METRIC_DETAIL_ID,
+    PARENT_RMM_ID,
+    CHILD_RMM_ID,
+    ACTION_TYPE,
+    ACTION_BY,
+    ACTION_DT,
+    STATUS,
+    MEET_INSTC_ID
+)
+VALUES (
+    :1, :2, :3,
+    'CASCADE',
+    :4,
+    CURRENT_TIMESTAMP,
+    'AWAITING_ACCEPTANCE',
+    :5
 )
 
 
-Level 2 (RMMs) — Clean Extracted List
-🔹 Under Global CIB (excl. HK & UK)
-US GBM
-US CMB
-HBUS MSS
-Malta CIB
-🔹 Under Global IWPB (excl. HK & UK Retail)
-Asia Pacific IWPB (excl. HK Retail)
-Malta IWPB
-United States IWPB
-MENAT IWPB
-Europe IWPB
-🔹 Under HBUK / Other (Global Business side)
-GPB
-Insurance
-Asset Management
-HAIL
-AMG Asia
-AMEU
-UK WPB
-🔹 Under Regions → United States
-Futures Commission Merchant Risk Committee
-🔹 Under Regions → Asia Pacific (ServCo list)
-Hong Kong
-Australia AUH
-Australia HBAU
-Australia SYH
-Sri Lanka
-Bangladesh
-Hang Seng
-Philippines
-China
-Indonesia
-Malaysia – HBMB
-Malaysia – HBMS
-HBSP
-Taiwan
-India
-Japan
-Korea
-Macau
-Mauritius HBMU
-Mauritius PTL
-New Zealand
-Singapore
-Thailand
-Vietnam KRI
-Vietnam
-🔹 Under Regions → MENAT / HCIB / HNAH (ServCo list)
-HBEG
-HSBC SA
-HBTR
-HBME
-🔹 Under Regions → Europe / Others
-Channel Islands and Isle of Man
-Bermuda
-HSBC Continental Europe
-HSBC Israel
-Ireland HSSI RAS
-HCIB SDGM
-South Africa
-HCIB US Branch
-🔹 Under Regions → Mexico
-Brazil
-Chile
-Uruguay
+def get_rmm_level(rmm_id):
+    res = sql_getData("GET_RMM_LEVEL", [rmm_id])
+    return res[0]["RMM_LEVEL"] if res else None
+
+
+
+
+def get_valid_children(rmm_id):
+    rows = sql_getData("GET_VALID_CHILDREN", [rmm_id])
+    return set(r["RMM_ID"] for r in rows)
+
+
+
+
+def get_mcl_locations(metric_id):
+    rows = sql_getData("GET_MCL_LOCATIONS", [metric_id])
+    return [r["RMM_ID"] for r in rows]
+
+
+def cascade_metrics_action(vInfo):
+    try:
+        parent_rmm_id = vInfo.get("rmm_id")
+        metric_ids = vInfo.get("selectedMetrics", [])
+        meet_instc_id = vInfo.get("instanceid")
+        user_id = str(myinfo())
+
+        MAX_CASCADE_LEVEL = 2  # 🔥 control here
+
+        if not metric_ids:
+            return jsonify({"status": "error", "message": "No metrics selected"})
+
+        # 🔹 Step 1: Get parent level
+        parent_level = get_rmm_level(parent_rmm_id)
+
+        if parent_level is None:
+            return jsonify({"status": "error", "message": "Invalid parent RMM"})
+
+        # 🔹 Step 2: Block cascade if level exceeded
+        if parent_level >= MAX_CASCADE_LEVEL:
+            return jsonify({
+                "status": "error",
+                "message": "Cascade not allowed at this level"
+            })
+
+        # 🔹 Step 3: Get valid children
+        valid_children = get_valid_children(parent_rmm_id)
+
+        cascaded = []
+        not_cascaded = []
+
+        # 🔹 Step 4: Process each metric
+        for metric_id in metric_ids:
+
+            # Get all configured locations
+            mcl_rmm_ids = get_mcl_locations(metric_id)
+
+            for child_rmm_id in mcl_rmm_ids:
+
+                if child_rmm_id in valid_children:
+
+                    # Check duplicate
+                    exists = sql_getData(
+                        "CHECK_EXISTING_MCA",
+                        [metric_id, child_rmm_id]
+                    )
+
+                    if exists:
+                        continue
+
+                    # Insert
+                    sql_insertData(
+                        "INSERT_MCA",
+                        "ACTION_ID",
+                        [
+                            metric_id,
+                            parent_rmm_id,
+                            child_rmm_id,
+                            user_id,
+                            meet_instc_id
+                        ]
+                    )
+
+                    cascaded.append(child_rmm_id)
+
+                else:
+                    not_cascaded.append(child_rmm_id)
+
+        # 🔹 Step 5: Prepare response
+
+        if not_cascaded:
+            return jsonify({
+                "status": "partial_success",
+                "message": "Cascade completed with some restrictions",
+                "cascaded": list(set(cascaded)),
+                "not_cascaded": list(set(not_cascaded))
+            })
+
+        return jsonify({
+            "status": "success",
+            "message": "Cascade completed successfully"
+        })
+
+    except Exception as e:
+        log_error.error(f"Error in cascade_metrics_action: {str(e)}")
+        return jsonify({
+            "status": "error",
+            "message": "Failed to cascade metrics"
+        })
+
+
+
