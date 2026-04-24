@@ -1,22 +1,65 @@
-def get_allowed_children(rmm_id):
-    parent_level = get_rmm_level(rmm_id)
+-- GET_ACTIVE_METRICS
 
-    # ❌ Stop at level 2
-    if parent_level is None or parent_level >= 2:
-        return set()
+SELECT 
+    RMDT.METRIC_DETAIL_ID,
+    
+    -- Metric Name (fallback logic)
+    CASE 
+        WHEN RMDT.METRICS_DISPLAY IS NULL 
+        THEN RMPM.METRICS_DISP 
+        ELSE RMDT.METRICS_DISPLAY 
+    END AS METRIC_NAME,
 
-    # 🔥 SPECIAL CASE: GLOBAL (LEVEL 0)
-    if parent_level == 0:
-        rows = sql_getData("GET_LEVEL1_RMMS", [])
-        return set(r["RMM_ID"] for r in rows)
+    RMDT.MASTER_METRIC_ID
 
-    # ✅ Normal case (GB → LOB, Region → Market)
-    rows = sql_getData("GET_VALID_CHILDREN", [rmm_id])
-    return set(r["RMM_ID"] for r in rows)
+FROM MEET_INSTC MI
+
+JOIN RAP 
+    ON MI.MEET_INSTC_ID = RAP.RAP_INSTANCE_ID
+
+JOIN RAP_METRICS_DETAILS RMDT 
+    ON RAP.RAP_ID = RMDT.RAP_ID
+
+LEFT JOIN RAP_METRICS_PACK_MAPPING RMPM
+    ON RMDT.RAP_METRICS_MAPPING_ID = RMPM.RAP_METRICS_MAPPING_ID
+
+WHERE MI.RMM_ID = :1
+AND MI.MEET_INSTC_ID = :2
+AND RMDT.METRIC_FLAG <> 'removed'
 
 
--- GET_LEVEL1_RMMS
-SELECT RMM_ID
-FROM RAP_RMM_GROUP
-WHERE RMM_LEVEL = 1
-AND ACTIVE = 'Y'
+
+def get_active_metrics(vInfo):
+    try:
+        rmm_id = vInfo.get("rmm_id")
+        meet_instc_id = vInfo.get("instanceid")
+
+        if not rmm_id or not meet_instc_id:
+            return jsonify({
+                "status": "error",
+                "message": "Missing required fields"
+            })
+
+        # 🔹 Fetch data
+        rows = sql_getData("GET_ACTIVE_METRICS", [rmm_id, meet_instc_id])
+
+        metrics_list = []
+
+        for record in rows:
+            metrics_list.append({
+                "METRIC_DETAIL_ID": record.get("METRIC_DETAIL_ID"),
+                "METRIC_NAME": record.get("METRIC_NAME"),
+                "MASTER_METRIC_ID": record.get("MASTER_METRIC_ID")
+            })
+
+        return jsonify({
+            "status": "success",
+            "data": metrics_list
+        })
+
+    except Exception as e:
+        log_error.error(f"Error in get_active_metrics: {str(e)}")
+        return jsonify({
+            "status": "error",
+            "message": "Failed to fetch metrics"
+        })
