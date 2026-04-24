@@ -1,27 +1,11 @@
-ALTER TABLE RAP_RMM_GROUP ADD RMM_LEVEL NUMBER;
+Hi Jayachandra,
 
-Level
-Meaning
-0
-Global
-1
-GBs / Regions
-2
-LOBs / Markets
-3
-Sub-levels
+Hope you’re doing well.
 
-SELECT RMM_ID
-FROM RAP_RMM_GROUP
-WHERE PARENT_RMM_ID = :current_rmm_id
-AND RMM_LEVEL = (
-    SELECT RMM_LEVEL + 1 
-    FROM RAP_RMM_GROUP 
-    WHERE RMM_ID = :current_rmm_id
-)
-AND ACTIVE = 'Y';
+Just wanted to check if there are any updates or possibilities regarding opportunities within HSBC, as we had discussed earlier. I understand there might be some hiring constraints currently.
 
-AND RMM_LEVEL <= :max_allowed_level
+I’m currently exploring options for my next step, so I wanted to stay in touch and understand if there might be any suitable openings from your side as well.
 
-if child_level > MAX_CASCADE_LEVEL:
-    reject
+Please let me know whenever you have any updates.
+
+Thanks!
