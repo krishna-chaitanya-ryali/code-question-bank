@@ -1,159 +1,22 @@
--- GET_RMM_LEVEL
-SELECT RMM_LEVEL
-FROM RAP_RMM_GROUP
-WHERE RMM_ID = :1
-
--- GET_VALID_CHILDREN
-SELECT RMM_ID
-FROM RAP_RMM_GROUP
-WHERE PARENT_RMM_ID = :1
-AND RMM_ID != :1
-AND RMM_LEVEL = (
-    SELECT RMM_LEVEL + 1 
-    FROM RAP_RMM_GROUP 
-    WHERE RMM_ID = :1
-)
-AND ACTIVE = 'Y'
-
--- GET_MCL_LOCATIONS
-SELECT RMM_ID
-FROM METRIC_CASCADE_LOCATIONS
-WHERE METRIC_DETAIL_ID = :1
-
--- CHECK_EXISTING_MCA
-SELECT 1
-FROM METRIC_CASCADE_ACTIONS
-WHERE METRIC_DETAIL_ID = :1
-AND CHILD_RMM_ID = :2
-AND STATUS = 'AWAITING_ACCEPTANCE'
-
-
--- INSERT_MCA
-INSERT INTO METRIC_CASCADE_ACTIONS (
-    METRIC_DETAIL_ID,
-    PARENT_RMM_ID,
-    CHILD_RMM_ID,
-    ACTION_TYPE,
-    ACTION_BY,
-    ACTION_DT,
-    STATUS,
-    MEET_INSTC_ID
-)
-VALUES (
-    :1, :2, :3,
-    'CASCADE',
-    :4,
-    CURRENT_TIMESTAMP,
-    'AWAITING_ACCEPTANCE',
-    :5
-)
-
-
-
-def get_rmm_level(rmm_id):
-    res = sql_getData("GET_RMM_LEVEL", [rmm_id])
-    return res[0]["RMM_LEVEL"] if res else None
-
-
 def get_allowed_children(rmm_id):
     parent_level = get_rmm_level(rmm_id)
 
-    # ❌ Stop cascade at level 2 (LOB / Market)
+    # ❌ Stop at level 2
     if parent_level is None or parent_level >= 2:
         return set()
 
+    # 🔥 SPECIAL CASE: GLOBAL (LEVEL 0)
+    if parent_level == 0:
+        rows = sql_getData("GET_LEVEL1_RMMS", [])
+        return set(r["RMM_ID"] for r in rows)
+
+    # ✅ Normal case (GB → LOB, Region → Market)
     rows = sql_getData("GET_VALID_CHILDREN", [rmm_id])
     return set(r["RMM_ID"] for r in rows)
 
 
-def get_mcl_locations(metric_id):
-    rows = sql_getData("GET_MCL_LOCATIONS", [metric_id])
-    return [r["RMM_ID"] for r in rows]
-
-
-def cascade_metrics_action(vInfo):
-    try:
-        parent_rmm_id = vInfo.get("rmm_id")
-        metric_ids = vInfo.get("selectedMetrics", [])
-        meet_instc_id = vInfo.get("instanceid")
-        user_id = str(myinfo())
-
-        if not metric_ids:
-            return jsonify({
-                "status": "error",
-                "message": "No metrics selected"
-            })
-
-        # 🔹 Step 1: Get allowed children (based on level logic)
-        valid_children = get_allowed_children(parent_rmm_id)
-
-        # If no children allowed → stop cascade
-        if not valid_children:
-            return jsonify({
-                "status": "error",
-                "message": "Cascade not allowed for this level"
-            })
-
-        cascaded = []
-        not_cascaded = []
-
-        # 🔹 Step 2: Process each metric
-        for metric_id in metric_ids:
-
-            # Get all configured cascade locations (MCL)
-            mcl_rmm_ids = get_mcl_locations(metric_id)
-
-            for child_rmm_id in mcl_rmm_ids:
-
-                if child_rmm_id in valid_children:
-
-                    # 🔹 Check duplicate
-                    exists = sql_getData(
-                        "CHECK_EXISTING_MCA",
-                        [metric_id, child_rmm_id]
-                    )
-
-                    if exists:
-                        continue
-
-                    # 🔹 Insert cascade action
-                    sql_insertData(
-                        "INSERT_MCA",
-                        "ACTION_ID",
-                        [
-                            metric_id,
-                            parent_rmm_id,
-                            child_rmm_id,
-                            user_id,
-                            meet_instc_id
-                        ]
-                    )
-
-                    cascaded.append(child_rmm_id)
-
-                else:
-                    not_cascaded.append(child_rmm_id)
-
-        # 🔹 Step 3: Response
-
-        if not_cascaded:
-            return jsonify({
-                "status": "partial_success",
-                "message": "Cascade completed. Some locations were not cascaded due to hierarchy restrictions.",
-                "cascaded": list(set(cascaded)),
-                "not_cascaded": list(set(not_cascaded))
-            })
-
-        return jsonify({
-            "status": "success",
-            "message": "Cascade completed successfully"
-        })
-
-    except Exception as e:
-        log_error.error(f"Error in cascade_metrics_action: {str(e)}")
-        return jsonify({
-            "status": "error",
-            "message": "Failed to cascade metrics"
-        })
-
-
+-- GET_LEVEL1_RMMS
+SELECT RMM_ID
+FROM RAP_RMM_GROUP
+WHERE RMM_LEVEL = 1
+AND ACTIVE = 'Y'
