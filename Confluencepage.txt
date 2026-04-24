@@ -1,8 +1,90 @@
-Level 2 (RMMs) – Primary List
-(These are the items under Regions / ServCo / deeper menus — your focus)
+(
+'US GBM',
+'US CMB',
+'HBUS MSS',
+'Malta CIB',
+'Asia Pacific IWPB (excl. HK Retail)',
+'Malta IWPB',
+'United States IWPB',
+'MENAT IWPB',
+'Europe IWPB',
+'GPB',
+'Insurance',
+'Asset Management',
+'HAIL',
+'AMG Asia',
+'AMEU',
+'UK WPB',
+'Futures Commission Merchant Risk Committee',
+'Hong Kong',
+'Australia AUH',
+'Australia HBAU',
+'Australia SYH',
+'Sri Lanka',
+'Bangladesh',
+'Hang Seng',
+'Philippines',
+'China',
+'Indonesia',
+'Malaysia - HBMB',
+'Malaysia - HBMS',
+'HBSP',
+'Taiwan',
+'India',
+'Japan',
+'Korea',
+'Macau',
+'Mauritius HBMU',
+'Mauritius PTL',
+'New Zealand',
+'Singapore',
+'Thailand',
+'Vietnam KRI',
+'Vietnam',
+'HBEG',
+'HSBC SA',
+'HBTR',
+'HBME',
+'Channel Islands and Isle of Man',
+'Bermuda',
+'HSBC Continental Europe',
+'HSBC Israel',
+'Ireland HSSI RAS',
+'HCIB SDGM',
+'South Africa',
+'HCIB US Branch',
+'Brazil',
+'Chile',
+'Uruguay'
+)
+
+
+Level 2 (RMMs) — Clean Extracted List
+🔹 Under Global CIB (excl. HK & UK)
+US GBM
+US CMB
+HBUS MSS
+Malta CIB
+🔹 Under Global IWPB (excl. HK & UK Retail)
+Asia Pacific IWPB (excl. HK Retail)
+Malta IWPB
+United States IWPB
+MENAT IWPB
+Europe IWPB
+🔹 Under HBUK / Other (Global Business side)
+GPB
+Insurance
+Asset Management
+HAIL
+AMG Asia
+AMEU
+UK WPB
+🔹 Under Regions → United States
+Futures Commission Merchant Risk Committee
+🔹 Under Regions → Asia Pacific (ServCo list)
 Hong Kong
 Australia AUH
-Australia BEL
+Australia HBAU
 Australia SYH
 Sri Lanka
 Bangladesh
@@ -10,58 +92,36 @@ Hang Seng
 Philippines
 China
 Indonesia
-Malaysia – HMBG
-Malaysia – HMBs
+Malaysia – HBMB
+Malaysia – HBMS
+HBSP
 Taiwan
 India
 Japan
 Korea
 Macau
-Mauritius HMBU
-Mauritius PBL
+Mauritius HBMU
+Mauritius PTL
 New Zealand
 Singapore
 Thailand
-Vietnam KRE
+Vietnam KRI
 Vietnam
-Brazil
-Chile
-Uruguay
-Bermuda
+🔹 Under Regions → MENAT / HCIB / HNAH (ServCo list)
+HBEG
+HSBC SA
+HBTR
+HBME
+🔹 Under Regions → Europe / Others
 Channel Islands and Isle of Man
+Bermuda
 HSBC Continental Europe
 HSBC Israel
-Inland HSSI RAS
+Ireland HSSI RAS
 HCIB SDGM
 South Africa
 HCIB US Branch
-🟡 Other Lists (L1 / Intermediate / Categories)
-(You said secondary priority)
-Regions:
-Asia Pacific
-MENAT
-HCIB
-HNAH
-Mexico
-Global Business:
-Global CIB (excl. HK & UK)
-Global IWPB (excl. HK & UK Retail)
-HBUK
-Other
-Additional:
-US GBM
-US CMB
-HSBC MSS
-Malta CIB
-Asia Pacific IWPB
-Malta IWPB
-United States IWPB
-MENAT IWPB
-Europe IWPB
-GPB
-Insurance
-Asset Management
-HAL
-AMG Asia
-AMEU
-UK IWPB
+🔹 Under Regions → Mexico
+Brazil
+Chile
+Uruguay
