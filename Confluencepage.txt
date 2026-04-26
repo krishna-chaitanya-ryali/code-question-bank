@@ -1,112 +1,23 @@
-Implemented metric cascade configuration in Add/Edit flow.
-
-- Enabled selection of RMMs across hierarchy (GBs, Regions, LOBs, Markets)
-- All selected locations are stored in METRIC_CASCADE_LOCATIONS (MCL)
-- No restriction applied at configuration stage (as per design)
-- Ensured data persistence supports Edit functionality (pre-fill selections)
-
-Tested scenarios:
-✔ Multiple RMM selections saved correctly
-✔ Edit screen reflects previously selected cascade locations
-
-Status: Completed and verified.
-
-
-
-
-Completed cascade mapping logic for Add/Edit flow.
-
-- Implemented backend handling for storing cascade mappings in MCL table
-- Ensured consistency between UI selections and database persistence
-- Supported hierarchical selections without enforcing cascade restrictions at this stage
-
-Validated:
-✔ Correct mapping between METRIC_DETAIL_ID and RMM_ID
-✔ No data loss during update/edit operations
-
-Status: Completed.
-
-
-
-Implemented foundation for re-cascade handling.
-
-- Integrated cascade action tracking via METRIC_CASCADE_ACTIONS (MCA)
-- Ensured new cascade actions are recorded with:
-  - ACTION_TYPE = 'CASCADE'
-  - STATUS = 'AWAITING_ACCEPTANCE'
-- Enabled future support for re-cascade and status transitions
-
-Validated:
-✔ Multiple cascade actions captured correctly
-✔ No duplicate active cascade entries
-
-Status: Completed (base flow ready; enhancements can be handled in future tasks if required).
-
-
-
-Developed getCascadeMetrics API.
-
-- Implemented response for:
-  ✔ Cascaded to Child metrics
-  ✔ Cascaded from Parent metrics
-  ✔ To Be Removed section
-
-- Integrated joins with:
-  
-  - RAP_METRICS_DETAILS
-  - METRIC_CASCADE_LOCATIONS (MCL)
-  - METRIC_CASCADE_ACTIONS (MCA)
-
-- Included fields:
-  ✔ Metric Name
-  ✔ Cascade Date
-  ✔ Threshold
-  ✔ Metric Applicability
-  ✔ Actioned By
-
-Validated:
-✔ Correct data rendering in UI
-✔ Proper mapping of cascade history
-
-Status: Completed and verified.
-
-
-
-Implemented bulk cascade operation.
-
-- Enabled cascading for multiple selected metrics in a single action
-
-- Backend processes list of METRIC_DETAIL_IDs
-
-- Supports partial success handling:
-  ✔ Valid RMMs cascaded
-  ✔ Invalid (restricted hierarchy) RMMs skipped
-
-- Implemented hierarchy validation using RMM_LEVEL:
-  ✔ Cascade allowed only to next level
-  ✔ Cascade blocked for Level ≥ 2
-
-Validated:
-✔ Bulk selection works correctly
-✔ No invalid cascades inserted
-
-Status: Completed.
-
-Completed data model validation for cascade feature.
-
-- Introduced and validated:
-  ✔ METRIC_CASCADE_LOCATIONS (MCL)
-  ✔ METRIC_CASCADE_ACTIONS (MCA)
-
-- Added RMM_LEVEL in RAP_RMM_GROUP to support hierarchy control
-
-- Ensured logical integrity across:
-  ✔ Parent-child cascade flow
-  ✔ Action tracking
-  ✔ Metric mapping
-
-Validated:
-✔ No FK inconsistencies
-✔ Correct hierarchy enforcement using level-based logic
-
-Status: Completed.
+Analysis done on business requirements mentioned in this ticket.
+✅ Implemented Scope (Relevant to this ticket):
+Cascade to Child functionality implemented in Add/Edit Metric flow
+Users can select multiple RMM locations (GBs, Regions, LOBs, Markets with child)
+Selected locations are saved in METRIC_CASCADE_LOCATIONS (MCL)
+Data persistence ensured for Edit functionality (pre-population of selected locations)
+Metric Name Cascade and Threshold Cascade values are stored and retrieved correctly
+Metric Applicability values are handled as part of RAP_METRICS_DETAILS
+✔ Validated:
+Add Metric flow with cascade selection
+Edit Metric flow with existing cascade mappings
+Data consistency between UI and DB
+🚫 Out of Scope (Not part of this implementation): The following items mentioned in the ticket are not directly related to Add/Edit cascade functionality and are handled separately or require different modules:
+Formula suggestions (Amber/Green/Blue logic)
+“Last modified by” display logic
+Go-live date handling and future metrics tab
+Cascaded from Parent dropdown behavior
+Acceptance/Rejection workflow for cascaded metrics
+UI-level validations unrelated to cascade mapping
+Non-editable conditions post acceptance (handled in cascade workflow)
+These items belong to other tickets/modules (e.g., Metric Applicability, Formula Engine, Cascade Action Flow).
+✅ Conclusion: Core Add/Edit Child Metric with Cascade functionality has been successfully implemented and validated as per scope.
+Status: Completed
