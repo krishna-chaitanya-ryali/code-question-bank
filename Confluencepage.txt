@@ -1,38 +1,44 @@
-SELECT 
-    RMDT.METRIC_DETAIL_ID,
+Intl.DateTimeFormat().resolvedOptions().timeZone
 
-    CASE 
-        WHEN RMDT.METRICS_DISPLAY IS NULL 
-        THEN RMPM.METRICS_DISP 
-        ELSE RMDT.METRICS_DISPLAY 
-    END AS METRIC_NAME,
+Asia/Kolkata
+America/New_York
+Europe/London
 
-    RMDT.METRIC_NAME_CASCADE,
-    RMDT.THRESHOLD_CASCADE,
-    RMDT.METRIC_APPLICABILITY,
 
-    MCA.CASCADE_DT,
-    MCA.ACTION_BY,
-    NVL(MCA.STATUS, 'Awaiting Acceptance') AS STATUS
+{
+  "rmm_id": 14,
+  "instance_id": 123,
+  "selectedMetrics": [101, 102],
+  "timezone": "Asia/Kolkata"
+}
 
-FROM RAP_METRICS_DETAILS RMDT
 
-JOIN RAP_METRICS_PACK_MAPPING RMPM
-    ON RMDT.RAP_METRICS_MAPPING_ID = RMPM.RAP_METRICS_MAPPING_ID
+from datetime import datetime
 
--- 🔥 ONLY THIS JOIN MATTERS
-JOIN (
-    SELECT 
-        METRIC_DETAIL_ID,
-        CHILD_RMM_ID,
-        MAX(ACTION_DT) AS CASCADE_DT,
-        MAX(ACTION_BY) KEEP (DENSE_RANK LAST ORDER BY ACTION_DT) AS ACTION_BY,
-        MAX(STATUS) KEEP (DENSE_RANK LAST ORDER BY ACTION_DT) AS STATUS
-    FROM METRIC_CASCADE_ACTIONS
-    WHERE ACTION_TYPE = 'CASCADE'
-    GROUP BY METRIC_DETAIL_ID, CHILD_RMM_ID
-) MCA
-    ON MCA.METRIC_DETAIL_ID = RMDT.METRIC_DETAIL_ID
-    AND MCA.CHILD_RMM_ID = :rmm_id   -- 🔥 THIS is your filter
+action_dt = datetime.utcnow()
 
-WHERE RMDT.METRIC_FLAG <> 'removed'
+
+import pytz
+
+def convert_to_user_tz(dt, tz_name):
+    if not dt:
+        return None
+
+    utc = pytz.utc
+    user_tz = pytz.timezone(tz_name)
+
+    utc_dt = utc.localize(dt)
+    local_dt = utc_dt.astimezone(user_tz)
+
+    return local_dt.strftime("%d-%b-%Y %I:%M %p %Z")
+
+
+
+timezone = vInfo.get("timezone", "UTC")
+
+"CASCADE_DT": convert_to_user_tz(
+    record.get("CASCADE_DT"),
+    timezone
+)
+
+
