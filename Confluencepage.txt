@@ -1,23 +1,38 @@
-Analysis done on business requirements mentioned in this ticket.
-✅ Implemented Scope (Relevant to this ticket):
-Cascade to Child functionality implemented in Add/Edit Metric flow
-Users can select multiple RMM locations (GBs, Regions, LOBs, Markets with child)
-Selected locations are saved in METRIC_CASCADE_LOCATIONS (MCL)
-Data persistence ensured for Edit functionality (pre-population of selected locations)
-Metric Name Cascade and Threshold Cascade values are stored and retrieved correctly
-Metric Applicability values are handled as part of RAP_METRICS_DETAILS
-✔ Validated:
-Add Metric flow with cascade selection
-Edit Metric flow with existing cascade mappings
-Data consistency between UI and DB
-🚫 Out of Scope (Not part of this implementation): The following items mentioned in the ticket are not directly related to Add/Edit cascade functionality and are handled separately or require different modules:
-Formula suggestions (Amber/Green/Blue logic)
-“Last modified by” display logic
-Go-live date handling and future metrics tab
-Cascaded from Parent dropdown behavior
-Acceptance/Rejection workflow for cascaded metrics
-UI-level validations unrelated to cascade mapping
-Non-editable conditions post acceptance (handled in cascade workflow)
-These items belong to other tickets/modules (e.g., Metric Applicability, Formula Engine, Cascade Action Flow).
-✅ Conclusion: Core Add/Edit Child Metric with Cascade functionality has been successfully implemented and validated as per scope.
-Status: Completed
+SELECT 
+    RMDT.METRIC_DETAIL_ID,
+
+    CASE 
+        WHEN RMDT.METRICS_DISPLAY IS NULL 
+        THEN RMPM.METRICS_DISP 
+        ELSE RMDT.METRICS_DISPLAY 
+    END AS METRIC_NAME,
+
+    RMDT.METRIC_NAME_CASCADE,
+    RMDT.THRESHOLD_CASCADE,
+    RMDT.METRIC_APPLICABILITY,
+
+    MCA.CASCADE_DT,
+    MCA.ACTION_BY,
+    NVL(MCA.STATUS, 'Awaiting Acceptance') AS STATUS
+
+FROM RAP_METRICS_DETAILS RMDT
+
+JOIN RAP_METRICS_PACK_MAPPING RMPM
+    ON RMDT.RAP_METRICS_MAPPING_ID = RMPM.RAP_METRICS_MAPPING_ID
+
+-- 🔥 ONLY THIS JOIN MATTERS
+JOIN (
+    SELECT 
+        METRIC_DETAIL_ID,
+        CHILD_RMM_ID,
+        MAX(ACTION_DT) AS CASCADE_DT,
+        MAX(ACTION_BY) KEEP (DENSE_RANK LAST ORDER BY ACTION_DT) AS ACTION_BY,
+        MAX(STATUS) KEEP (DENSE_RANK LAST ORDER BY ACTION_DT) AS STATUS
+    FROM METRIC_CASCADE_ACTIONS
+    WHERE ACTION_TYPE = 'CASCADE'
+    GROUP BY METRIC_DETAIL_ID, CHILD_RMM_ID
+) MCA
+    ON MCA.METRIC_DETAIL_ID = RMDT.METRIC_DETAIL_ID
+    AND MCA.CHILD_RMM_ID = :rmm_id   -- 🔥 THIS is your filter
+
+WHERE RMDT.METRIC_FLAG <> 'removed'
