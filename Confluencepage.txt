@@ -1,44 +1,46 @@
-Intl.DateTimeFormat().resolvedOptions().timeZone
-
-Asia/Kolkata
-America/New_York
-Europe/London
-
-
-{
-  "rmm_id": 14,
-  "instance_id": 123,
-  "selectedMetrics": [101, 102],
-  "timezone": "Asia/Kolkata"
-}
-
-
 from datetime import datetime
 
-action_dt = datetime.utcnow()
-
-
-import pytz
-
-def convert_to_user_tz(dt, tz_name):
+def format_datetime(dt):
     if not dt:
         return None
 
-    utc = pytz.utc
-    user_tz = pytz.timezone(tz_name)
-
-    utc_dt = utc.localize(dt)
-    local_dt = utc_dt.astimezone(user_tz)
-
-    return local_dt.strftime("%d-%b-%Y %I:%M %p %Z")
-
-
-
-timezone = vInfo.get("timezone", "UTC")
-
-"CASCADE_DT": convert_to_user_tz(
-    record.get("CASCADE_DT"),
-    timezone
-)
+    try:
+        # If dt is already datetime object
+        return dt.strftime("%d-%m-%Y %H:%M:%S")
+    except:
+        # If dt is string (fallback case)
+        try:
+            parsed_dt = datetime.strptime(dt, "%a, %d %b %Y %H:%M:%S %Z")
+            return parsed_dt.strftime("%d-%m-%Y %H:%M:%S")
+        except:
+            return dt  # return as-is if parsing fails
 
 
+@views.route("/cascade_get_metric_details", methods=["GET"])
+def cascade_get_metric_details():
+    try:
+        metric_id = reqs.args.get('METRIC_DETAIL_ID')
+        details_list = sql_getData(522, [int(metric_id)])
+
+        if details_list:
+            base_record = details_list[0]
+
+            # 🔹 Collect cascaded locations
+            rmm_ids = [row['RMM_ID'] for row in details_list if row['RMM_ID']]
+            base_record['CASCADED_LOCATIONS'] = list(set(rmm_ids))
+
+            # 🔥 FORMAT DATE HERE
+            if base_record.get("UPDT_DT"):
+                base_record["UPDT_DT"] = format_datetime(base_record["UPDT_DT"])
+
+        # 🔹 Existing logic
+        if base_record["DT_ID"] > GRAF_CUTOFF_DATE:
+            base_record["RAS_CATEGORY"] = 0
+            if base_record["RAP_METRICS_CATEGORY"] is not None:
+                base_record["RAS_CATEGORY"] = base_record["RAP_METRICS_CATEGORY"]
+
+        return jsonify([base_record])
+
+    except Exception as e:
+        log_error.error('Error | mod_views | cascade_get_metric_details | ' + str(e))
+        return ("Error in getting metric_details")
