@@ -1,39 +1,30 @@
-SELECT 
-    RMDT.RAP_METRICS_MAPPING_ID,
-    MCL.RMM_ID,
+@views.route("/cascade_get_metric_details", methods=["GET"])
+def cascade_get_metric_details():
+    try:
+        metric_id = reqs.args.get('METRIC_DETAIL_ID')
+        details_list = sql_getData(522, [int(metric_id)])
 
-    -- ✅ Last Modified Date
-    RMDT.UPDT_DT AS LAST_MODIFIED_DATE,
+        if not details_list:
+            return jsonify([])   # ✅ Safe return
 
-    -- ✅ Last Modified By (EMP_ID priority + PSID fallback)
-    COALESCE(
-        UT_UPD.USER_NAME,
-        (
-            SELECT UT2.USER_NAME
-            FROM USER_TAB UT2
-            WHERE UT2.PSID = RMDT.UPDT_BY
-            FETCH FIRST 1 ROW ONLY
-        )
-    ) AS LAST_MODIFIED_BY,
+        base_record = details_list[0]
 
-    -- ✅ Existing Functional Approver (DON’T TOUCH)
-    UT.USER_NAME AS FUNCTION_APPROVER_NAME
+        # 🔹 Collect cascaded locations
+        rmm_ids = list({row['RMM_ID'] for row in details_list if row.get('RMM_ID')})
+        base_record['CASCADED_LOCATIONS'] = rmm_ids
 
-FROM RAP_METRICS_DETAILS RMDT
+        # 🔹 FORMAT DATE
+        if base_record.get("LAST_MODIFIED_DATE"):
+            base_record["LAST_MODIFIED_DATE"] = format_datetime(base_record["LAST_MODIFIED_DATE"])
 
-JOIN RAP_METRICS_PACK_MAPPING RMPM 
-    ON RMDT.RAP_METRICS_MAPPING_ID = RMPM.RAP_METRICS_MAPPING_ID
+        # 🔹 Existing logic (safe access)
+        if base_record.get("DT_ID") and base_record["DT_ID"] > GRAF_CUTOFF_DATE:
+            base_record["RAS_CATEGORY"] = 0
+            if base_record.get("RAP_METRICS_CATEGORY") is not None:
+                base_record["RAS_CATEGORY"] = base_record["RAP_METRICS_CATEGORY"]
 
-LEFT JOIN METRIC_CASCADE_LOCATIONS MCL 
-    ON MCL.METRIC_DETAIL_ID = RMDT.METRIC_DETAIL_ID
+        return jsonify([base_record])
 
--- ✅ Existing join (keep as is)
-LEFT JOIN USER_TAB UT 
-    ON UT.USER_ID = RMDT.FUNCTION_APPROVER
-
--- ✅ Primary join (EMP_ID)
-LEFT JOIN USER_TAB UT_UPD 
-    ON UT_UPD.EMP_ID = RMDT.UPDT_BY
-
-WHERE RMDT.METRIC_DETAIL_ID = :metric_id
-AND RMDT.METRIC_FLAG <> 'removed';
+    except Exception as e:
+        log_error.error('Error | mod_views | cascade_get_metric_details | ' + str(e))
+        return ("Error in getting metric_details")
