@@ -1,30 +1,62 @@
-@views.route("/cascade_get_metric_details", methods=["GET"])
-def cascade_get_metric_details():
-    try:
-        metric_id = reqs.args.get('METRIC_DETAIL_ID')
-        details_list = sql_getData(522, [int(metric_id)])
+SELECT
+    RMDT.MASTER_METRIC_ID,
+    RMDT.METRIC_DETAIL_ID,
 
-        if not details_list:
-            return jsonify([])   # ✅ Safe return
+    CASE 
+        WHEN RMDT.METRICS_DISPLAY IS NULL THEN RMPM.METRICS_DISP 
+        ELSE RMDT.METRICS_DISPLAY 
+    END AS METRIC_NAME,
 
-        base_record = details_list[0]
+    RMDT.METRIC_NAME_CASCADE,
+    RMDT.THRESHOLD_CASCADE,
+    RMDT.METRIC_APPLICABILITY,
 
-        # 🔹 Collect cascaded locations
-        rmm_ids = list({row['RMM_ID'] for row in details_list if row.get('RMM_ID')})
-        base_record['CASCADED_LOCATIONS'] = rmm_ids
+    MCA.CASCADE_DT,
 
-        # 🔹 FORMAT DATE
-        if base_record.get("LAST_MODIFIED_DATE"):
-            base_record["LAST_MODIFIED_DATE"] = format_datetime(base_record["LAST_MODIFIED_DATE"])
+    -- ✅ Replace ACTION_BY with USERNAME
+    COALESCE(
+        UT.USER_NAME,
+        (
+            SELECT UT2.USER_NAME
+            FROM USER_TAB UT2
+            WHERE UT2.PSID = MCA.ACTION_BY
+            FETCH FIRST 1 ROW ONLY
+        )
+    ) AS ACTION_BY
 
-        # 🔹 Existing logic (safe access)
-        if base_record.get("DT_ID") and base_record["DT_ID"] > GRAF_CUTOFF_DATE:
-            base_record["RAS_CATEGORY"] = 0
-            if base_record.get("RAP_METRICS_CATEGORY") is not None:
-                base_record["RAS_CATEGORY"] = base_record["RAP_METRICS_CATEGORY"]
+FROM MEET_INSTC MI
 
-        return jsonify([base_record])
+JOIN RAP 
+    ON MI.MEET_INSTC_ID = RAP.RAP_INSTANCE_ID
 
-    except Exception as e:
-        log_error.error('Error | mod_views | cascade_get_metric_details | ' + str(e))
-        return ("Error in getting metric_details")
+JOIN RAP_METRICS_DETAILS RMDT 
+    ON RAP.RAP_ID = RMDT.RAP_ID
+
+JOIN RAP_METRICS_PACK_MAPPING RMPM 
+    ON RMDT.RAP_METRICS_MAPPING_ID = RMPM.RAP_METRICS_MAPPING_ID
+
+-- 🔥 Existing MCA logic
+LEFT JOIN (
+    SELECT
+        METRIC_DETAIL_ID,
+        MAX(ACTION_DT) AS CASCADE_DT,
+        MAX(ACTION_BY) KEEP (DENSE_RANK LAST ORDER BY ACTION_DT) AS ACTION_BY
+    FROM METRIC_CASCADE_ACTIONS
+    WHERE ACTION_TYPE = 'CASCADE'
+    GROUP BY METRIC_DETAIL_ID
+) MCA 
+    ON MCA.METRIC_DETAIL_ID = RMDT.METRIC_DETAIL_ID
+
+-- ✅ NEW JOIN (EMP_ID primary)
+LEFT JOIN USER_TAB UT 
+    ON UT.EMP_ID = MCA.ACTION_BY
+
+WHERE MI.RMM_ID = :1
+  AND MI.MEET_INSTC_ID = :2
+  AND RMDT.METRIC_FLAG <> 'removed'
+
+  AND EXISTS (
+      SELECT 1
+      FROM METRIC_CASCADE_LOCATIONS MCL
+      WHERE MCL.METRIC_DETAIL_ID = RMDT.METRIC_DETAIL_ID
+  )
