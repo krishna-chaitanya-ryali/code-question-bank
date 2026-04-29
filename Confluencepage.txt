@@ -1,14 +1,39 @@
-Hi Matt, on the metric auto-cascade work:
-We’ve completed the core cascade flow — both cascade to child and cascaded from parent sections are working end-to-end.
-Status handling (like Awaiting Acceptance) and cascade actions are implemented.
-We’ve also fixed audit fields — last modified date and user are now correctly captured and displayed.
-Cascade filtering logic is working as expected based on hierarchy levels.
-Currently, we’re making minor refinements:
-Formatting adjustments for date fields
-Finalizing user display names in a couple of queries
-No major blockers at the moment.”
-🟡 If he asks “Any risks / blockers?”
-You can say:
-“Nothing major — just some small query-level refinements, which we are actively resolving.”
-🟢 If he asks “Next steps?”
-“Next, we’ll finalize the remaining edge cases and move towards complete validation and testing.”
+SELECT 
+    RMDT.RAP_METRICS_MAPPING_ID,
+    MCL.RMM_ID,
+
+    -- ✅ Last Modified Date
+    RMDT.UPDT_DT AS LAST_MODIFIED_DATE,
+
+    -- ✅ Last Modified By (EMP_ID priority + PSID fallback)
+    COALESCE(
+        UT_UPD.USER_NAME,
+        (
+            SELECT UT2.USER_NAME
+            FROM USER_TAB UT2
+            WHERE UT2.PSID = RMDT.UPDT_BY
+            FETCH FIRST 1 ROW ONLY
+        )
+    ) AS LAST_MODIFIED_BY,
+
+    -- ✅ Existing Functional Approver (DON’T TOUCH)
+    UT.USER_NAME AS FUNCTION_APPROVER_NAME
+
+FROM RAP_METRICS_DETAILS RMDT
+
+JOIN RAP_METRICS_PACK_MAPPING RMPM 
+    ON RMDT.RAP_METRICS_MAPPING_ID = RMPM.RAP_METRICS_MAPPING_ID
+
+LEFT JOIN METRIC_CASCADE_LOCATIONS MCL 
+    ON MCL.METRIC_DETAIL_ID = RMDT.METRIC_DETAIL_ID
+
+-- ✅ Existing join (keep as is)
+LEFT JOIN USER_TAB UT 
+    ON UT.USER_ID = RMDT.FUNCTION_APPROVER
+
+-- ✅ Primary join (EMP_ID)
+LEFT JOIN USER_TAB UT_UPD 
+    ON UT_UPD.EMP_ID = RMDT.UPDT_BY
+
+WHERE RMDT.METRIC_DETAIL_ID = :metric_id
+AND RMDT.METRIC_FLAG <> 'removed';
