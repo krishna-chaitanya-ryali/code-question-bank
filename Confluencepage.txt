@@ -1,46 +1,14 @@
-from datetime import datetime
-
-def format_datetime(dt):
-    if not dt:
-        return None
-
-    try:
-        # If dt is already datetime object
-        return dt.strftime("%d-%m-%Y %H:%M:%S")
-    except:
-        # If dt is string (fallback case)
-        try:
-            parsed_dt = datetime.strptime(dt, "%a, %d %b %Y %H:%M:%S %Z")
-            return parsed_dt.strftime("%d-%m-%Y %H:%M:%S")
-        except:
-            return dt  # return as-is if parsing fails
-
-
-@views.route("/cascade_get_metric_details", methods=["GET"])
-def cascade_get_metric_details():
-    try:
-        metric_id = reqs.args.get('METRIC_DETAIL_ID')
-        details_list = sql_getData(522, [int(metric_id)])
-
-        if details_list:
-            base_record = details_list[0]
-
-            # 🔹 Collect cascaded locations
-            rmm_ids = [row['RMM_ID'] for row in details_list if row['RMM_ID']]
-            base_record['CASCADED_LOCATIONS'] = list(set(rmm_ids))
-
-            # 🔥 FORMAT DATE HERE
-            if base_record.get("UPDT_DT"):
-                base_record["UPDT_DT"] = format_datetime(base_record["UPDT_DT"])
-
-        # 🔹 Existing logic
-        if base_record["DT_ID"] > GRAF_CUTOFF_DATE:
-            base_record["RAS_CATEGORY"] = 0
-            if base_record["RAP_METRICS_CATEGORY"] is not None:
-                base_record["RAS_CATEGORY"] = base_record["RAP_METRICS_CATEGORY"]
-
-        return jsonify([base_record])
-
-    except Exception as e:
-        log_error.error('Error | mod_views | cascade_get_metric_details | ' + str(e))
-        return ("Error in getting metric_details")
+Hi Matt, on the metric auto-cascade work:
+We’ve completed the core cascade flow — both cascade to child and cascaded from parent sections are working end-to-end.
+Status handling (like Awaiting Acceptance) and cascade actions are implemented.
+We’ve also fixed audit fields — last modified date and user are now correctly captured and displayed.
+Cascade filtering logic is working as expected based on hierarchy levels.
+Currently, we’re making minor refinements:
+Formatting adjustments for date fields
+Finalizing user display names in a couple of queries
+No major blockers at the moment.”
+🟡 If he asks “Any risks / blockers?”
+You can say:
+“Nothing major — just some small query-level refinements, which we are actively resolving.”
+🟢 If he asks “Next steps?”
+“Next, we’ll finalize the remaining edge cases and move towards complete validation and testing.”
