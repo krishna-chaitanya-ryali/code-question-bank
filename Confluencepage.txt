@@ -1,16 +1,64 @@
-SELECT
-    METRIC_DETAIL_ID,
+UPDATE METRIC_CASCADE_ACTIONS
+SET STATUS = 'Accepted'
+WHERE METRIC_DETAIL_ID = :1
+AND CHILD_RMM_ID = :2
+AND STATUS = 'Awaiting Acceptance'
 
-    MAX(ACTION_DT) AS CASCADE_DT,
 
-    MAX(ACTION_BY) KEEP (
-        DENSE_RANK LAST ORDER BY ACTION_DT
-    ) AS ACTION_BY,
+if METRIC_DETAIL_ID != -1:
+    try:
+        cascade_type = vInfo.get("cascade_type", "")
+        parent_metric_detail_id = vInfo.get("METRIC_DETAIL_ID")
+        child_rmm_id = selectedRmmId
 
-    MAX(ACTION_DT_STR) KEEP (
-        DENSE_RANK LAST ORDER BY ACTION_DT
-    ) AS CASCADE_DT_STR
+        if cascade_type == "newMetricCascade" and parent_metric_detail_id:
+            sql_execute(900, [int(parent_metric_detail_id), int(child_rmm_id)])
 
-FROM METRIC_CASCADE_ACTIONS
-WHERE ACTION_TYPE = 'CASCADE'
-GROUP BY METRIC_DETAIL_ID
+    except Exception as e:
+        log_error.error(f"Error updating cascade status (new): {str(e)}")
+
+
+
+
+def cascade_admin_update_metric_name_details_tbl():
+
+
+
+return jsonify(vRecs)
+
+# AFTER successful update (before return jsonify)
+
+try:
+    cascade_type = vInfo.get("cascade_type", "")
+    parent_metric_detail_id = vInfo.get("METRIC_DETAIL_ID")
+    child_rmm_id = selectedRmmId
+
+    if cascade_type == "existingMetricCascade" and parent_metric_detail_id:
+        sql_execute(900, [int(parent_metric_detail_id), int(child_rmm_id)])
+
+except Exception as e:
+    log_error.error(f"Error updating cascade status (existing): {str(e)}")
+
+
+vRecs = admin_update_record_metric_details(...)
+
+if vRecs:
+    # 👉 ADD HERE ✅
+
+return jsonify(vRecs)
+
+
+
+def update_cascade_status(vInfo, selectedRmmId):
+    try:
+        cascade_type = vInfo.get("cascade_type", "")
+        parent_metric_detail_id = vInfo.get("METRIC_DETAIL_ID")
+
+        if cascade_type in ["newMetricCascade", "existingMetricCascade"] and parent_metric_detail_id:
+            sql_execute(900, [int(parent_metric_detail_id), int(selectedRmmId)])
+
+    except Exception as e:
+        log_error.error(f"Cascade status update failed: {str(e)}")
+
+
+update_cascade_status(vInfo, selectedRmmId)
