@@ -1,15 +1,16 @@
-ALTER TABLE METRIC_CASCADE_ACTIONS 
-ADD ACTION_DT_STR VARCHAR2(50);
+SELECT
+    METRIC_DETAIL_ID,
 
-current_time = vinfo.get("current_time")
+    MAX(ACTION_DT) AS CASCADE_DT,
 
-sql_insertData(
-    379,
-    "ACTION_ID",
-    [metric_id, parent_rmm_id, child_rmm_id, user_id, meet_instc_id, current_time]
-)
+    MAX(ACTION_BY) KEEP (
+        DENSE_RANK LAST ORDER BY ACTION_DT
+    ) AS ACTION_BY,
 
+    MAX(ACTION_DT_STR) KEEP (
+        DENSE_RANK LAST ORDER BY ACTION_DT
+    ) AS CASCADE_DT_STR
 
-ACTION_DT     -> SYSTIMESTAMP
-ACTION_DT_STR -> :6
-
+FROM METRIC_CASCADE_ACTIONS
+WHERE ACTION_TYPE = 'CASCADE'
+GROUP BY METRIC_DETAIL_ID
