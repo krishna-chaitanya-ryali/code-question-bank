@@ -1,4 +1,15 @@
-Hi Mateusz,
-I’ve prepared a query for this and can share it here. Just to highlight, this query grants access across multiple locations, so it may not align with standard access control practices if used broadly.
-It was originally prepared for internal use and should be applied carefully based on specific requirements.
-Please confirm if you’re okay for me to share it here.
+ALTER TABLE METRIC_CASCADE_ACTIONS 
+ADD ACTION_DT_STR VARCHAR2(50);
+
+current_time = vinfo.get("current_time")
+
+sql_insertData(
+    379,
+    "ACTION_ID",
+    [metric_id, parent_rmm_id, child_rmm_id, user_id, meet_instc_id, current_time]
+)
+
+
+ACTION_DT     -> SYSTIMESTAMP
+ACTION_DT_STR -> :6
+
