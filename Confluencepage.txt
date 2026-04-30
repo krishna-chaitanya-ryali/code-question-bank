@@ -1,4 +1,4 @@
-Currently, IT CR creation and related activities are being handled by Anish. From my side, I am primarily focused on the metric auto-cascade work.
-That said, if a CR is raised and approved, I can support from the backend to provide the required access. We have handled similar requests earlier as well.
-However, as this involves backend changes, it would be better to proceed through the standard CR process considering the ongoing service protection.
-Please let me know how you would like to proceed.
+Hi Mateusz,
+I’ve prepared a query for this and can share it here. Just to highlight, this query grants access across multiple locations, so it may not align with standard access control practices if used broadly.
+It was originally prepared for internal use and should be applied carefully based on specific requirements.
+Please confirm if you’re okay for me to share it here.
