@@ -1,16 +1,4 @@
-metric_ids = vInfo.get("selectedMetrics", [])
-
-# 🔥 Normalize everything
-if isinstance(metric_ids, str):
-    metric_ids = [metric_ids]
-
-if isinstance(metric_ids, int):
-    metric_ids = [metric_ids]
-
-if not isinstance(metric_ids, list):
-    return jsonify({"status": "error", "message": "Invalid selectedMetrics format"})
-
-
-log_error.error(f"DEBUG metric_ids type: {type(metric_ids)} value: {metric_ids}")
-
-
+Currently, IT CR creation and related activities are being handled by Anish. From my side, I am primarily focused on the metric auto-cascade work.
+That said, if a CR is raised and approved, I can support from the backend to provide the required access. We have handled similar requests earlier as well.
+However, as this involves backend changes, it would be better to proceed through the standard CR process considering the ongoing service protection.
+Please let me know how you would like to proceed.
