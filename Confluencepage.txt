@@ -58,3 +58,20 @@ def update_cascade(parent_id, target_id, rmm_id):
         ])
     except Exception as e:
         log_error.error(f"Cascade update failed: {str(e)}")
+
+
+def get_location_type(rmm_id):
+    res = sql_getData(383, [rmm_id])
+    if res:
+        level = res[0]["RMM_LEVEL"]
+
+        if level == 0:
+            return "Global"
+        elif level == 1:
+            return "GB"
+        elif level == 2:
+            return "LOB"
+        elif level == 3:
+            return "Market"
+
+    return "Unknown"
