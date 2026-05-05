@@ -4,6 +4,57 @@ ADD TARGET_METRIC_DETAIL_ID NUMBER;
 UPDATE METRIC_CASCADE_ACTIONS
 SET 
     STATUS = 'Accepted',
-    TARGET_METRIC_DETAIL_ID = :selected_metric_detail_id  -- 103
-WHERE METRIC_DETAIL_ID = :parent_metric_detail_id         -- 101
-AND CHILD_RMM_ID = :child_rmm_id;
+    TARGET_METRIC_DETAIL_ID = :1
+WHERE METRIC_DETAIL_ID = :2
+AND CHILD_RMM_ID = :3
+AND STATUS = 'Awaiting Acceptance';
+
+
+METRIC_DETAIL_ID = int(get_metric_details_id(q1))
+
+try:
+    cascade_type = vInfo.get("cascade_type", "")
+    parent_metric_detail_id = vInfo.get("PARENT_METRIC_DETAIL_ID")
+    child_rmm_id = selectedRmmId
+    target_metric_detail_id = METRIC_DETAIL_ID  # newly created
+
+    if cascade_type == "newMetricCascade" and parent_metric_detail_id:
+        sql_execute(UPDATE_QUERY_ID, [
+            int(target_metric_detail_id),
+            int(parent_metric_detail_id),
+            int(child_rmm_id)
+        ])
+
+except Exception as e:
+    log_error.error(f"Error updating cascade (new): {str(e)}")
+
+
+cascade_admin_update_metric_name_details_tbl()
+
+
+try:
+    cascade_type = vInfo.get("cascade_type", "")
+    parent_metric_detail_id = vInfo.get("PARENT_METRIC_DETAIL_ID")
+    child_rmm_id = selectedRmmId
+    target_metric_detail_id = vInfo.get("METRIC_DETAIL_ID")  # selected existing (103)
+
+    if cascade_type == "existingMetricCascade" and parent_metric_detail_id:
+        sql_execute(UPDATE_QUERY_ID, [
+            int(target_metric_detail_id),
+            int(parent_metric_detail_id),
+            int(child_rmm_id)
+        ])
+
+except Exception as e:
+    log_error.error(f"Error updating cascade (existing): {str(e)}")
+
+
+def update_cascade(parent_id, target_id, rmm_id):
+    try:
+        sql_execute(UPDATE_QUERY_ID, [
+            int(target_id),
+            int(parent_id),
+            int(rmm_id)
+        ])
+    except Exception as e:
+        log_error.error(f"Cascade update failed: {str(e)}")
