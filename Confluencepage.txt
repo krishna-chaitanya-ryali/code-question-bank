@@ -75,3 +75,30 @@ def get_location_type(rmm_id):
             return "Market"
 
     return "Unknown"
+
+for rmm_id in locations:
+    location_type = get_location_type(rmm_id)
+    values.append((metric_id, rmm_id, location_type, user))
+
+
+
+try:
+    cascade_type = vInfo.get("cascade_type", "")
+    
+    parent_metric_detail_id = (
+        vInfo.get("PARENT_METRIC_DETAIL_ID") or
+        vInfo.get("cascaded_metric_detail_id")
+    )
+
+    child_rmm_id = selectedRmmId
+    target_metric_detail_id = METRIC_DETAIL_ID
+
+    if cascade_type == "newMetricCascade" and parent_metric_detail_id:
+        sql_execute(UPDATE_QUERY_ID, [
+            int(target_metric_detail_id),
+            int(parent_metric_detail_id),
+            int(child_rmm_id)
+        ])
+
+except Exception as e:
+    log_error.error(f"Error updating cascade status (new): {str(e)}")
