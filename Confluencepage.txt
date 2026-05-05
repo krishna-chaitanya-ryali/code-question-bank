@@ -1,72 +1,12 @@
-Title:
-Request for NAS Drive Setup for Metric Cascade Supporting Documents (UAT & Production)
+Hi Team,
 
----
+We require a NAS drive to be provisioned for the RAP application to store supporting documents related to metric cascade functionality.
 
-Description:
-As part of the Metric Auto Cascade enhancement in the RAP application, we require a centralized storage location (NAS drive) to store supporting documents uploaded by users.
+Kindly set this up in both non-production (UAT) and production environments with read/write access for the application servers.
 
-These documents will be associated with cascade actions (e.g., acceptance, rejection, or exception justification) and may include files such as Excel sheets, emails, or other relevant attachments.
+This is needed on priority as part of an upcoming release. Please share the mount path and access details once ready.
 
-To support this functionality, we need a NAS drive to be provisioned and accessible from the application servers.
+Let us know if any additional information is required.
 
----
-
-Requirement Details:
-
-- Environment:
-  
-  - UAT
-  - Production
-
-- Purpose:
-  Store user-uploaded supporting documents related to metric cascade actions.
-
-- Access Requirement:
-  
-  - Read/Write access from application servers
-  - Access for backend services (Python APIs)
-
-- Suggested Directory Structure:
-  
-  /nas/rap/metric_cascade/
-    ├── uat/
-    └── prod/
-
-- File Types (Expected):
-  
-  - .xlsx
-  - .xls
-  - .csv
-  - .msg / .eml (if email uploads are enabled)
-  - .pdf (optional)
-
-- Estimated Usage:
-  
-  - Moderate volume (based on cascade activity)
-  - Files will be retained for audit and tracking purposes
-
----
-
-Additional Requirements:
-
-- Ensure proper permissions (restricted access to application service accounts only)
-- Provide mount details/path for integration
-- Confirm any size limits or quotas
-- Backup/retention policy (if applicable)
-
----
-
-Dependencies:
-
-- Required for upcoming implementation of cascade audit/logging and document attachment feature
-
----
-
-Priority:
-Medium (Required for upcoming sprint)
-
----
-
-Point of Contact:
+Thanks,
 R Krishna Chaitanya
