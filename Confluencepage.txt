@@ -1,39 +1,72 @@
-Hi Nithin,
-
-Here’s a quick update on the progress of the Metric Auto Cascade implementation:
-
-- Cascade Functionality (Core Flow)
-  The end-to-end cascade flow from parent (e.g., Global/GB level) to child (e.g., LOB/Market level) is implemented. Metrics can now be cascaded and are visible under the “Cascade to Child” and “Cascaded from Parent” sections.
-
-- Level-Based Restriction
-  Cascade logic has been aligned with the RMM hierarchy (Level 0 → Level 1 only). Even if users select deeper levels, the system restricts actual cascade to valid levels while still storing selections for UI consistency.
-
-- Database & Query Enhancements
-  Queries for both “cascade to child” and “cascaded from parent” sections are updated and working correctly. We also ensured correct mapping using "METRIC_DETAIL_ID" and proper handling of latest cascade actions.
-
-- Time & Display Handling
-  Cascade timestamps are now handled using a frontend-provided formatted value ("ACTION_DT_STR") for display, while backend timestamps are retained for sorting and accuracy.
-
-- User Details Mapping
-  Instead of showing user IDs, we are now displaying usernames by mapping with the user table.
-
-- Acceptance Flow (Major Update)
-  When a cascaded metric is reviewed and accepted:
-  
-  - Status is updated from “Awaiting Acceptance” → “Accepted”
-  - Backend logic correctly updates the parent cascade record using "METRIC_DETAIL_ID"
-
-- New vs Existing Handling (Design Clarified)
-  
-  - New: Creates a new metric in the child location with the same "MASTER_METRIC_ID"
-  - Existing: Reuses an existing metric and links it to the cascade action (design finalized, implementation in progress)
-
-- Stability & Fixes
-  Fixed issues related to empty results, incorrect joins, and environment inconsistencies (local vs dev).
+Title:
+Request for NAS Drive Setup for Metric Cascade Supporting Documents (UAT & Production)
 
 ---
 
-Current Status:
-Core cascade flow is working end-to-end. Acceptance handling is implemented. Final adjustments are ongoing for the existing metric selection flow and minor edge cases.
+Description:
+As part of the Metric Auto Cascade enhancement in the RAP application, we require a centralized storage location (NAS drive) to store supporting documents uploaded by users.
 
-Let me know if you need a quick walkthrough.
+These documents will be associated with cascade actions (e.g., acceptance, rejection, or exception justification) and may include files such as Excel sheets, emails, or other relevant attachments.
+
+To support this functionality, we need a NAS drive to be provisioned and accessible from the application servers.
+
+---
+
+Requirement Details:
+
+- Environment:
+  
+  - UAT
+  - Production
+
+- Purpose:
+  Store user-uploaded supporting documents related to metric cascade actions.
+
+- Access Requirement:
+  
+  - Read/Write access from application servers
+  - Access for backend services (Python APIs)
+
+- Suggested Directory Structure:
+  
+  /nas/rap/metric_cascade/
+    ├── uat/
+    └── prod/
+
+- File Types (Expected):
+  
+  - .xlsx
+  - .xls
+  - .csv
+  - .msg / .eml (if email uploads are enabled)
+  - .pdf (optional)
+
+- Estimated Usage:
+  
+  - Moderate volume (based on cascade activity)
+  - Files will be retained for audit and tracking purposes
+
+---
+
+Additional Requirements:
+
+- Ensure proper permissions (restricted access to application service accounts only)
+- Provide mount details/path for integration
+- Confirm any size limits or quotas
+- Backup/retention policy (if applicable)
+
+---
+
+Dependencies:
+
+- Required for upcoming implementation of cascade audit/logging and document attachment feature
+
+---
+
+Priority:
+Medium (Required for upcoming sprint)
+
+---
+
+Point of Contact:
+R Krishna Chaitanya
