@@ -1,3 +1,28 @@
+def bulk_insert_review_details(review_rows):
+
+    try:
+
+        Db_Con = rapdb()
+
+        SqlQry = QueryString[390]['Qstring']
+
+        affected = Db_Con.bulk_execute(
+            SqlQry,
+            review_rows
+        )
+
+        Db_Con.endconnection()
+
+        return affected
+
+    except Exception as e:
+
+        print("bulk_insert_review_details")
+        print(e)
+
+        return -1
+
+
 def insert_review_details(
     cascaded_metric_detail_id,
     accepted_fields,
@@ -11,39 +36,75 @@ def insert_review_details(
     accepted_fields = accepted_fields or []
     rejected_fields = rejected_fields or []
 
-    # clear old rows
+    # -----------------------------------
+    # delete old rows
+    # -----------------------------------
+
     delete_review_rows(cascaded_metric_detail_id)
 
-    # insert accepted fields
+    review_rows = []
+
+    # -----------------------------------
+    # accepted rows
+    # -----------------------------------
+
     for field in accepted_fields:
 
-        sql_insertData(
-            390,
-            "INSERT_REVIEW_ROW",
-            [
-                cascaded_metric_detail_id,
-                field,
-                "Accepted",
-                remarks,
-                file_name,
-                file_path,
-                user
-            ]
-        )
+        review_rows.append([
+            cascaded_metric_detail_id,
+            field,
+            "Accepted",
+            remarks,
+            file_name,
+            file_path,
+            user
+        ])
 
-    # insert rejected fields
+    # -----------------------------------
+    # rejected rows
+    # -----------------------------------
+
     for field in rejected_fields:
 
-        sql_insertData(
-            390,
-            "INSERT_REVIEW_ROW",
-            [
-                cascaded_metric_detail_id,
-                field,
-                "Rejected",
-                remarks,
-                file_name,
-                file_path,
-                user
-            ]
-        )
+        review_rows.append([
+            cascaded_metric_detail_id,
+            field,
+            "Rejected",
+            remarks,
+            file_name,
+            file_path,
+            user
+        ])
+
+    # -----------------------------------
+    # bulk insert
+    # -----------------------------------
+
+    if review_rows:
+
+        bulk_insert_review_details(review_rows)
+
+
+INSERT INTO METRIC_CASCADE_REVIEW_DETAILS
+(
+    CASCADED_METRIC_DETAIL_ID,
+    FIELD_KEY,
+    REVIEW_TYPE,
+    REMARKS,
+    FILE_NAME,
+    FILE_PATH,
+    CREATED_BY,
+    CREATED_DT
+)
+VALUES
+(
+    :1,
+    :2,
+    :3,
+    :4,
+    :5,
+    :6,
+    :7,
+    CURRENT_TIMESTAMP
+)
+
