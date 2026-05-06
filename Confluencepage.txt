@@ -1,25 +1,49 @@
-def delete_review_rows(cascaded_metric_detail_id):
+def insert_review_details(
+    cascaded_metric_detail_id,
+    accepted_fields,
+    rejected_fields,
+    remarks,
+    file_name,
+    file_path,
+    user
+):
 
-    try:
-        Db_Con = capdb()
+    accepted_fields = accepted_fields or []
+    rejected_fields = rejected_fields or []
 
-        SqlQry = QueryString[389]['Qstring']
+    # clear old rows
+    delete_review_rows(cascaded_metric_detail_id)
 
-        Db_Con.del_data(
-            SqlQry,
-            [cascaded_metric_detail_id]
+    # insert accepted fields
+    for field in accepted_fields:
+
+        sql_insertData(
+            390,
+            "INSERT_REVIEW_ROW",
+            [
+                cascaded_metric_detail_id,
+                field,
+                "Accepted",
+                remarks,
+                file_name,
+                file_path,
+                user
+            ]
         )
 
-        Db_Con.endconnection()
+    # insert rejected fields
+    for field in rejected_fields:
 
-        return "Removed"
-
-    except Exception as e:
-
-        print("delete_review_rows")
-        print(e)
-
-        return "Error"
-
-
-delete_review_rows(cascaded_metric_detail_id)
+        sql_insertData(
+            390,
+            "INSERT_REVIEW_ROW",
+            [
+                cascaded_metric_detail_id,
+                field,
+                "Rejected",
+                remarks,
+                file_name,
+                file_path,
+                user
+            ]
+        )
