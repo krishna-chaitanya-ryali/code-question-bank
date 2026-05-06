@@ -1,82 +1,52 @@
-def submit_cascade_review(vInfo):
+389: {
+    "Qstring": """
+        DELETE FROM METRIC_CASCADE_REVIEW_DETAILS
+        WHERE CASCADED_METRIC_DETAIL_ID = :1
+    """
+}
 
-    try:
-
-        cascaded_metric_detail_id = vInfo.get(
-            "cascaded_metric_detail_id"
+390: {
+    "Qstring": """
+        INSERT INTO METRIC_CASCADE_REVIEW_DETAILS (
+            CASCADED_METRIC_DETAIL_ID,
+            FIELD_KEY,
+            REVIEW_TYPE,
+            REMARKS,
+            FILE_NAME,
+            FILE_PATH,
+            CREATED_BY,
+            CREATED_DT
         )
-
-        accepted_fields = (
-            vInfo.get("acceptedFieldKeys") or []
+        VALUES (
+            :1, :2, :3, :4, :5, :6, :7,
+            CURRENT_TIMESTAMP
         )
+    """
+}
 
-        rejected_fields = (
-            vInfo.get("rejectedFieldKeys") or []
-        )
+391: {
+    "Qstring": """
+        UPDATE METRIC_CASCADE_ACTIONS
+        SET
+            STATUS = :1,
+            LAST_UPDATED_BY = :2,
+            LAST_UPDATED_DT = CURRENT_TIMESTAMP
+        WHERE METRIC_DETAIL_ID = :3
+    """
+}
 
-        remarks = vInfo.get(
-            "remarks",
-            ""
-        )
+392: {
+    "Qstring": """
+        SELECT
+            FIELD_KEY,
+            REVIEW_TYPE,
+            REMARKS,
+            FILE_NAME,
+            FILE_PATH,
+            CREATED_BY,
+            CREATED_DT
+        FROM METRIC_CASCADE_REVIEW_DETAILS
+        WHERE CASCADED_METRIC_DETAIL_ID = :1
+    """
+}
 
-        dispensation_files = (
-            vInfo.get("dispensationFiles") or []
-        )
-
-        vUser = str(myinfo())
-
-        file_name = None
-        file_path = None
-
-        # file metadata
-        if dispensation_files:
-
-            uploaded_file = dispensation_files[0]
-
-            file_name = uploaded_file.get("name")
-
-            file_path = (
-                f"/nas/metric_cascade/"
-                f"{cascaded_metric_detail_id}/"
-                f"{file_name}"
-            )
-
-        # calculate status
-        status = get_cascade_review_status(
-            accepted_fields,
-            rejected_fields
-        )
-
-        # store review rows
-        insert_review_details(
-            cascaded_metric_detail_id,
-            accepted_fields,
-            rejected_fields,
-            remarks,
-            file_name,
-            file_path,
-            vUser
-        )
-
-        # update main status
-        sql_insertData(
-            391,
-            "UPDATE_STATUS",
-            [
-                status,
-                vUser,
-                cascaded_metric_detail_id
-            ]
-        )
-
-        return jsonify({
-            "status": status
-        })
-
-    except Exception as e:
-
-        log_error.error(
-            f"submit_cascade_review : {str(e)}"
-        )
-
-        return jsonify("Error")
