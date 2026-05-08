@@ -5,7 +5,8 @@ def derive_cascade_request_status(
 ):
 
     reviewed_count = (
-        accepted_count + rejected_count
+        accepted_count +
+        rejected_count
     )
 
     # -------------------------------------
@@ -31,6 +32,28 @@ def derive_cascade_request_status(
     return "FULLY_REVIEWED"
 
 
+def derive_next_action(status):
+
+    if not status:
+
+        return "REVIEW_POPUP"
+
+    status = status.strip()
+
+    if status == "Accepted":
+
+        return "EDIT_POPUP"
+
+    if status == "Partial Review":
+
+        return "DISPENSATION_POPUP"
+
+    if status == "Rejected":
+
+        return "DISPENSATION_POPUP"
+
+    return "REVIEW_POPUP"
+
 
 CREATE TABLE METRIC_CASCADE_DISPENSATION_DETAILS (
 
@@ -51,8 +74,6 @@ CREATE TABLE METRIC_CASCADE_DISPENSATION_DETAILS (
     CREATED_DT TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-
-393
 INSERT INTO METRIC_CASCADE_DISPENSATION_DETAILS
 (
     CASCADED_METRIC_DETAIL_ID,
@@ -75,51 +96,43 @@ VALUES
 )
 
 
-
-remove
-
-insert_review_details()
-
-def save_review_state(
-    cascaded_metric_detail_id,
+def get_cascade_review_status(
     accepted_fields,
     rejected_fields,
-    user
+    total_fields=9,
+    is_draft=False
 ):
 
-    accepted_fields = accepted_fields or []
+    if is_draft:
+        return "In Progress"
 
-    rejected_fields = rejected_fields or []
+    accepted_count = len(accepted_fields)
 
-    delete_review_rows(
-        cascaded_metric_detail_id
+    rejected_count = len(rejected_fields)
+
+    decided_count = (
+        accepted_count +
+        rejected_count
     )
 
-    review_rows = []
+    # nothing selected
+    if decided_count == 0:
+        return "Not Started"
 
-    for field in accepted_fields:
+    # partial selection
+    if decided_count < total_fields:
+        return "In Progress"
 
-        review_rows.append([
-            cascaded_metric_detail_id,
-            field,
-            "Accepted",
-            user
-        ])
+    # all rejected
+    if rejected_count == total_fields:
+        return "Rejected"
 
-    for field in rejected_fields:
+    # mix accept + reject
+    if rejected_count > 0:
+        return "Partial Review"
 
-        review_rows.append([
-            cascaded_metric_detail_id,
-            field,
-            "Rejected",
-            user
-        ])
-
-    if review_rows:
-
-        bulk_insert_review_state(
-            review_rows
-        )
+    # all accepted
+    return "Accepted"
 
 
 def insert_dispensation_details(
@@ -149,9 +162,6 @@ def insert_dispensation_details(
         )
 
 
-
-bulk_insert_review_state()
-
 def submit_cascade_review(vInfo):
 
     try:
@@ -166,6 +176,61 @@ def submit_cascade_review(vInfo):
             vInfo.get(
                 "acceptedFieldKeys"
             ) or []
+        )
+
+        rejected_fields = (
+            vInfo.get(
+                "rejectedFieldKeys"
+            ) or []
+        )
+
+        vUser = str(myinfo())
+
+        status = get_cascade_review_status(
+            accepted_fields,
+            rejected_fields
+        )
+
+        # save review selections
+        save_review_state(
+            cascaded_metric_detail_id,
+            accepted_fields,
+            rejected_fields,
+            vUser
+        )
+
+        # update workflow status
+        sql_insertData(
+            391,
+            "NA",
+            [
+                status,
+                vUser,
+                cascaded_metric_detail_id
+            ]
+        )
+
+        return jsonify({
+            "status": status
+        })
+
+    except Exception as e:
+
+        log_error.error(
+            f"submit_cascade_review : {str(e)}"
+        )
+
+        return jsonify("Error")
+
+
+def submit_dispensation_log(vInfo):
+
+    try:
+
+        cascaded_metric_detail_id = (
+            vInfo.get(
+                "cascaded_metric_detail_id"
+            )
         )
 
         rejected_fields = (
@@ -191,10 +256,7 @@ def submit_cascade_review(vInfo):
 
         file_path = None
 
-        # -------------------------------------
-        # FILE INFO
-        # -------------------------------------
-
+        # file upload metadata
         if dispensation_files:
 
             uploaded_file = (
@@ -207,68 +269,45 @@ def submit_cascade_review(vInfo):
 
             file_path = (
                 FOLDER_EXCEL +
-                f"{cascaded_metric_detail_id}/"
+                f"{cascaded_metric_detail_id}/" +
                 f"{file_name}"
             )
 
-        # -------------------------------------
-        # CALCULATE STATUS
-        # -------------------------------------
-
-        status = get_cascade_review_status(
-            accepted_fields,
-            rejected_fields
-        )
-
-        # -------------------------------------
-        # SAVE REVIEW STATE
-        # -------------------------------------
-
-        save_review_state(
+        # save dispensation details
+        insert_dispensation_details(
             cascaded_metric_detail_id,
-            accepted_fields,
             rejected_fields,
+            remarks,
+            file_name,
+            file_path,
             vUser
         )
 
-        # -------------------------------------
-        # FULLY REJECTED
-        # -------------------------------------
-
-        if status == "Rejected":
-
-            insert_dispensation_details(
-                cascaded_metric_detail_id,
-                rejected_fields,
-                remarks,
-                file_name,
-                file_path,
-                vUser
-            )
-
-        # -------------------------------------
-        # UPDATE MAIN STATUS
-        # -------------------------------------
-
-        sql_insertData(
-            391,
-            "NA",
-            [
-                status,
-                vUser,
-                cascaded_metric_detail_id
-            ]
-        )
-
         return jsonify({
-            "status": status
+            "status": "Success"
         })
 
     except Exception as e:
 
         log_error.error(
-            f"submit_cascade_review : "
-            f"{str(e)}"
+            f"submit_dispensation_log : {str(e)}"
         )
 
         return jsonify("Error")
+
+
+modify 
+
+cascade_from_parent_metrics.append(
+
+"CASCADE_REQUEST_STATUS":
+derive_cascade_request_status(
+    len(record.get("ACCEPTED_FIELDS") or []),
+    len(record.get("REJECTED_FIELDS") or [])
+),
+
+"NEXT_ACTION":
+derive_next_action(
+    record.get("STATUS")
+)
+
