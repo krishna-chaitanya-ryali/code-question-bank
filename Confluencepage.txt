@@ -59,3 +59,63 @@ def save_review_state(
             review_rows
         )
 
+
+
+def delete_review_rows(
+    cascaded_metric_detail_id
+):
+
+    try:
+
+        Db_Con = rapdb()
+
+        SqlQry = QueryString[389]['Qstring']
+
+        Db_Con.del_data(
+            SqlQry,
+            [cascaded_metric_detail_id]
+        )
+
+        Db_Con.endconnection()
+
+        return "Removed"
+
+    except Exception as e:
+
+        print(
+            "delete_review_rows"
+        )
+
+        print(e)
+
+        return "Error"
+
+
+def bulk_insert_review_state(
+    review_rows
+):
+
+    try:
+
+        Db_Con = rapdb()
+
+        SqlQry = QueryString[390]['Qstring']
+
+        affected = Db_Con.bulk_execute(
+            SqlQry,
+            review_rows
+        )
+
+        Db_Con.endconnection()
+
+        return affected
+
+    except Exception as e:
+
+        print(
+            "bulk_insert_review_state"
+        )
+
+        print(e)
+
+        return -1
