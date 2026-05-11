@@ -1,63 +1,12 @@
-def save_review_state(
-    cascaded_metric_detail_id,
-    accepted_fields,
-    rejected_fields,
-    remarks,
-    user
-):
+SELECT
+    METRIC_DETAIL_ID,
+    TARGET_METRIC_DETAIL_ID,
+    STATUS,
+    ACTION_TYPE
+FROM METRIC_CASCADE_ACTIONS
+WHERE TARGET_METRIC_DETAIL_ID = 236737;
 
-    accepted_fields = (
-        accepted_fields or []
-    )
+SELECT *
+FROM METRIC_CASCADE_REVIEW_STATE
+WHERE CASCADED_METRIC_DETAIL_ID = 236737;
 
-    rejected_fields = (
-        rejected_fields or []
-    )
-
-    # -----------------------------------
-    # DELETE OLD ROWS
-    # -----------------------------------
-
-    delete_review_rows(
-        cascaded_metric_detail_id
-    )
-
-    review_rows = []
-
-    # -----------------------------------
-    # ACCEPTED
-    # -----------------------------------
-
-    for field in accepted_fields:
-
-        review_rows.append([
-            cascaded_metric_detail_id,
-            field,
-            "Accepted",
-            remarks,
-            user
-        ])
-
-    # -----------------------------------
-    # REJECTED
-    # -----------------------------------
-
-    for field in rejected_fields:
-
-        review_rows.append([
-            cascaded_metric_detail_id,
-            field,
-            "Rejected",
-            remarks,
-            user
-        ])
-
-    # -----------------------------------
-    # BULK INSERT
-    # -----------------------------------
-
-    if review_rows:
-
-        bulk_insert_review_state(
-            review_rows
-        )
