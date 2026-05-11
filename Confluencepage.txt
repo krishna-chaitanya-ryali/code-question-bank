@@ -1,57 +1,46 @@
-def save_review_state(
-    cascaded_metric_detail_id,
-    accepted_fields,
-    rejected_fields,
-    remarks,
-    user
-):
+if dispensation_files:
 
-    accepted_fields = (
-        accepted_fields or []
+    uploaded_file = (
+        dispensation_files[0]
     )
 
-    rejected_fields = (
-        rejected_fields or []
-    )
+    # -------------------------------------------------
+    # HANDLE DICT
+    # -------------------------------------------------
 
-    # ---------------------------------------------------------
-    # DELETE OLD ROWS
-    # ---------------------------------------------------------
+    if isinstance(uploaded_file, dict):
 
-    delete_review_rows(
-        cascaded_metric_detail_id
-    )
-
-    # ---------------------------------------------------------
-    # ACCEPTED
-    # ---------------------------------------------------------
-
-    for field in accepted_fields:
-
-        sql_insertData(
-            390,
-            "REVIEW_STATE_ID",
-            [
-                cascaded_metric_detail_id,
-                field,
-                "Accepted",
-                user
-            ]
+        file_name = (
+            uploaded_file.get("name")
         )
 
-    # ---------------------------------------------------------
-    # REJECTED
-    # ---------------------------------------------------------
+    # -------------------------------------------------
+    # HANDLE STRING
+    # -------------------------------------------------
 
-    for field in rejected_fields:
+    elif isinstance(uploaded_file, str):
 
-        sql_insertData(
-            390,
-            "REVIEW_STATE_ID",
-            [
-                cascaded_metric_detail_id,
-                field,
-                "Rejected",
-                user
-            ]
+        file_name = uploaded_file
+
+    # -------------------------------------------------
+    # HANDLE TUPLE/LIST
+    # -------------------------------------------------
+
+    elif (
+        isinstance(uploaded_file, tuple)
+        or isinstance(uploaded_file, list)
+    ):
+
+        file_name = uploaded_file[0]
+
+    # -------------------------------------------------
+    # FILE PATH
+    # -------------------------------------------------
+
+    if file_name:
+
+        file_path = (
+            FOLDER_EXCEL
+            + f"{cascaded_metric_detail_id}/"
+            + file_name
         )
