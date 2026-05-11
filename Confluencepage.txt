@@ -1,109 +1,57 @@
-def submit_dispense_review(vInfo):
-    try:
+def save_review_state(
+    cascaded_metric_detail_id,
+    accepted_fields,
+    rejected_fields,
+    remarks,
+    user
+):
 
-        cascaded_metric_detail_id = (
-            vInfo.get(
-                "cascaded_metric_detail_id"
-            )
-        )
+    accepted_fields = (
+        accepted_fields or []
+    )
 
-        rejected_fields = (
-            vInfo.get(
-                "rejectedFieldKeys"
-            ) or []
-        )
+    rejected_fields = (
+        rejected_fields or []
+    )
 
-        remarks = vInfo.get(
-            "remarks",
-            ""
-        )
+    # ---------------------------------------------------------
+    # DELETE OLD ROWS
+    # ---------------------------------------------------------
 
-        dispensation_files = (
-            vInfo.get(
-                "dispensationFiles"
-            ) or []
-        )
+    delete_review_rows(
+        cascaded_metric_detail_id
+    )
 
-        vUser = str(myinfo())
+    # ---------------------------------------------------------
+    # ACCEPTED
+    # ---------------------------------------------------------
 
-        file_name = None
-        file_path = None
+    for field in accepted_fields:
 
-        # ---------------------------------------------------------
-        # FILE DETAILS
-        # ---------------------------------------------------------
-
-        if dispensation_files:
-
-            uploaded_file = (
-                dispensation_files[0]
-            )
-
-            file_name = (
-                uploaded_file.get("name")
-            )
-
-            file_path = (
-                FOLDER_EXCEL
-                + f"{cascaded_metric_detail_id}/"
-                + file_name
-            )
-
-        # ---------------------------------------------------------
-        # SAVE DISPENSATION
-        # ---------------------------------------------------------
-
-        for field in rejected_fields:
-
-            sql_insertData(
-                393,
-                "DISPENSATION_ID",
-                [
-                    cascaded_metric_detail_id,
-                    field,
-                    remarks,
-                    file_name,
-                    file_path,
-                    vUser
-                ]
-            )
-
-        # ---------------------------------------------------------
-        # SAVE REVIEW STATE
-        # ---------------------------------------------------------
-
-        save_review_state(
-            cascaded_metric_detail_id,
-            [],
-            rejected_fields,
-            remarks,
-            vUser
-        )
-
-        # ---------------------------------------------------------
-        # UPDATE STATUS
-        # ---------------------------------------------------------
-
-        sql_updateData(
-            391,
+        sql_insertData(
+            390,
+            "REVIEW_STATE_ID",
             [
-                "Rejected",
-                vUser,
-                cascaded_metric_detail_id
+                cascaded_metric_detail_id,
+                field,
+                "Accepted",
+                user
             ]
         )
 
-        return jsonify({
-            "status": "Success"
-        })
+    # ---------------------------------------------------------
+    # REJECTED
+    # ---------------------------------------------------------
 
-    except Exception as e:
+    for field in rejected_fields:
 
-        log_error.error(
-            "submit_dispense_review : "
-            + str(e)
+        sql_insertData(
+            390,
+            "REVIEW_STATE_ID",
+            [
+                cascaded_metric_detail_id,
+                field,
+                "Rejected",
+                user
+            ]
         )
-
-        return jsonify({
-            "status": "Error"
-        })
