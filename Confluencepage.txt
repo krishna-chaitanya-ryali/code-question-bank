@@ -1,10 +1,63 @@
-"CASCADE_REQUEST_STATUS": derive_cascade_request_status(
-    len(record.get("ACCEPTED_FIELDS") or []),
-    len(record.get("REJECTED_FIELDS") or [])
-),
+def save_review_state(
+    cascaded_metric_detail_id,
+    accepted_fields,
+    rejected_fields,
+    remarks,
+    user
+):
 
+    accepted_fields = (
+        accepted_fields or []
+    )
 
-"CASCADE_REQUEST_STATUS": derive_cascade_request_status(
-    accepted_count,
-    rejected_count
-),
+    rejected_fields = (
+        rejected_fields or []
+    )
+
+    # -----------------------------------
+    # DELETE OLD ROWS
+    # -----------------------------------
+
+    delete_review_rows(
+        cascaded_metric_detail_id
+    )
+
+    review_rows = []
+
+    # -----------------------------------
+    # ACCEPTED
+    # -----------------------------------
+
+    for field in accepted_fields:
+
+        review_rows.append([
+            cascaded_metric_detail_id,
+            field,
+            "Accepted",
+            remarks,
+            user
+        ])
+
+    # -----------------------------------
+    # REJECTED
+    # -----------------------------------
+
+    for field in rejected_fields:
+
+        review_rows.append([
+            cascaded_metric_detail_id,
+            field,
+            "Rejected",
+            remarks,
+            user
+        ])
+
+    # -----------------------------------
+    # BULK INSERT
+    # -----------------------------------
+
+    if review_rows:
+
+        bulk_insert_review_state(
+            review_rows
+        )
