@@ -41,3 +41,17 @@ MCA.SELECTED_EXISTING_METRIC_DETAIL_ID
     "SELECTED_EXISTING_METRIC_DETAIL_ID"
 )
 
+
+
+
+selected_cascading_type = (
+    vInfo.get(
+        "selected_cascading_type"
+    ) or None
+)
+
+selected_existing_metric_detail_id = (
+    vInfo.get(
+        "selected_existing_metric_detail_id"
+    ) or None
+)
