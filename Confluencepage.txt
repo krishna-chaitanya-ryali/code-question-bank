@@ -1,80 +1,70 @@
-ALTER TABLE METRIC_CASCADE_ACTIONS
-ADD (
-    SELECTED_CASCADING_TYPE VARCHAR2(20),
-    SELECTED_EXISTING_METRIC_DETAIL_ID NUMBER
-);
+SELECT
+    FIELD_KEY,
+    REVIEW_TYPE
+FROM METRIC_CASCADE_REVIEW_STATE
+WHERE CASCADED_METRIC_DETAIL_ID = :1
+394
 
-391
+def get_cascade_review_state(vInfo):
 
-UPDATE METRIC_CASCADE_ACTIONS
-SET 
-    STATUS = :1,
-    LAST_UPDATED_BY = :2,
-    LAST_UPDATED_DT = CURRENT_TIMESTAMP,
-    SELECTED_CASCADING_TYPE = :4,
-    SELECTED_EXISTING_METRIC_DETAIL_ID = :5
-WHERE METRIC_DETAIL_ID = :3
+    try:
 
+        cascaded_metric_detail_id = (
+            vInfo.get(
+                "cascaded_metric_detail_id"
+            )
+        )
 
+        review_rows = sql_getData(
+            394,
+            [
+                cascaded_metric_detail_id
+            ]
+        )
 
-parameter order
+        accepted_keys = []
+        rejected_keys = []
 
-[
-    status,
-    user,
-    metric_detail_id,
-    selected_cascading_type,
-    selected_existing_metric_detail_id
-]
+        if review_rows and review_rows != -1:
 
-380
+            for row in review_rows:
 
-MCA.SELECTED_CASCADING_TYPE,
-MCA.SELECTED_EXISTING_METRIC_DETAIL_ID
+                review_type = (
+                    row.get("REVIEW_TYPE")
+                )
 
+                field_key = (
+                    row.get("FIELD_KEY")
+                )
 
-"SELECTED_CASCADING_TYPE": record.get(
-    "SELECTED_CASCADING_TYPE"
-),
+                if review_type == "Accepted":
 
-"SELECTED_EXISTING_METRIC_DETAIL_ID": record.get(
-    "SELECTED_EXISTING_METRIC_DETAIL_ID"
-)
+                    accepted_keys.append(
+                        field_key
+                    )
 
+                elif review_type == "Rejected":
 
+                    rejected_keys.append(
+                        field_key
+                    )
 
+        return jsonify({
 
-selected_cascading_type = (
-    vInfo.get(
-        "selected_cascading_type"
-    ) or None
-)
+            "acceptedFieldKeys":
+                accepted_keys,
 
-selected_existing_metric_detail_id = (
-    vInfo.get(
-        "selected_existing_metric_detail_id"
-    ) or None
-)
+            "rejectedFieldKeys":
+                rejected_keys
+        })
 
+    except Exception as e:
 
+        log_error.error(
+            "get_cascade_review_state : "
+            + str(e)
+        )
 
-sql_insertData(
-    391,
-    "NA",
-    [
-        "Rejected",
-        str(myinfo()),
-        cascaded_metric_detail_id,
-        None,
-        None
-    ]
-)
-
-
-MAX(MCA1.SELECTED_CASCADING_TYPE) KEEP (
-    DENSE_RANK LAST ORDER BY MCA1.ACTION_DT
-) AS SELECTED_CASCADING_TYPE,
-
-MAX(MCA1.SELECTED_EXISTING_METRIC_DETAIL_ID) KEEP (
-    DENSE_RANK LAST ORDER BY MCA1.ACTION_DT
-) AS SELECTED_EXISTING_METRIC_DETAIL_ID,
+        return jsonify({
+            "status": "Error"
+        })
