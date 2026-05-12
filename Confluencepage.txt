@@ -55,3 +55,17 @@ selected_existing_metric_detail_id = (
         "selected_existing_metric_detail_id"
     ) or None
 )
+
+
+
+sql_insertData(
+    391,
+    "NA",
+    [
+        "Rejected",
+        str(myinfo()),
+        cascaded_metric_detail_id,
+        None,
+        None
+    ]
+)
