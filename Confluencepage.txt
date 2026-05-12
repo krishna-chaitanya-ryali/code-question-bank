@@ -1,15 +1,43 @@
-parent_metric_detail_id = vInfo.get(
-    "cascaded_metric_detail_id"
+ALTER TABLE METRIC_CASCADE_ACTIONS
+ADD (
+    SELECTED_CASCADING_TYPE VARCHAR2(20),
+    SELECTED_EXISTING_METRIC_DETAIL_ID NUMBER
+);
+
+391
+
+UPDATE METRIC_CASCADE_ACTIONS
+SET 
+    STATUS = :1,
+    LAST_UPDATED_BY = :2,
+    LAST_UPDATED_DT = CURRENT_TIMESTAMP,
+    SELECTED_CASCADING_TYPE = :4,
+    SELECTED_EXISTING_METRIC_DETAIL_ID = :5
+WHERE METRIC_DETAIL_ID = :3
+
+
+
+parameter order
+
+[
+    status,
+    user,
+    metric_detail_id,
+    selected_cascading_type,
+    selected_existing_metric_detail_id
+]
+
+380
+
+MCA.SELECTED_CASCADING_TYPE,
+MCA.SELECTED_EXISTING_METRIC_DETAIL_ID
+
+
+"SELECTED_CASCADING_TYPE": record.get(
+    "SELECTED_CASCADING_TYPE"
+),
+
+"SELECTED_EXISTING_METRIC_DETAIL_ID": record.get(
+    "SELECTED_EXISTING_METRIC_DETAIL_ID"
 )
 
-if parent_metric_detail_id:
-
-    sql_insertData(
-        391,
-        "NA",
-        [
-            "Accepted",
-            str(myinfo()),
-            parent_metric_detail_id
-        ]
-    )
