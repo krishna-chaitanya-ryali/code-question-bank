@@ -1,9 +1,15 @@
-sql_insertData(
-    391,
-    "NA",
-    [
-        "Rejected",
-        str(vUser),
-        cascaded_metric_detail_id
-    ]
+parent_metric_detail_id = vInfo.get(
+    "cascaded_metric_detail_id"
 )
+
+if parent_metric_detail_id:
+
+    sql_insertData(
+        391,
+        "NA",
+        [
+            "Accepted",
+            str(myinfo()),
+            parent_metric_detail_id
+        ]
+    )
