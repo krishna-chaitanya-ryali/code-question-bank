@@ -1,70 +1,49 @@
-SELECT
-    FIELD_KEY,
-    REVIEW_TYPE
-FROM METRIC_CASCADE_REVIEW_STATE
-WHERE CASCADED_METRIC_DETAIL_ID = :1
-394
+Backend implementation for Perform Cascade functionality is largely completed, including:
 
-def get_cascade_review_state(vInfo):
+- bulk cascade support
+- immediate child cascade handling
+- hierarchy validation
+- cascaded from parent visibility
+- cascade status handling
+- actioned by/date updates
+- duplicate prevention
+- accept/reject review handling
 
-    try:
+“To Be Removed” downstream validation is partially completed and may require additional SIT/UAT validation.
 
-        cascaded_metric_detail_id = (
-            vInfo.get(
-                "cascaded_metric_detail_id"
-            )
-        )
+Email notification functionality is currently out of scope and expected to be covered under separate email/reminder related stories.
 
-        review_rows = sql_getData(
-            394,
-            [
-                cascaded_metric_detail_id
-            ]
-        )
 
-        accepted_keys = []
-        rejected_keys = []
 
-        if review_rows and review_rows != -1:
 
-            for row in review_rows:
+Backend support for Metric Assignment screen is largely completed, including:
 
-                review_type = (
-                    row.get("REVIEW_TYPE")
-                )
+- Cascaded to Child retrieval
+- status handling
+- cascade date/actioned by
+- metric applicability/name cascade/threshold cascade retrieval
+- bulk and individual metric cascade support
+- persistence of cascaded metrics after review actions
+- review status tracking for greying out completed entries
 
-                field_key = (
-                    row.get("FIELD_KEY")
-                )
+“To be Removed” downstream handling and Out-of-Cycle override/new-entry behavior may require additional SIT/UAT validation for edge cases.
 
-                if review_type == "Accepted":
+Frontend-specific items such as tab rendering, checkbox UI, and grey-out styling are outside backend scope.
 
-                    accepted_keys.append(
-                        field_key
-                    )
 
-                elif review_type == "Rejected":
 
-                    rejected_keys.append(
-                        field_key
-                    )
 
-        return jsonify({
+Backend implementation for Global Perform Cascade functionality is largely completed, including:
 
-            "acceptedFieldKeys":
-                accepted_keys,
+- immediate child cascade handling
+- hierarchy validation
+- bulk and individual metric cascade support
+- duplicate prevention for already cascaded metrics
+- cascaded from parent visibility
+- cascade status tracking
+- actioned by/date handling
+- review workflow integration
 
-            "rejectedFieldKeys":
-                rejected_keys
-        })
+“To be Removed” downstream behavior and rollback/error handling scenarios may require additional SIT/UAT validation.
 
-    except Exception as e:
-
-        log_error.error(
-            "get_cascade_review_state : "
-            + str(e)
-        )
-
-        return jsonify({
-            "status": "Error"
-        })
+Email notification functionality is currently outside backend scope and expected to be covered under separate notification-related stories.
