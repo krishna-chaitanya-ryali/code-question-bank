@@ -68,3 +68,12 @@ def derive_next_action(
         cascade_request_status,
         record.get("STATUS")
     ),
+
+
+
+cascade_request_status = (
+    derive_cascade_request_status(
+        accepted_count,
+        rejected_count
+    )
+)
