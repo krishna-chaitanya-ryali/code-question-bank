@@ -1,79 +1,10 @@
-def derive_next_action(
-    cascade_request_status,
-    metric_cascade_status
-):
-
-    cascade_request_status = (
-        cascade_request_status or ""
-    ).strip()
-
-    metric_cascade_status = (
-        metric_cascade_status or ""
-    ).strip()
-
-    # ---------------------------------------------------------
-    # NOT STARTED
-    # ---------------------------------------------------------
-
-    if (
-        cascade_request_status == "NOT_STARTED"
-        and metric_cascade_status == "Awaiting Acceptance"
-    ):
-
-        return "VIEW_POPUP"
-
-    # ---------------------------------------------------------
-    # PARTIAL REVIEW
-    # ---------------------------------------------------------
-
-    if (
-        cascade_request_status == "PARTIAL_REVIEW"
-        and metric_cascade_status == "In Progress"
-    ):
-
-        return "REVIEW_POPUP"
-
-    # ---------------------------------------------------------
-    # FULLY REVIEWED BUT FINAL SUBMIT PENDING
-    # ---------------------------------------------------------
-
-    if (
-        cascade_request_status == "FULLY_REVIEWED"
-        and metric_cascade_status == "In Progress"
-    ):
-
-        return "EDIT_POPUP"
-
-    # ---------------------------------------------------------
-    # COMPLETED
-    # ---------------------------------------------------------
-
-    if metric_cascade_status in [
-        "Accepted",
-        "Rejected"
-    ]:
-
-        return ""
-
-    # ---------------------------------------------------------
-    # DEFAULT
-    # ---------------------------------------------------------
-
-    return "VIEW_POPUP"
-
-
-
-"NEXT_ACTION":
-    derive_next_action(
-        cascade_request_status,
-        record.get("STATUS")
-    ),
-
-
-
-cascade_request_status = (
-    derive_cascade_request_status(
-        accepted_count,
-        rejected_count
-    )
-)
+NOT_STARTED
+Awaiting Acceptance
+PARTIAL_REVIEW
+In Progress
+FULLY_REVIEWED + final pending
+In Progress
+FULLY_REVIEWED + accepted final submit
+Accepted
+FULLY_REVIEWED + rejected final submit
+Rejected
