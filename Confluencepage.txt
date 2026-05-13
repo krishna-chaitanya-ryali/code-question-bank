@@ -1,94 +1,58 @@
-if cascade_flag == "Yes":
-
-    # sync insert + delete
-
-    existing = sql_getData(
-        374,
-        [metric_detail_id]
-    )
-
-    existing_rmm_ids = [
-        row["RMM_ID"]
-        for row in existing
-    ]
-
-    to_insert = (
-        set(selected_rmm_ids)
-        - set(existing_rmm_ids)
-    )
-
-    to_delete = (
-        set(existing_rmm_ids)
-        - set(selected_rmm_ids)
-    )
-
-    for rmm_id in to_delete:
-
-        deleteDatafrom_cascaded_locations(
-            metric_detail_id,
-            rmm_id,
-            cascade_flag
-        )
-
-    for rmm_id in to_insert:
-
-        location_type = get_location_type(
-            rmm_id
-        )
-
-        sql_insertData(
-            373,
-            "CASCADED_ID",
-            [
-                metric_detail_id,
-                rmm_id,
-                location_type,
-                vUser
-            ]
-        )
-
-    # ---------------------------------------------------------
-    # UPDATE CASCADE STATUS
-    # ---------------------------------------------------------
-
-    try:
-
-        cascade_type = vInfo.get(
-            "cascade_type",
-            ""
-        )
-
-        parent_metric_detail_id = vInfo.get(
-            "cascaded_metric_detail_id"
-        )
-
-        if (
-            cascade_type == "existingMetricCascade"
-            and parent_metric_detail_id
-        ):
-
-            sql_insertData(
-                391,
-                "NA",
-                [
-                    "Accepted",
-                    str(myinfo()),
-                    None,
-                    None,
-                    int(parent_metric_detail_id)
-                ]
-            )
-
-    except Exception as e:
-
-        log_error.error(
-            f"Error updating cascade status (existing): {str(e)}"
-        )
-
-elif cascade_flag == "No":
-
-    deleteDatafrom_cascaded_locations(
-        metric_detail_id,
-        selectedRmmId,
-        cascade_flag
-    )
+✅ JIRA TICKET
+Summary
+Deactivate inactive users in Pack Builder application based on AMRP review process
+Description
+This ticket is raised to perform user deactivation activity for the Pack Builder application based on the completed AMRP review process.
+As part of the review cycle, the complete user list was uploaded into the AMRP tool and notifications were sent to the respective line managers for validation. The managers were provided sufficient time to review and respond.
+Based on the latest AMRP output, a list of users for whom no approval/response was received has been identified. The request is to deactivate those users in the Pack Builder application as part of regular access governance and cleanup activity.
+The activity involves preparing and executing database update queries for the identified users.
+Purpose / Justification
+To deactivate inactive/unverified users
+To maintain proper access governance
+To ensure only validated users retain access
+Expected Outcome
+Identified users are deactivated successfully
+Active user data remains unaffected
+✅ DATABASE CHANGE REQUEST (DATA CR)
+Short Description
+Production database update to deactivate inactive Pack Builder users based on AMRP review
+Description
+This change request is raised to perform a production database update for deactivating selected users in the Pack Builder application.
+As part of the AMRP review process, user details were shared with respective line managers for validation. Based on the latest review output, certain users identified as inactive or unverified are required to be deactivated in the application.
+The activity involves executing validated SQL update queries to update user status for the identified records.
+This is a data-only change and does not involve application code or schema modifications.
+Reason for Change
+To remove inactive/unverified users from the application
+To maintain accurate user access data
+To support access governance and compliance activities
+Implementation Plan
+Obtain approved change window and database access.
+Identify the users to be deactivated based on the AMRP output.
+Take backup of affected records.
+Execute SQL update queries to deactivate the users.
+Verify updated records.
+Commit the changes.
+Customer / Business Impact
+No downtime expected
+No impact to active users
+Improves access governance and user data accuracy
+Technical Impact
+No application restart required
+No schema changes involved
+Limited to specific user records
+Backout Plan
+Restore original user status using backup data
+Revert updates if required
+Post Implementation Verification
+Validate deactivated users in database
+Confirm only intended users are impacted
+Verify active users remain unaffected
+Release Plan
+Standalone production database change
+Executed during approved change window
+No application deployment required
+✅ This wording is good because:
+Sounds like a routine governance activity
+Clearly low risk
+Avoids mentioning incidents/problems
+Explains AMRP context cleanly
