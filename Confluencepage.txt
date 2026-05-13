@@ -1,49 +1,101 @@
-Backend implementation for Perform Cascade functionality is largely completed, including:
+def derive_next_action(
+    cascade_request_status
+):
 
-- bulk cascade support
-- immediate child cascade handling
-- hierarchy validation
-- cascaded from parent visibility
-- cascade status handling
-- actioned by/date updates
-- duplicate prevention
-- accept/reject review handling
+    if not cascade_request_status:
+        return "REVIEW_POPUP"
 
-“To Be Removed” downstream validation is partially completed and may require additional SIT/UAT validation.
+    cascade_request_status = (
+        cascade_request_status.strip()
+    )
 
-Email notification functionality is currently out of scope and expected to be covered under separate email/reminder related stories.
+    if cascade_request_status in [
+        "NOT_STARTED",
+        "PARTIAL_REVIEW"
+    ]:
+        return "REVIEW_POPUP"
 
-
-
-
-Backend support for Metric Assignment screen is largely completed, including:
-
-- Cascaded to Child retrieval
-- status handling
-- cascade date/actioned by
-- metric applicability/name cascade/threshold cascade retrieval
-- bulk and individual metric cascade support
-- persistence of cascaded metrics after review actions
-- review status tracking for greying out completed entries
-
-“To be Removed” downstream handling and Out-of-Cycle override/new-entry behavior may require additional SIT/UAT validation for edge cases.
-
-Frontend-specific items such as tab rendering, checkbox UI, and grey-out styling are outside backend scope.
+    return ""
 
 
+cascade_request_status = (
+    derive_cascade_request_status(
+        accepted_count,
+        rejected_count
+    )
+)
+
+cascaded_from_parent_metrics.append({
+
+    "MASTER_METRIC_ID":
+        record.get("MASTER_METRIC_ID"),
+
+    "METRIC_DETAIL_ID":
+        record.get("METRIC_DETAIL_ID"),
+
+    "METRIC_NAME":
+        record.get("METRIC_NAME"),
+
+    "METRIC_NAME_CASCADE":
+        record.get("METRIC_NAME_CASCADE"),
+
+    "THRESHOLD_CASCADE":
+        record.get("THRESHOLD_CASCADE"),
+
+    "METRIC_APPLICABILITY":
+        record.get("METRIC_APPLICABILITY"),
+
+    "METRIC_CASCADED_DATE":
+        record.get("CASCADE_DT"),
+
+    "METRIC_CASCADED_USER_NAME":
+        record.get("ACTION_BY"),
+
+    "METRIC_CASCADED_STATUS":
+        record.get("STATUS")
+        or "Awaiting Acceptance",
+
+    "ACCEPTED_COUNT":
+        accepted_count,
+
+    "REJECTED_COUNT":
+        rejected_count,
+
+    "CASCADE_REQUEST_STATUS":
+        cascade_request_status,
+
+    "NEXT_ACTION":
+        derive_next_action(
+            cascade_request_status
+        ),
+
+    "SELECTED_CASCADING_TYPE":
+        record.get(
+            "SELECTED_CASCADING_TYPE"
+        ),
+
+    "SELECTED_EXISTING_METRIC_DETAIL_ID":
+        record.get(
+            "SELECTED_EXISTING_METRIC_DETAIL_ID"
+        )
+})
 
 
-Backend implementation for Global Perform Cascade functionality is largely completed, including:
-
-- immediate child cascade handling
-- hierarchy validation
-- bulk and individual metric cascade support
-- duplicate prevention for already cascaded metrics
-- cascaded from parent visibility
-- cascade status tracking
-- actioned by/date handling
-- review workflow integration
-
-“To be Removed” downstream behavior and rollback/error handling scenarios may require additional SIT/UAT validation.
-
-Email notification functionality is currently outside backend scope and expected to be covered under separate notification-related stories.
+Request Status
+Metric Status
+Next Action
+NOT_STARTED
+Awaiting Acceptance
+REVIEW_POPUP
+PARTIAL_REVIEW
+In Progress
+REVIEW_POPUP
+FULLY_REVIEWED
+In Progress
+EMPTY
+FULLY_REVIEWED
+Accepted
+EMPTY
+FULLY_REVIEWED
+Rejected
+EMPTY
