@@ -146,10 +146,10 @@ def submit_dispense_review(vInfo):
         # DETERMINE METRIC CASCADE STATUS
         # ---------------------------------------------------------
 
-        # ALL REJECTED
+        # ALL 9 REJECTED
         if (
             accepted_count == 0
-            and rejected_count > 0
+            and rejected_count == 9
         ):
 
             metric_cascade_status = "Rejected"
@@ -164,7 +164,7 @@ def submit_dispense_review(vInfo):
             metric_cascade_status = "In Progress"
             next_action = "EDIT_POPUP"
 
-        # PARTIAL REJECT ONLY
+        # PARTIAL REVIEW
         else:
 
             metric_cascade_status = "In Progress"
@@ -218,10 +218,3 @@ def submit_dispense_review(vInfo):
         return jsonify({
             "status": "Error"
         })
-
-
-
-SELECT *
-FROM METRIC_CASCADE_REVIEW_STATE
-WHERE CASCADED_METRIC_DETAIL_ID = :1
-AND REVIEW_TYPE = :2
