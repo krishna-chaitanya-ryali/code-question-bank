@@ -2,11 +2,15 @@ def submit_dispense_review(vInfo):
 
     try:
 
+        print("STEP 1")
+
         cascaded_metric_detail_id = (
             vInfo.get(
                 "cascaded_metric_detail_id"
             )
         )
+
+        print("STEP 2")
 
         rejected_fields = (
             vInfo.get(
@@ -14,10 +18,14 @@ def submit_dispense_review(vInfo):
             ) or []
         )
 
+        print("STEP 3")
+
         remarks = vInfo.get(
             "remarks",
             ""
         )
+
+        print("STEP 4")
 
         dispensation_files = (
             vInfo.get(
@@ -25,7 +33,13 @@ def submit_dispense_review(vInfo):
             ) or []
         )
 
+        print("STEP 5")
+
         vUser = myinfo()
+
+        print("STEP 6")
+        print(vUser)
+        print(type(vUser))
 
         file_name = None
         file_path = None
@@ -36,13 +50,20 @@ def submit_dispense_review(vInfo):
 
         if dispensation_files:
 
+            print("STEP 7")
+
             uploaded_file = (
                 dispensation_files[0]
             )
 
+            print(uploaded_file)
+            print(type(uploaded_file))
+
             file_name = (
                 uploaded_file.get("name")
             )
+
+            print("STEP 8")
 
             file_path = (
                 FOLDER_EXCEL
@@ -50,11 +71,16 @@ def submit_dispense_review(vInfo):
                 + file_name
             )
 
+        print("STEP 9")
+
         # ---------------------------------------------------------
         # SAVE DISPENSATION
         # ---------------------------------------------------------
 
         for field in rejected_fields:
+
+            print("STEP 10")
+            print(field)
 
             sql_insertData(
                 393,
@@ -69,18 +95,41 @@ def submit_dispense_review(vInfo):
                 ]
             )
 
+        print("STEP 11")
+
         # ---------------------------------------------------------
-        # REVIEW COUNTS
+        # FETCH ACCEPTED REVIEW STATE
         # ---------------------------------------------------------
 
-        accepted_count = 0
+        accepted_rows = sql_getData(
+            392,
+            [
+                cascaded_metric_detail_id,
+                "Accepted"
+            ]
+        )
+
+        print("STEP 11A")
+        print(accepted_rows)
+
+        accepted_count = len(
+            accepted_rows or []
+        )
 
         rejected_count = len(
             rejected_fields
         )
 
+        print("STEP 11B")
+
+        print("ACCEPTED_COUNT")
+        print(accepted_count)
+
+        print("REJECTED_COUNT")
+        print(rejected_count)
+
         # ---------------------------------------------------------
-        # CASCADE REQUEST STATUS
+        # DERIVE CASCADE REQUEST STATUS
         # ---------------------------------------------------------
 
         cascade_request_status = (
@@ -90,21 +139,45 @@ def submit_dispense_review(vInfo):
             )
         )
 
-        # ---------------------------------------------------------
-        # METRIC CASCADE STATUS
-        # ---------------------------------------------------------
-
-        metric_cascade_status = (
-            derive_metric_cascade_status(
-                cascade_request_status,
-                has_rejection=True,
-                is_dispense_complete=True,
-                is_edit_completed=False
-            )
-        )
+        print("STEP 11C")
+        print(cascade_request_status)
 
         # ---------------------------------------------------------
-        # UPDATE MAIN STATUS
+        # DETERMINE METRIC CASCADE STATUS
+        # ---------------------------------------------------------
+
+        # ALL REJECTED
+        if (
+            accepted_count == 0
+            and rejected_count > 0
+        ):
+
+            metric_cascade_status = "Rejected"
+            next_action = ""
+
+        # MIXED ACCEPT + REJECT
+        elif (
+            accepted_count > 0
+            and rejected_count > 0
+        ):
+
+            metric_cascade_status = "In Progress"
+            next_action = "EDIT_POPUP"
+
+        # PARTIAL REJECT ONLY
+        else:
+
+            metric_cascade_status = "In Progress"
+            next_action = "REVIEW_POPUP"
+
+        print("STEP 11D")
+        print(metric_cascade_status)
+
+        print("STEP 11E")
+        print(next_action)
+
+        # ---------------------------------------------------------
+        # UPDATE ACTION TABLE
         # ---------------------------------------------------------
 
         sql_insertData(
@@ -119,17 +192,22 @@ def submit_dispense_review(vInfo):
             ]
         )
 
+        print("STEP 12")
+
         return jsonify({
             "status":
                 metric_cascade_status,
+
             "cascade_request_status":
                 cascade_request_status,
+
             "next_action":
-                ""
+                next_action
         })
 
     except Exception as e:
 
+        print("FAILED HERE")
         print(str(e))
 
         log_error.error(
@@ -140,3 +218,10 @@ def submit_dispense_review(vInfo):
         return jsonify({
             "status": "Error"
         })
+
+
+
+SELECT *
+FROM METRIC_CASCADE_REVIEW_STATE
+WHERE CASCADED_METRIC_DETAIL_ID = :1
+AND REVIEW_TYPE = :2
