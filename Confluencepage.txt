@@ -1,94 +1,17 @@
-if cascade_flag == "Yes":
+SELECT USER_ID, IS_ACTIVE, COUNT(*)
+FROM RAPUSER.MAP_USER_ROLE
+WHERE USER_ID = 11
+GROUP BY USER_ID, IS_ACTIVE
+HAVING COUNT(*) > 1;
 
-    # sync insert + delete
 
-    existing = sql_getData(
-        374,
-        [metric_detail_id]
-    )
+SELECT cols.column_name
+FROM user_constraints cons
+JOIN user_cons_columns cols
+ON cons.constraint_name = cols.constraint_name
+WHERE cons.constraint_name = 'MAP_USER_ROLE_UK1';
 
-    existing_rmm_ids = [
-        row["RMM_ID"]
-        for row in existing
-    ]
 
-    to_insert = (
-        set(selected_rmm_ids)
-        - set(existing_rmm_ids)
-    )
-
-    to_delete = (
-        set(existing_rmm_ids)
-        - set(selected_rmm_ids)
-    )
-
-    for rmm_id in to_delete:
-
-        deleteDatafrom_cascaded_locations(
-            metric_detail_id,
-            rmm_id,
-            cascade_flag
-        )
-
-    for rmm_id in to_insert:
-
-        location_type = get_location_type(
-            rmm_id
-        )
-
-        sql_insertData(
-            373,
-            "CASCADED_ID",
-            [
-                metric_detail_id,
-                rmm_id,
-                location_type,
-                vUser
-            ]
-        )
-
-    # ---------------------------------------------------------
-    # UPDATE CASCADE STATUS
-    # ---------------------------------------------------------
-
-    try:
-
-        cascade_type = vInfo.get(
-            "cascade_type",
-            ""
-        )
-
-        parent_metric_detail_id = vInfo.get(
-            "cascaded_metric_detail_id"
-        )
-
-        if (
-            cascade_type == "existingMetricCascade"
-            and parent_metric_detail_id
-        ):
-
-            sql_insertData(
-                391,
-                "NA",
-                [
-                    "Accepted",
-                    str(myinfo()),
-                    None,
-                    None,
-                    int(parent_metric_detail_id)
-                ]
-            )
-
-    except Exception as e:
-
-        log_error.error(
-            f"Error updating cascade status (existing): {str(e)}"
-        )
-
-elif cascade_flag == "No":
-
-    deleteDatafrom_cascaded_locations(
-        metric_detail_id,
-        selectedRmmId,
-        cascade_flag
-    )
+SELECT *
+FROM RAPUSER.MAP_USER_ROLE
+WHERE USER_ID = 11;
