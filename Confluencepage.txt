@@ -1,46 +1,16 @@
-ALTER TABLE METRIC_CASCADE_REVIEW_STATE
-ADD RMM_ID NUMBER;
-
-INSERT INTO METRIC_CASCADE_REVIEW_STATE
-(
-    CASCADED_METRIC_DETAIL_ID,
-    RMM_ID,
-    FIELD_KEY,
-    REVIEW_TYPE,
-    CREATED_BY,
-    CREATED_DT
-)
-VALUES
-(
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    SYSTIMESTAMP
-)
-
-Step 3 — save_review_state()
-
-DELETE FROM METRIC_CASCADE_REVIEW_STATE
+DELETE FROM METRIC_CASCADE_DISPENSATION_DETAILS
 WHERE CASCADED_METRIC_DETAIL_ID = ?
 AND RMM_ID = ?
 
-394
-SELECT *
-FROM METRIC_CASCADE_REVIEW_STATE
-WHERE CASCADED_METRIC_DETAIL_ID = ?
-AND RMM_ID = ?
 
-def 7
+# ---------------------------------------------------------
+# DELETE OLD DISPENSATION RECORDS
+# ---------------------------------------------------------
 
-review_rows = sql_getData(
-    394,
+sql_deleteData(
+    397,
     [
         cascaded_metric_detail_id,
         rmm_id
     ]
 )
-
-save_active_cascade_review()
-
