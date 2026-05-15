@@ -41,3 +41,11 @@ if dispense_rows and dispense_rows != -1:
             rejected_keys.append(
                 field_key
             )
+
+
+
+SELECT DISTINCT
+    FIELD_KEY
+FROM METRIC_CASCADE_DISPENSATION_DETAILS
+WHERE CASCADED_METRIC_DETAIL_ID = ?
+AND RMM_ID = ?
