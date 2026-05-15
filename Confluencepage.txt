@@ -1,21 +1,36 @@
+metric_detail_id = record.get(
+    "METRIC_DETAIL_ID"
+)
+
 # ---------------------------------------------------------
-# CLEAR OLD ACCEPTED STATE
+# ACCEPTED COUNT
 # ---------------------------------------------------------
 
-if len(rejected_fields) == 9:
+accepted_rows = sql_getData(
+    392,
+    [
+        metric_detail_id,
+        rmm_id,
+        "Accepted"
+    ]
+)
 
-    sql_deleteData(
-        398,
-        [
-            cascaded_metric_detail_id,
-            rmm_id,
-            "Accepted"
-        ]
-    )
+accepted_count = len(
+    accepted_rows or []
+)
 
+# ---------------------------------------------------------
+# REJECTED COUNT
+# ---------------------------------------------------------
 
+rejected_rows = sql_getData(
+    396,
+    [
+        metric_detail_id,
+        rmm_id
+    ]
+)
 
-DELETE FROM METRIC_CASCADE_REVIEW_STATE
-WHERE CASCADED_METRIC_DETAIL_ID = ?
-AND RMM_ID = ?
-AND REVIEW_TYPE = ?
+rejected_count = len(
+    rejected_rows or []
+)
