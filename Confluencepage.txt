@@ -1,36 +1,37 @@
-metric_detail_id = record.get(
-    "METRIC_DETAIL_ID"
-)
+Hi Matt, Nitin,
 
-# ---------------------------------------------------------
-# ACCEPTED COUNT
-# ---------------------------------------------------------
+We have completed the technical analysis of the newly shared enhancement tickets related to Metric Auto Cascade.
 
-accepted_rows = sql_getData(
-    392,
-    [
-        metric_detail_id,
-        rmm_id,
-        "Accepted"
-    ]
-)
+After reviewing the requested changes in detail, our assessment is that several of the tickets are not limited to minor UI-level adjustments and instead introduce significant backend and workflow impacts across the current cascade implementation. A large number of these changes directly affect sensitive areas such as:
 
-accepted_count = len(
-    accepted_rows or []
-)
+- review/edit/save-draft lifecycle,
+- cascade state management,
+- dispensation handling,
+- parent-child metric synchronization,
+- attachment persistence/download handling,
+- validation engine logic,
+- and reopen/edit workflows.
 
-# ---------------------------------------------------------
-# REJECTED COUNT
-# ---------------------------------------------------------
+As part of the ongoing implementation itself, substantial effort has already gone into stabilizing the current review and dispensation framework due to the highly interconnected nature of the enhancement. Many of the newly requested changes overlap with the same core workflow areas, which increases regression and delivery risk significantly.
 
-rejected_rows = sql_getData(
-    396,
-    [
-        metric_detail_id,
-        rmm_id
-    ]
-)
+While a few isolated items may appear smaller from a UI perspective (such as label/tool-tip updates or column renaming), most of the requested enhancements require additional backend implementation, schema/query changes, lifecycle handling, and extensive regression validation.
 
-rejected_count = len(
-    rejected_rows or []
-)
+At this stage, the current development bandwidth is fully occupied with completing and stabilizing the originally committed scope for the planned delivery timeline. Considering the amount of backend work, testing, regression validation, and deployment readiness activities still pending, we do not currently have sufficient capacity to safely accommodate additional enhancement items within the same timeline.
+
+If any of the newly proposed tickets are expected to be included in the current release scope, we would require either:
+
+- additional timeline allocation, or
+- additional development/support capacity
+
+to avoid impacting delivery quality and overall implementation stability.
+
+Based on our analysis:
+
+- KMIT-1640, KMIT-1641, KMIT-1643, and KMIT-1645 should be treated as major enhancements requiring separate estimation and planning.
+- KMIT-1642 and KMIT-1646 are relatively lower in complexity compared to the above items, however they still require additional backend work, testing, and validation effort.
+- KMIT-1637, KMIT-1638, and KMIT-1639 primarily contain frontend/tool-tip related updates with limited backend involvement.
+
+Considering the current timelines and stabilization activities already in progress, we would recommend treating the newly introduced enhancement requests separately unless delivery timelines are formally revisited.
+
+Regards,
+Krishna Chaitanya
