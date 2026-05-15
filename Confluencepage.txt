@@ -11,3 +11,19 @@ For example, changes introduced in the Accept/Reject flow required corresponding
 - reporting consistency
 
 Because of this dependency chain, implementation effort is not limited to a single ticket or screen-level change. Additional regression testing and end-to-end validation are also required.
+
+
+One additional factor impacting the estimation is that the enhancement scope is evolving during implementation discussions.
+
+The current implementation involves multiple interconnected flows, and several functional behaviors are being clarified progressively during daily review discussions. As we validate the implementation against real scenarios, additional edge cases, dependency impacts, and existing behavioral gaps are also getting identified.
+
+Because of this, a significant portion of the effort is going into:
+
+- functional analysis
+- impact assessment
+- validating parent-child cascade behavior
+- review state consistency
+- regression handling
+- and aligning backend behavior with evolving business expectations
+
+So the effort is not purely development effort; it also includes continuous investigation, refinement, and stabilization of the end-to-end workflow.
