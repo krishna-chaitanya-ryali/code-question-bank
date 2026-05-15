@@ -1,16 +1,14 @@
-DELETE FROM METRIC_CASCADE_DISPENSATION_DETAILS
-WHERE CASCADED_METRIC_DETAIL_ID = ?
-AND RMM_ID = ?
-
-
 # ---------------------------------------------------------
-# DELETE OLD DISPENSATION RECORDS
+# CLEAR OLD ACCEPTED STATE
 # ---------------------------------------------------------
 
-sql_deleteData(
-    397,
-    [
-        cascaded_metric_detail_id,
-        rmm_id
-    ]
-)
+if len(rejected_fields) == 9:
+
+    sql_deleteData(
+        398,
+        [
+            cascaded_metric_detail_id,
+            rmm_id,
+            "Accepted"
+        ]
+    )
