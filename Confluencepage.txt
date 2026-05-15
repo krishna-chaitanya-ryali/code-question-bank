@@ -1,55 +1,46 @@
-
-ALTER TABLE METRIC_CASCADE_DISPENSATION_DETAILS
+ALTER TABLE METRIC_CASCADE_REVIEW_STATE
 ADD RMM_ID NUMBER;
 
-dispense_rows = sql_getData(
-    396,
+INSERT INTO METRIC_CASCADE_REVIEW_STATE
+(
+    CASCADED_METRIC_DETAIL_ID,
+    RMM_ID,
+    FIELD_KEY,
+    REVIEW_TYPE,
+    CREATED_BY,
+    CREATED_DT
+)
+VALUES
+(
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    SYSTIMESTAMP
+)
+
+Step 3 — save_review_state()
+
+DELETE FROM METRIC_CASCADE_REVIEW_STATE
+WHERE CASCADED_METRIC_DETAIL_ID = ?
+AND RMM_ID = ?
+
+394
+SELECT *
+FROM METRIC_CASCADE_REVIEW_STATE
+WHERE CASCADED_METRIC_DETAIL_ID = ?
+AND RMM_ID = ?
+
+def 7
+
+review_rows = sql_getData(
+    394,
     [
-        cascaded_metric_detail_id
+        cascaded_metric_detail_id,
+        rmm_id
     ]
 )
 
+save_active_cascade_review()
 
-if review_rows and review_rows != -1:
-
-    for row in review_rows:
-
-        review_type = (
-            row.get("REVIEW_TYPE")
-        )
-
-        field_key = (
-            row.get("FIELD_KEY")
-        )
-
-        if review_type == "Accepted":
-
-            accepted_keys.append(
-                field_key
-            )
-
-
-if dispense_rows and dispense_rows != -1:
-
-    for row in dispense_rows:
-
-        field_key = (
-            row.get("FIELD_KEY")
-        )
-
-        if (
-            field_key
-            and field_key not in rejected_keys
-        ):
-
-            rejected_keys.append(
-                field_key
-            )
-
-
-
-SELECT DISTINCT
-    FIELD_KEY
-FROM METRIC_CASCADE_DISPENSATION_DETAILS
-WHERE CASCADED_METRIC_DETAIL_ID = ?
-AND RMM_ID = ?
