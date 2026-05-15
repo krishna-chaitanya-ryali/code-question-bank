@@ -12,3 +12,10 @@ if len(rejected_fields) == 9:
             "Accepted"
         ]
     )
+
+
+
+DELETE FROM METRIC_CASCADE_REVIEW_STATE
+WHERE CASCADED_METRIC_DETAIL_ID = ?
+AND RMM_ID = ?
+AND REVIEW_TYPE = ?
