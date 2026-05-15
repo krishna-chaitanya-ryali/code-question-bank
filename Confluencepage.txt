@@ -1,40 +1,43 @@
-# ---------------------------------------------------------
-# REVIEW COUNTS
-# ---------------------------------------------------------
-
-reviewed_count = (
-    accepted_count + rejected_count
+dispense_rows = sql_getData(
+    396,
+    [
+        cascaded_metric_detail_id
+    ]
 )
 
-print("STEP 11CC")
-print(reviewed_count)
 
-# ---------------------------------------------------------
-# FINAL STATUS + NEXT ACTION
-# ---------------------------------------------------------
+if review_rows and review_rows != -1:
 
-# ALL 9 REJECTED
-if (
-    accepted_count == 0
-    and rejected_count == 9
-):
-    metric_cascade_status = "Rejected"
-    next_action = ""
+    for row in review_rows:
 
-# ALL 9 REVIEWED
-elif reviewed_count == 9:
+        review_type = (
+            row.get("REVIEW_TYPE")
+        )
 
-    metric_cascade_status = "In Progress"
+        field_key = (
+            row.get("FIELD_KEY")
+        )
 
-    # at least one accepted present
-    if accepted_count > 0:
-        next_action = "EDIT_POPUP"
+        if review_type == "Accepted":
 
-    else:
-        next_action = ""
+            accepted_keys.append(
+                field_key
+            )
 
-# PARTIAL REVIEW
-else:
 
-    metric_cascade_status = "In Progress"
-    next_action = "REVIEW_POPUP"
+if dispense_rows and dispense_rows != -1:
+
+    for row in dispense_rows:
+
+        field_key = (
+            row.get("FIELD_KEY")
+        )
+
+        if (
+            field_key
+            and field_key not in rejected_keys
+        ):
+
+            rejected_keys.append(
+                field_key
+            )
