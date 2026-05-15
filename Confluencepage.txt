@@ -1,29 +1,40 @@
-The current Metric Auto Cascade implementation is highly interconnected. A change in one stage of the flow impacts multiple downstream modules such as review handling, dispensation, edit flow, next-action derivation, cascade status updates, reporting, and compliance tracking.
+# ---------------------------------------------------------
+# REVIEW COUNTS
+# ---------------------------------------------------------
 
-For example, changes introduced in the Accept/Reject flow required corresponding modifications in:
+reviewed_count = (
+    accepted_count + rejected_count
+)
 
-- review state handling
-- metric cascade status derivation
-- next action logic
-- dispensation processing
-- parent-child synchronization
-- child location isolation
-- reporting consistency
+print("STEP 11CC")
+print(reviewed_count)
 
-Because of this dependency chain, implementation effort is not limited to a single ticket or screen-level change. Additional regression testing and end-to-end validation are also required.
+# ---------------------------------------------------------
+# FINAL STATUS + NEXT ACTION
+# ---------------------------------------------------------
 
+# ALL 9 REJECTED
+if (
+    accepted_count == 0
+    and rejected_count == 9
+):
+    metric_cascade_status = "Rejected"
+    next_action = ""
 
-One additional factor impacting the estimation is that the enhancement scope is evolving during implementation discussions.
+# ALL 9 REVIEWED
+elif reviewed_count == 9:
 
-The current implementation involves multiple interconnected flows, and several functional behaviors are being clarified progressively during daily review discussions. As we validate the implementation against real scenarios, additional edge cases, dependency impacts, and existing behavioral gaps are also getting identified.
+    metric_cascade_status = "In Progress"
 
-Because of this, a significant portion of the effort is going into:
+    # at least one accepted present
+    if accepted_count > 0:
+        next_action = "EDIT_POPUP"
 
-- functional analysis
-- impact assessment
-- validating parent-child cascade behavior
-- review state consistency
-- regression handling
-- and aligning backend behavior with evolving business expectations
+    else:
+        next_action = ""
 
-So the effort is not purely development effort; it also includes continuous investigation, refinement, and stabilization of the end-to-end workflow.
+# PARTIAL REVIEW
+else:
+
+    metric_cascade_status = "In Progress"
+    next_action = "REVIEW_POPUP"
