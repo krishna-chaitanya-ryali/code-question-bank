@@ -1,3 +1,7 @@
+
+ALTER TABLE METRIC_CASCADE_DISPENSATION_DETAILS
+ADD RMM_ID NUMBER;
+
 dispense_rows = sql_getData(
     396,
     [
