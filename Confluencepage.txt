@@ -1,79 +1,23 @@
-ALTER TABLE METRIC_CASCADE_LOCATIONS
-ADD (
-    CASCADE_STATUS VARCHAR2(100),
-    IS_ACTIVE VARCHAR2(1) DEFAULT 'Y',
-    CASCADE_VERSION NUMBER DEFAULT 1,
-    UPDT_DT TIMESTAMP,
-    UPDT_BY VARCHAR2(200)
-);
+#########################################################################
+# INSERT BRAND NEW RMMS
+# #########################################################################
 
+for rmm_id in to_insert:
 
-SELECT
-    STATUS
-FROM
-    METRIC_CASCADE_ACTIONS
-WHERE
-    METRIC_DETAIL_ID = ?
-    AND CHILD_RMM_ID = ?
-ORDER BY
-    ACTION_DT DESC
-FETCH FIRST 1 ROWS ONLY
+    location_type = get_location_type(
+        rmm_id
+    )
 
-
-
-SELECT
-    NVL(MAX(CASCADE_VERSION), 0) + 1 AS NEXT_VERSION
-FROM
-    METRIC_CASCADE_LOCATIONS
-WHERE
-    METRIC_DETAIL_ID = ?
-    AND RMM_ID = ?
-
-
-UPDATE
-    METRIC_CASCADE_LOCATIONS
-SET
-    IS_ACTIVE = 'N',
-    CASCADE_STATUS = ?,
-    UPDT_BY = ?,
-    UPDT_DT = CURRENT_TIMESTAMP
-WHERE
-    METRIC_DETAIL_ID = ?
-    AND RMM_ID = ?
-    AND IS_ACTIVE = 'Y'
-
-INSERT INTO METRIC_CASCADE_LOCATIONS
-(
-    CASCADED_ID,
-    METRIC_DETAIL_ID,
-    RMM_ID,
-    LOCATION_TYPE,
-    CREAT_BY,
-    CASCADE_STATUS,
-    IS_ACTIVE,
-    CASCADE_VERSION
-)
-VALUES
-(
-    ISEQ$$_92316.NEXTVAL,
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    'Y',
-    ?
-)
-
-
-existing_rmm_ids = [row["RMM_ID"] for row in existing]
-
-existing_selected_rmm_ids = (
-    set(selected_rmm_ids)
-    &
-    set(existing_rmm_ids)
-)
-
+    sql_insertData(
+        373,
+        "CASCADED_ID",
+        [
+            metric_detail_id,
+            rmm_id,
+            location_type,
+            vUser
+        ]
+    )
 
 # #########################################################################
 # RE-CASCADE EXISTING SELECTED RMMS
@@ -180,7 +124,7 @@ for rmm_id in existing_selected_rmm_ids:
     )
 
     # ---------------------------------------------------------
-    # INSERT NEW ROW
+    # INSERT NEW RE-CASCADE ROW
     # ---------------------------------------------------------
 
     sql_insertData(
@@ -195,16 +139,3 @@ for rmm_id in existing_selected_rmm_ids:
             next_version
         ]
     )
-
-
-
-903 parameters 
-
-[
-    metric_detail_id,
-    rmm_id,
-    location_type,
-    str(vUser),
-    new_row_status,
-    next_version
-]
