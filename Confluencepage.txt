@@ -1,26 +1,87 @@
 SELECT
-    cols.column_name
-FROM
-    all_constraints cons,
-    all_cons_columns cols
-WHERE
-    cons.constraint_name = cols.constraint_name
-    AND cons.owner = cols.owner
-    AND cons.constraint_type = 'U'
-    AND cons.constraint_name = 'UK_MCL';
+    RMDT.MASTER_METRIC_ID,
 
+    RMDT.METRIC_DETAIL_ID,
 
+    CASE
+        WHEN RMDT.METRICS_DISPLAY IS NULL
+        THEN RMPM.METRICS_DISP
+        ELSE RMDT.METRICS_DISPLAY
+    END AS METRIC_NAME,
 
-ALTER TABLE METRIC_CASCADE_LOCATIONS
-DROP CONSTRAINT UK_MCL;
+    RMDT.METRIC_NAME_CASCADE,
 
+    RMDT.THRESHOLD_CASCADE,
 
+    RMDT.METRIC_APPLICABILITY,
 
-ALTER TABLE METRIC_CASCADE_LOCATIONS
-ADD CONSTRAINT UK_MCL
-UNIQUE
-(
-    METRIC_DETAIL_ID,
-    RMM_ID,
-    CASCADE_VERSION
-);
+    MCA.CASCADE_DT_STR AS CASCADE_DT,
+
+    COALESCE(
+        UT.USER_NAME,
+        (
+            SELECT UT2.USER_NAME
+            FROM USER_TAB UT2
+            WHERE UT2.PSID = MCA.ACTION_BY
+            FETCH FIRST 1 ROW ONLY
+        )
+    ) AS ACTION_BY
+
+FROM MEET_INSTC MI
+
+JOIN RAP
+    ON MI.MEET_INSTC_ID = RAP.RAP_INSTANCE_ID
+
+JOIN RAP_METRICS_DETAILS RMDT
+    ON RAP.RAP_ID = RMDT.RAP_ID
+
+JOIN RAP_METRICS_PACK_MAPPING RMPM
+    ON RMDT.RAP_REVIEWS_MAPPING_ID = RMPM.RAP_METRICS_MAPPING_ID
+
+-- #####################################################################
+-- ACTIVE CASCADE LOCATION ROWS
+-- #####################################################################
+
+JOIN METRIC_CASCADE_LOCATIONS MCL
+    ON MCL.METRIC_DETAIL_ID = RMDT.METRIC_DETAIL_ID
+    AND MCL.IS_ACTIVE = 'Y'
+
+-- #####################################################################
+-- LATEST CASCADE ACTION
+-- #####################################################################
+
+LEFT JOIN (
+    SELECT
+        METRIC_DETAIL_ID,
+
+        MAX(ACTION_DT) AS CASCADE_DT,
+
+        MAX(ACTION_BY)
+            KEEP (
+                DENSE_RANK LAST
+                ORDER BY ACTION_DT
+            ) AS ACTION_BY,
+
+        MAX(ACTION_DT_STR)
+            KEEP (
+                DENSE_RANK LAST
+                ORDER BY ACTION_DT
+            ) AS CASCADE_DT_STR
+
+    FROM METRIC_CASCADE_ACTIONS
+
+    WHERE ACTION_TYPE = 'CASCADE'
+
+    GROUP BY METRIC_DETAIL_ID
+
+) MCA
+    ON MCA.METRIC_DETAIL_ID = RMDT.METRIC_DETAIL_ID
+
+LEFT JOIN USER_TAB UT
+    ON UT.EMP_ID = MCA.ACTION_BY
+
+WHERE MI.RMM_ID = :1
+
+AND MI.MEET_INSTC_ID = :2
+
+AND RMDT.METRIC_FLAG <> 'removed'
