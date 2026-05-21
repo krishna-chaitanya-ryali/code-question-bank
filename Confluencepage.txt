@@ -1,37 +1,120 @@
-Hi Prasad,
+ALTER TABLE METRIC_CASCADE_ACTIONS
+ADD IS_ACTIVE CHAR(1) DEFAULT 'Y';
 
-After analyzing the re-cascade workflow in detail, we would like to confirm the below functional behaviors before implementation, as these impact the overall parent-child cascade lifecycle and historical row handling.
+ALTER TABLE METRIC_CASCADE_ACTIONS
+ADD CASCADE_VERSION NUMBER DEFAULT 1;
 
-1. When a metric is re-cascaded by Parent and the same metric is already present under Child → "Cascaded From Parent" section:
 
-- Should the OLD row become "Revised Cascade" and greyed out?
-- Should a NEW row be inserted with status as "Awaiting Acceptance"?
+ALTER TABLE METRIC_CASCADE_ACTIONS
+ADD SYSTEM_REMARK VARCHAR2(200);
 
-(Current understanding: YES)
 
-2. When the same metric was already Accepted by Child and available under Child → "Cascaded To Child" section:
-
-- On re-cascade from Parent, should the existing row under "Cascaded To Child" immediately become greyed out and Actioned By updated to "System"?
-
-(Current understanding: YES)
-
-3. During re-cascade flow, should NO new row be immediately created under Child → "Cascaded To Child" section?
-   And should the new row appear there only AFTER Child re-accepts the revised metric successfully?
-
-(Current understanding: YES)
-
-4. Since the metric is already present in Child dashboard after first acceptance:
-
-- During re-cascade, should Child user mandatorily select "Existing Metric" option and map to the already existing metric from dropdown instead of creating a new metric?
-
-(Current understanding: YES)
-
-5. If Parent re-cascades the same metric multiple times before Child acts:
-
-- Should all previous pending rows become "Revised Cascade" and only the latest row remain actionable?
-
-6. Should historical rows continue to remain visible in UI for audit/history purposes while being greyed out?
-
-(Current understanding: YES)
-
-Please confirm if the above understanding is aligned with business expectation so that we can proceed with implementation accordingly.
+RECOMMENDED IMPLEMENTATION ORDER
+This is what I strongly suggest.
+STEP 1 — DATABASE DESIGN
+FIRST.
+Do NOT start APIs first.
+You need backend control fields.
+At minimum I strongly recommend:
+SQL
+IS_ACTIVE
+Recommended additional fields:
+SQL
+IS_RECASCADED
+PARENT_CASCADE_ID
+CASCADE_VERSION
+Even if you don’t fully use them now, future you will thank yourself.
+Because re-cascade is now:
+Plain text
+versioned workflow
+STEP 2 — INSERT vs UPDATE REFACTOR
+MOST IMPORTANT STEP.
+Currently: same metric probably:
+Plain text
+updates existing row
+Now: must:
+Plain text
+insert new row
+This is core architecture change.
+Identify:
+all update queries,
+all cascade queries,
+all “existing metric” logic.
+STEP 3 — OLD ROW DEACTIVATION LOGIC
+Now create centralized helper logic.
+Example conceptually:
+Python
+mark_old_rows_as_revised()
+This should:
+grey old rows
+set Revised Cascade
+set System
+deactivate actionable state
+Centralize this logic. Very important.
+Do NOT duplicate everywhere.
+STEP 4 — FETCH QUERY REDESIGN
+Now modify:
+query 378
+query 380
+related cascade queries
+to support:
+historical rows,
+active rows,
+greyed rows,
+revised rows.
+This is where:
+Plain text
+IS_ACTIVE
+becomes important.
+STEP 5 — STATUS ENGINE
+NOW modify:
+derive_next_action()
+derive_cascade_request_status()
+review popup routing.
+Important:
+Plain text
+Re-Cascaded
+should behave SAME as:
+Plain text
+Awaiting Acceptance
+You already confirmed this.
+Huge simplification.
+STEP 6 — FRONTEND PAYLOAD
+NOW talk to Prasad.
+Only now.
+Give him payload like:
+JSON
+{
+  "DISPLAY_STATUS": "Revised Cascade",
+  "IS_GREYED_OUT": "Y",
+  "ACTIONED_BY": "System",
+  "NEXT_ACTION": ""
+}
+Frontend job:
+grey rows,
+disable checkbox,
+disable actions,
+show statuses.
+Simple.
+STEP 7 — REVIEW FLOW TESTING
+MOST IMPORTANT.
+You already learned: review workflow is extremely sensitive.
+Now test:
+TEST CASES
+CASE 1
+Accepted → Re-Cascade
+CASE 2
+Awaiting Acceptance → Re-Cascade
+CASE 3
+In Progress → Re-Cascade
+CASE 4
+Multiple Re-Cascade
+CASE 5
+Child accepted → child cascaded → parent recascade
+CASE 6
+Existing metric selection
+CASE 7
+Edit popup reopen
+CASE 8
+Draft invalidation
+VERY important.
