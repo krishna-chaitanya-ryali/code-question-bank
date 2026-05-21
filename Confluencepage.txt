@@ -1,141 +1,26 @@
-#########################################################################
-# INSERT BRAND NEW RMMS
-# #########################################################################
+SELECT
+    cols.column_name
+FROM
+    all_constraints cons,
+    all_cons_columns cols
+WHERE
+    cons.constraint_name = cols.constraint_name
+    AND cons.owner = cols.owner
+    AND cons.constraint_type = 'U'
+    AND cons.constraint_name = 'UK_MCL';
 
-for rmm_id in to_insert:
 
-    location_type = get_location_type(
-        rmm_id
-    )
 
-    sql_insertData(
-        373,
-        "CASCADED_ID",
-        [
-            metric_detail_id,
-            rmm_id,
-            location_type,
-            vUser
-        ]
-    )
+ALTER TABLE METRIC_CASCADE_LOCATIONS
+DROP CONSTRAINT UK_MCL;
 
-# #########################################################################
-# RE-CASCADE EXISTING SELECTED RMMS
-# #########################################################################
 
-for rmm_id in existing_selected_rmm_ids:
 
-    location_type = get_location_type(
-        rmm_id
-    )
-
-    latest_action = sql_getData(
-        399,
-        [
-            metric_detail_id,
-            rmm_id
-        ]
-    )
-
-    # ---------------------------------------------------------
-    # IF NO ACTION HISTORY
-    # ---------------------------------------------------------
-
-    if (
-        not latest_action
-        or latest_action == -1
-    ):
-
-        continue
-
-    latest_status = (
-        latest_action[0].get(
-            "STATUS",
-            ""
-        )
-    )
-
-    # ---------------------------------------------------------
-    # GET NEXT VERSION
-    # ---------------------------------------------------------
-
-    version_rows = sql_getData(
-        901,
-        [
-            metric_detail_id,
-            rmm_id
-        ]
-    )
-
-    next_version = 1
-
-    if (
-        version_rows
-        and version_rows != -1
-    ):
-
-        next_version = (
-            version_rows[0].get(
-                "NEXT_VERSION",
-                1
-            )
-        )
-
-    # ---------------------------------------------------------
-    # DETERMINE OLD/NEW STATUS
-    # ---------------------------------------------------------
-
-    old_row_status = ""
-    new_row_status = ""
-
-    if latest_status in [
-        "Awaiting Acceptance",
-        "In Progress"
-    ]:
-
-        old_row_status = "Revised Cascade"
-        new_row_status = "Re-Cascaded"
-
-    elif latest_status in [
-        "Accepted",
-        "Rejected"
-    ]:
-
-        old_row_status = latest_status
-        new_row_status = "Awaiting Acceptance"
-
-    else:
-
-        continue
-
-    # ---------------------------------------------------------
-    # GREY OUT OLD ROW
-    # ---------------------------------------------------------
-
-    sql_insertData(
-        902,
-        "NA",
-        [
-            old_row_status,
-            str(vUser),
-            metric_detail_id,
-            rmm_id
-        ]
-    )
-
-    # ---------------------------------------------------------
-    # INSERT NEW RE-CASCADE ROW
-    # ---------------------------------------------------------
-
-    sql_insertData(
-        903,
-        "CASCADED_ID",
-        [
-            metric_detail_id,
-            rmm_id,
-            location_type,
-            str(vUser),
-            new_row_status,
-            next_version
-        ]
-    )
+ALTER TABLE METRIC_CASCADE_LOCATIONS
+ADD CONSTRAINT UK_MCL
+UNIQUE
+(
+    METRIC_DETAIL_ID,
+    RMM_ID,
+    CASCADE_VERSION
+);
