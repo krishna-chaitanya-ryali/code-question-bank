@@ -1,12 +1,89 @@
-for rmm_id in to_insert:
+ALTER TABLE METRIC_CASCADE_LOCATIONS
+ADD (
+    CASCADE_STATUS VARCHAR2(100),
+    IS_ACTIVE VARCHAR2(1) DEFAULT 'Y',
+    CASCADE_VERSION NUMBER DEFAULT 1,
+    UPDT_DT TIMESTAMP,
+    UPDT_BY VARCHAR2(200)
+);
+
+
+SELECT
+    STATUS
+FROM
+    METRIC_CASCADE_ACTIONS
+WHERE
+    METRIC_DETAIL_ID = ?
+    AND CHILD_RMM_ID = ?
+ORDER BY
+    ACTION_DT DESC
+FETCH FIRST 1 ROWS ONLY
+
+
+
+SELECT
+    NVL(MAX(CASCADE_VERSION), 0) + 1 AS NEXT_VERSION
+FROM
+    METRIC_CASCADE_LOCATIONS
+WHERE
+    METRIC_DETAIL_ID = ?
+    AND RMM_ID = ?
+
+
+UPDATE
+    METRIC_CASCADE_LOCATIONS
+SET
+    IS_ACTIVE = 'N',
+    CASCADE_STATUS = ?,
+    UPDT_BY = ?,
+    UPDT_DT = CURRENT_TIMESTAMP
+WHERE
+    METRIC_DETAIL_ID = ?
+    AND RMM_ID = ?
+    AND IS_ACTIVE = 'Y'
+
+INSERT INTO METRIC_CASCADE_LOCATIONS
+(
+    CASCADED_ID,
+    METRIC_DETAIL_ID,
+    RMM_ID,
+    LOCATION_TYPE,
+    CREAT_BY,
+    CASCADE_STATUS,
+    IS_ACTIVE,
+    CASCADE_VERSION
+)
+VALUES
+(
+    ISEQ$$_92316.NEXTVAL,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    'Y',
+    ?
+)
+
+
+existing_rmm_ids = [row["RMM_ID"] for row in existing]
+
+existing_selected_rmm_ids = (
+    set(selected_rmm_ids)
+    &
+    set(existing_rmm_ids)
+)
+
+
+# #########################################################################
+# RE-CASCADE EXISTING SELECTED RMMS
+# #########################################################################
+
+for rmm_id in existing_selected_rmm_ids:
 
     location_type = get_location_type(
         rmm_id
     )
-
-    # ---------------------------------------------------------
-    # CHECK WHETHER CASCADE WORKFLOW ALREADY EXISTS
-    # ---------------------------------------------------------
 
     latest_action = sql_getData(
         399,
@@ -17,7 +94,7 @@ for rmm_id in to_insert:
     )
 
     # ---------------------------------------------------------
-    # FIRST TIME CASCADE
+    # IF NO ACTION HISTORY
     # ---------------------------------------------------------
 
     if (
@@ -25,77 +102,109 @@ for rmm_id in to_insert:
         or latest_action == -1
     ):
 
-        sql_insertData(
-            373,
-            "CASCADED_ID",
-            [
-                metric_detail_id,
-                rmm_id,
-                location_type,
-                vUser
-            ]
+        continue
+
+    latest_status = (
+        latest_action[0].get(
+            "STATUS",
+            ""
+        )
+    )
+
+    # ---------------------------------------------------------
+    # GET NEXT VERSION
+    # ---------------------------------------------------------
+
+    version_rows = sql_getData(
+        901,
+        [
+            metric_detail_id,
+            rmm_id
+        ]
+    )
+
+    next_version = 1
+
+    if (
+        version_rows
+        and version_rows != -1
+    ):
+
+        next_version = (
+            version_rows[0].get(
+                "NEXT_VERSION",
+                1
+            )
         )
 
     # ---------------------------------------------------------
-    # RE-CASCADE FLOW
+    # DETERMINE OLD/NEW STATUS
     # ---------------------------------------------------------
+
+    old_row_status = ""
+    new_row_status = ""
+
+    if latest_status in [
+        "Awaiting Acceptance",
+        "In Progress"
+    ]:
+
+        old_row_status = "Revised Cascade"
+        new_row_status = "Re-Cascaded"
+
+    elif latest_status in [
+        "Accepted",
+        "Rejected"
+    ]:
+
+        old_row_status = latest_status
+        new_row_status = "Awaiting Acceptance"
 
     else:
 
-        # -----------------------------------------------------
-        # GET NEXT VERSION
-        # -----------------------------------------------------
+        continue
 
-        version_rows = sql_getData(
-            901,
-            [
-                metric_detail_id,
-                rmm_id
-            ]
-        )
+    # ---------------------------------------------------------
+    # GREY OUT OLD ROW
+    # ---------------------------------------------------------
 
-        next_version = 1
+    sql_insertData(
+        902,
+        "NA",
+        [
+            old_row_status,
+            str(vUser),
+            metric_detail_id,
+            rmm_id
+        ]
+    )
 
-        if (
-            version_rows
-            and version_rows != -1
-        ):
+    # ---------------------------------------------------------
+    # INSERT NEW ROW
+    # ---------------------------------------------------------
 
-            next_version = (
-                version_rows[0].get(
-                    "NEXT_VERSION",
-                    1
-                )
-            )
-
-        # -----------------------------------------------------
-        # DEACTIVATE OLD ROWS
-        # -----------------------------------------------------
-
-        sql_insertData(
-            902,
-            "NA",
-            [
-                str(vUser),
-                metric_detail_id,
-                rmm_id
-            ]
-        )
-
-        # -----------------------------------------------------
-        # INSERT NEW RE-CASCADE ROW
-        # -----------------------------------------------------
-
-        sql_insertData(
-            903,
-            "CASCADED_ID",
-            [
-                metric_detail_id,
-                rmm_id,
-                location_type,
-                str(vUser),
-                next_version
-            ]
-        )
+    sql_insertData(
+        903,
+        "CASCADED_ID",
+        [
+            metric_detail_id,
+            rmm_id,
+            location_type,
+            str(vUser),
+            new_row_status,
+            next_version
+        ]
+    )
 
 
+
+903 parameters 
+
+[
+    metric_detail_id,
+    rmm_id,
+    location_type,
+    str(vUser),
+    new_row_status,
+    next_version
+]
