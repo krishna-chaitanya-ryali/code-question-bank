@@ -1,83 +1,101 @@
-Before clicking Cascade,
-should same metric + same location be selectable again?
-
-ALTER TABLE METRIC_CASCADE_LOCATIONS
-ADD (
-    CASCADE_STATUS VARCHAR2(50),
-    IS_ACTIVE VARCHAR2(1) DEFAULT 'Y',
-    PARENT_ACTION_ID NUMBER,
-    CASCADE_VERSION NUMBER DEFAULT 1
-);
-
-
-SELECT
-    MCA.ACTION_ID,
-    MCA.STATUS,
-    MCA.ACTION_DT
-FROM
-    METRIC_CASCADE_ACTIONS MCA
-WHERE
-    MCA.METRIC_DETAIL_ID = ?
-    AND MCA.CHILD_RMM_ID = ?
-ORDER BY
-    MCA.ACTION_DT DESC
-FETCH FIRST 1 ROWS ONLY
-
-
-
 for rmm_id in to_insert:
 
-latest_action = sql_getData(
-    401,
-    [
-        metric_detail_id,
+    location_type = get_location_type(
         rmm_id
-    ]
-)
+    )
 
+    # ---------------------------------------------------------
+    # CHECK WHETHER CASCADE WORKFLOW ALREADY EXISTS
+    # ---------------------------------------------------------
 
-UPDATE
-    METRIC_CASCADE_LOCATIONS
-SET
-    IS_ACTIVE = 'N',
-    CASCADE_STATUS = 'Revised Cascade',
-    UPDT_DT = CURRENT_TIMESTAMP,
-    UPDT_BY = ?
-WHERE
-    METRIC_DETAIL_ID = ?
-    AND RMM_ID = ?
-    AND IS_ACTIVE = 'Y'
+    latest_action = sql_getData(
+        399,
+        [
+            metric_detail_id,
+            rmm_id
+        ]
+    )
 
+    # ---------------------------------------------------------
+    # FIRST TIME CASCADE
+    # ---------------------------------------------------------
 
-INSERT INTO METRIC_CASCADE_LOCATIONS
-(
-    CASCADED_ID,
-    METRIC_DETAIL_ID,
-    RMM_ID,
-    LOCATION_TYPE,
-    CREAT_BY,
-    CASCADE_STATUS,
-    IS_ACTIVE,
-    CASCADE_VERSION
-)
-VALUES
-(
-    ISEQ$$_92316.NEXTVAL,
-    ?,
-    ?,
-    ?,
-    ?,
-    'Re-Cascaded',
-    'Y',
-    ?
-)
+    if (
+        not latest_action
+        or latest_action == -1
+    ):
 
-SELECT
-    NVL(MAX(CASCADE_VERSION), 0) + 1 AS NEXT_VERSION
-FROM
-    METRIC_CASCADE_LOCATIONS
-WHERE
-    METRIC_DETAIL_ID = ?
-    AND RMM_ID = ?
+        sql_insertData(
+            373,
+            "CASCADED_ID",
+            [
+                metric_detail_id,
+                rmm_id,
+                location_type,
+                vUser
+            ]
+        )
+
+    # ---------------------------------------------------------
+    # RE-CASCADE FLOW
+    # ---------------------------------------------------------
+
+    else:
+
+        # -----------------------------------------------------
+        # GET NEXT VERSION
+        # -----------------------------------------------------
+
+        version_rows = sql_getData(
+            901,
+            [
+                metric_detail_id,
+                rmm_id
+            ]
+        )
+
+        next_version = 1
+
+        if (
+            version_rows
+            and version_rows != -1
+        ):
+
+            next_version = (
+                version_rows[0].get(
+                    "NEXT_VERSION",
+                    1
+                )
+            )
+
+        # -----------------------------------------------------
+        # DEACTIVATE OLD ROWS
+        # -----------------------------------------------------
+
+        sql_insertData(
+            902,
+            "NA",
+            [
+                str(vUser),
+                metric_detail_id,
+                rmm_id
+            ]
+        )
+
+        # -----------------------------------------------------
+        # INSERT NEW RE-CASCADE ROW
+        # -----------------------------------------------------
+
+        sql_insertData(
+            903,
+            "CASCADED_ID",
+            [
+                metric_detail_id,
+                rmm_id,
+                location_type,
+                str(vUser),
+                next_version
+            ]
+        )
 
 
