@@ -47,15 +47,7 @@ JOIN RAP_METRICS_PACK_MAPPING RMPM
 -----------------------------------------------------------------
 JOIN METRIC_CASCADE_LOCATIONS MCL
     ON MCL.METRIC_DETAIL_ID = RMDT.METRIC_DETAIL_ID
-
------------------------------------------------------------------
--- ONLY DIRECT CHILD OF CURRENT RMM
------------------------------------------------------------------
-AND MCL.RMM_ID IN (
-    SELECT MI2.RMM_ID
-    FROM MEET_INSTC MI2
-    WHERE MI2.PARENT_RMM_ID = :1
-)
+    AND MCL.RMM_ID = :1
 
 -----------------------------------------------------------------
 -- LATEST CASCADE ACTION
