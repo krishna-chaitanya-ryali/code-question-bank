@@ -1,248 +1,88 @@
-905: {
-    "Qstring": """
-        UPDATE METRIC_CASCADE_ACTIONS
-        SET
-            STATUS = 'Revised Cascade',
-            IS_ACTIVE = 'N',
-            LAST_UPDATED_DT = CURRENT_TIMESTAMP
-        WHERE ACTION_ID = :1
-    """
-},
+SELECT DISTINCT
+    RMDT.MASTER_METRIC_ID,
+    RMDT.METRIC_DETAIL_ID,
 
+    CASE 
+        WHEN RMDT.METRICS_DISPLAY IS NULL 
+            THEN RMPM.METRICS_DISP 
+        ELSE RMDT.METRICS_DISPLAY 
+    END AS METRIC_NAME,
 
-391: {
-    "Qstring": """
-        UPDATE METRIC_CASCADE_ACTIONS
-        SET 
-            STATUS = :1,
-            LAST_UPDATED_BY = :2,
-            LAST_UPDATED_DT = CURRENT_TIMESTAMP,
-            SELECTED_CASCADING_TYPE = :3,
-            SELECTED_EXISTING_METRIC_DETAIL_ID = :4,
-            IS_ACTIVE = 'N'
-        WHERE ACTION_ID = (
-            SELECT MAX(ACTION_ID)
-            FROM METRIC_CASCADE_ACTIONS
-            WHERE METRIC_DETAIL_ID = :5
-            AND CHILD_RMM_ID = :6
-            AND IS_ACTIVE = 'Y'
+    RMDT.METRIC_NAME_CASCADE,
+    RMDT.THRESHOLD_CASCADE,
+    RMDT.METRIC_APPLICABILITY,
+
+    MCA.CASCADE_DT_STR AS CASCADE_DT,
+
+    COALESCE(
+        UT.USER_NAME,
+        (
+            SELECT UT2.USER_NAME
+            FROM USER_TAB UT2
+            WHERE UT2.PSID = MCA.ACTION_BY
+            FETCH FIRST 1 ROW ONLY
         )
-    """
-},
+    ) AS ACTION_BY,
 
+    -----------------------------------------------------------------
+    -- VERSIONING FIELDS
+    -----------------------------------------------------------------
+    MCL.CASCADE_VERSION,
+    MCL.CASCADE_STATUS,
+    MCL.IS_ACTIVE
 
-906: {
-    "Qstring": """
-        SELECT
-            ACTION_ID,
-            STATUS,
-            CASCADE_VERSION
-        FROM METRIC_CASCADE_ACTIONS
-        WHERE METRIC_DETAIL_ID = :1
-        AND CHILD_RMM_ID = :2
-        AND IS_ACTIVE = 'Y'
-        ORDER BY ACTION_ID DESC
-    """
-},
+FROM MEET_INSTC MI
 
+JOIN RAP 
+    ON MI.MEET_INSTC_ID = RAP.RAP_INSTANCE_ID
 
-for child_rmm_id in mcl_rmm_ids:
+JOIN RAP_METRICS_DETAILS RMDT 
+    ON RAP.RAP_ID = RMDT.RAP_ID
 
-    if child_rmm_id in valid_children:
+JOIN RAP_METRICS_PACK_MAPPING RMPM 
+    ON RMDT.RAP_METRICS_MAPPING_ID = RMPM.RAP_METRICS_MAPPING_ID
 
-        # ########################################################
-        # GET CURRENT ACTIVE CASCADE
-        # ########################################################
+-----------------------------------------------------------------
+-- CASCADE LOCATION TABLE
+-----------------------------------------------------------------
+JOIN METRIC_CASCADE_LOCATIONS MCL 
+    ON MCL.METRIC_DETAIL_ID = RMDT.METRIC_DETAIL_ID
+    AND MCL.IS_ACTIVE = 'Y'
 
-        current_active = sql_getData(
-            906,
-            [metric_id, child_rmm_id]
-        )
+-----------------------------------------------------------------
+-- LATEST CASCADE ACTION
+-----------------------------------------------------------------
+LEFT JOIN (
+    SELECT
+        METRIC_DETAIL_ID,
+        CHILD_RMM_ID,
+        CASCADE_VERSION,
+        MAX(ACTION_DT) AS CASCADE_DT,
 
-        cascade_version = 1
-        new_status = "Awaiting Acceptance"
+        MAX(ACTION_BY) KEEP (
+            DENSE_RANK LAST ORDER BY ACTION_DT
+        ) AS ACTION_BY,
 
-        # ########################################################
-        # RECASCADE SCENARIO
-        # ########################################################
+        MAX(ACTION_DT_STR) KEEP (
+            DENSE_RANK LAST ORDER BY ACTION_DT
+        ) AS CASCADE_DT_STR
 
-        if current_active:
+    FROM METRIC_CASCADE_ACTIONS
 
-            old_action_id = current_active[0].get(
-                "ACTION_ID"
-            )
+    WHERE ACTION_TYPE = 'CASCADE'
 
-            old_status = current_active[0].get(
-                "STATUS"
-            )
+    GROUP BY
+        METRIC_DETAIL_ID,
+        CHILD_RMM_ID,
+        CASCADE_VERSION
+) MCA 
+    ON MCA.METRIC_DETAIL_ID = MCL.METRIC_DETAIL_ID
+    AND MCA.CASCADE_VERSION = MCL.CASCADE_VERSION
+    AND MCA.CHILD_RMM_ID = MCL.RMM_ID
 
-            old_version = current_active[0].get(
-                "CASCADE_VERSION",
-                1
-            )
+LEFT JOIN USER_TAB UT 
+    ON UT.EMP_ID = MCA.ACTION_BY
 
-            cascade_version = old_version + 1
-
-            # ####################################################
-            # AWAITING / IN PROGRESS / RE-CASCADED
-            # ####################################################
-
-            if old_status in [
-                "Awaiting Acceptance",
-                "In Progress",
-                "Re-Cascaded"
-            ]:
-
-                # OLD ROW -> Revised Cascade
-                sql_updateData(
-                    905,
-                    [old_action_id]
-                )
-
-                new_status = "Re-Cascaded"
-
-            # ####################################################
-            # ACCEPTED / REJECTED
-            # ####################################################
-
-            elif old_status in [
-                "Accepted",
-                "Rejected"
-            ]:
-
-                # historical row remains same
-                new_status = "Awaiting Acceptance"
-
-        # ########################################################
-        # CHECK DUPLICATE VERSION
-        # ########################################################
-
-        exists = sql_getData(
-            382,
-            [
-                metric_id,
-                child_rmm_id,
-                cascade_version
-            ]
-        )
-
-        if exists:
-            continue
-
-        # ########################################################
-        # INSERT NEW CASCADE ACTION
-        # ########################################################
-
-        action_id = sql_insertData(
-            379,
-            "ACTION_ID",
-            [
-                metric_id,
-                parent_rmm_id,
-                child_rmm_id,
-                user_id,
-                meet_instc_id,
-                current_time,
-                cascade_version,
-                new_status
-            ]
-        )
-
-        if action_id != -1:
-            cascaded.append(child_rmm_id)
-        else:
-            not_cascaded.append(child_rmm_id)
-
-    else:
-        not_cascaded.append(child_rmm_id)
-
-
-379: {
-    "Qstring": """
-        INSERT INTO METRIC_CASCADE_ACTIONS (
-            METRIC_DETAIL_ID,
-            PARENT_RMM_ID,
-            CHILD_RMM_ID,
-            ACTION_TYPE,
-            ACTION_BY,
-            ACTION_DT,
-            STATUS,
-            MEET_INSTC_ID,
-            ACTION_DT_STR,
-            CASCADE_VERSION,
-            IS_ACTIVE
-        )
-        VALUES (
-            :1,
-            :2,
-            :3,
-            'CASCADE',
-            :4,
-            CURRENT_TIMESTAMP,
-            :8,
-            :5,
-            :6,
-            :7,
-            'Y'
-        )
-    """
-},
-
-
-
-
-
-1. Tell Me About Yourself
-✅ Answer
-Hi, I’m Krishna Chaitanya, and I have around 10+ years of experience in backend and enterprise application development, primarily using Python, Flask, and FastAPI.
-Currently, I’m working with Synechron on the RAP (Risk Appetite Platform) application for HSBC, where I’ve been involved for the last 4–5 years. My role includes backend development, REST API design, production support, enhancements, debugging critical issues, and coordinating releases.
-Over the years, I’ve taken ownership of multiple critical functionalities, handled production incidents, mentored team members, and worked closely with business and IT stakeholders to ensure smooth delivery.
-Technically, I’ve worked on Flask, FastAPI, Oracle, Linux, Jenkins pipelines, REST APIs, and event-driven integrations. I also explored GenAI/OpenAI-related internal implementations and automation use cases.
-Now I’m looking for opportunities where I can contribute at a larger scale, take on more ownership, and continue growing technically and professionally.
-🔥 2. Explain Your Current Project (RAP)
-✅ Answer
-RAP stands for Risk Appetite Platform. It is a centralized risk monitoring system used to track business risk metrics against predefined risk appetite and tolerance thresholds.
-The application collects periodic business data, validates it against defined thresholds, identifies breaches, and stores historical information for reporting and analysis.
-From a technical perspective, the backend is primarily built using Python and Flask, with Oracle as the database. We use REST APIs for integrations, Linux servers for deployment, and Jenkins pipelines for release deployments.
-My role involves backend development, enhancement implementation, production support, debugging critical issues, release coordination, and mentoring team members.
-🔥 3. Explain a Challenging Production Issue
-✅ Answer
-One critical issue we faced was related to user access and data visibility after a release deployment. Some users were unable to access specific functionalities due to incorrect entitlement mappings.
-I first analyzed logs and database mappings, then validated the deployment changes and identified that some upstream validations were missed during testing.
-I coordinated with both business and support teams, implemented a temporary fix to restore access quickly, and later deployed a permanent solution after proper validation.
-Additionally, I introduced better validation checks and regression testing steps to avoid similar issues in future releases.
-🔥 4. How Do You Handle Pressure and Multiple Priorities?
-✅ Answer
-I usually start by identifying business-critical and production-impacting tasks first.
-I prioritize based on severity, business impact, and delivery timelines. If multiple high-priority tasks arise simultaneously, I communicate clearly with stakeholders and align expectations regarding timelines and dependencies.
-I also believe in structured execution instead of reacting emotionally under pressure. This approach helped me manage production issues, releases, and enhancements in parallel across multiple cycles.
-🔥 5. How Do You Mentor Team Members?
-✅ Answer
-I usually mentor team members through KT sessions, debugging support, code reviews, and architecture discussions.
-Since RAP is a complex enterprise application, onboarding new members requires both business and technical understanding. I help them understand workflows, backend logic, database relationships, and debugging approaches so they can contribute independently over time.
-I also encourage knowledge sharing and documentation to reduce dependency on individuals.
-🔥 6. Explain Your Leadership Experience
-✅ Answer
-While my official role has been primarily technical, I’ve handled many lead-level responsibilities over the years.
-I’ve coordinated deliveries, guided junior developers, handled production ownership, worked with stakeholders during releases, participated in requirement discussions, and ensured smooth execution during critical situations.
-I usually take ownership of tasks end-to-end and ensure proper communication between business, QA, and development teams.
-🔥 7. What Is Your Experience With Architecture / Design?
-✅ Answer
-My experience mainly involves backend architecture and scalable API design.
-I’ve worked extensively on REST API development using Flask and FastAPI, database optimization in Oracle, production debugging, and integration handling.
-I also focus on writing modular, maintainable, and reusable code with proper error handling and logging mechanisms.
-Additionally, I’ve worked with Linux environments, Jenkins deployment pipelines, and event-driven processing concepts.
-🔥 8. Have You Worked on Cloud or Scalable Systems?
-✅ Answer
-I’ve had exposure to cloud-based environments and deployment workflows, particularly around application hosting, deployment coordination, and infrastructure interactions.
-My primary expertise is backend engineering, but I understand scalability considerations such as API optimization, modular architecture, logging, asynchronous processing, and production stability.
-🔥 9. Why Are You Looking for a Change?
-✅ Answer
-I’ve been working on the same platform for several years and gained strong ownership and stability experience.
-At this stage, I’m looking for broader technical exposure, larger-scale challenges, and opportunities where I can contribute more strategically and continue growing.
-🔥 10. Why Should We Hire You?
-✅ Answer
-I bring a combination of strong backend technical expertise and real production ownership experience.
-Beyond development, I’ve handled critical production situations, mentoring, stakeholder coordination, and delivery responsibilities in enterprise environments.
-I can contribute both technically and from a delivery ownership perspective from day one.
-
+WHERE MI.RMM_ID = :1
+AND MI.MEET_INSTC_ID = :2
+AND RMDT.METRIC_FLAG <> 'removed'
