@@ -1,20 +1,76 @@
-LEFT JOIN (
-    SELECT
-        METRIC_DETAIL_ID,
-        CHILD_RMM_ID,
-        CASCADE_VERSION,
-        MAX(ACTION_DT) AS CASCADE_DT,
-        MAX(ACTION_BY)
-            KEEP (DENSE_RANK LAST ORDER BY ACTION_DT) AS ACTION_BY,
-        MAX(ACTION_DT_STR)
-            KEEP (DENSE_RANK LAST ORDER BY ACTION_DT) AS CASCADE_DT_STR
-    FROM METRIC_CASCADE_ACTIONS
-    WHERE ACTION_TYPE = 'CASCADE'
-    GROUP BY
-        METRIC_DETAIL_ID,
-        CHILD_RMM_ID,
-        CASCADE_VERSION
-) MCA
-ON MCA.METRIC_DETAIL_ID = MCL.METRIC_DETAIL_ID
-AND MCA.CASCADE_VERSION = MCL.CASCADE_VERSION
-AND MCA.CHILD_RMM_ID = MCL.RMM_ID
+379: {
+    "Qstring": """
+        INSERT INTO METRIC_CASCADE_ACTIONS (
+            METRIC_DETAIL_ID,
+            PARENT_RMM_ID,
+            CHILD_RMM_ID,
+            ACTION_TYPE,
+            ACTION_BY,
+            ACTION_DT,
+            STATUS,
+            MEET_INSTC_ID,
+            ACTION_DT_STR,
+            CASCADE_VERSION
+        )
+        VALUES (
+            :1,
+            :2,
+            :3,
+            'CASCADE',
+            :4,
+            CURRENT_TIMESTAMP,
+            'Awaiting Acceptance',
+            :5,
+            :6,
+            :7
+        )
+    """
+},
+
+
+for child_rmm_id in mcl_rmm_ids:
+
+
+# Get latest active cascade version
+mcl_data = sql_getData(
+    904,
+    [metric_id, child_rmm_id]
+)
+
+if not mcl_data:
+    continue
+
+cascade_version = mcl_data[0].get(
+    "CASCADE_VERSION",
+    1
+)
+
+
+action_id = sql_insertData(
+    379,
+    "ACTION_ID",
+    [
+        metric_id,
+        parent_rmm_id,
+        child_rmm_id,
+        user_id,
+        meet_instc_id,
+        current_time,
+        cascade_version
+    ]
+)
+
+
+904: {
+    "Qstring": """
+        SELECT
+            CASCADE_VERSION
+        FROM METRIC_CASCADE_LOCATIONS
+        WHERE METRIC_DETAIL_ID = :1
+        AND RMM_ID = :2
+        AND IS_ACTIVE = 'Y'
+        ORDER BY CASCADE_VERSION DESC
+    """
+},
+
+
