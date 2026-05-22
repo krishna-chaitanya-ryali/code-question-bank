@@ -1,66 +1,3 @@
-ALTER TABLE METRIC_CASCADE_LOCATIONS
-RENAME COLUMN RMM_ID TO CHILD_RMM_ID;
-
-
-ALTER TABLE METRIC_CASCADE_LOCATIONS
-ADD PARENT_RMM_ID NUMBER;
-
-
-UPDATE METRIC_CASCADE_LOCATIONS
-SET PARENT_RMM_ID = 101
-WHERE CHILD_RMM_ID = 681;
-
-
-(metric_id, parent_rmm_id, child_rmm_id, location_type, user)
-
-
-
-INSERT INTO METRIC_CASCADE_LOCATIONS
-(
-    METRIC_DETAIL_ID,
-    RMM_ID,
-    LOCATION_TYPE,
-    CRT_BY
-)
-VALUES
-(
-    :1,
-    :2,
-    :3,
-    :4
-)
-
-
-INSERT INTO METRIC_CASCADE_LOCATIONS
-(
-    METRIC_DETAIL_ID,
-    PARENT_RMM_ID,
-    CHILD_RMM_ID,
-    LOCATION_TYPE,
-    CRT_BY
-)
-VALUES
-(
-    :1,
-    :2,
-    :3,
-    :4,
-    :5
-)
-
-sql_insertData(
-    373,
-    "CASCADED_ID",
-    [
-        metric_detail_id,
-        parent_rmm_id,
-        child_rmm_id,
-        location_type,
-        vUser
-    ]
-)
-
-
 SELECT
     RMDT.MASTER_METRIC_ID,
     RMDT.METRIC_DETAIL_ID,
@@ -75,6 +12,15 @@ SELECT
     RMDT.THRESHOLD_CASCADE,
     RMDT.METRIC_APPLICABILITY,
 
+    -----------------------------------------------------------------
+    -- PARENT / CHILD INFO
+    -----------------------------------------------------------------
+    MCL.PARENT_RMM_ID,
+    MCL.CHILD_RMM_ID,
+
+    -----------------------------------------------------------------
+    -- CASCADE INFO
+    -----------------------------------------------------------------
     MCA.CASCADE_DT_STR AS CASCADE_DT,
 
     COALESCE(
@@ -87,6 +33,9 @@ SELECT
         )
     ) AS ACTION_BY,
 
+    -----------------------------------------------------------------
+    -- VERSIONING FIELDS
+    -----------------------------------------------------------------
     MCL.CASCADE_VERSION,
     MCL.CASCADE_STATUS,
     MCL.IS_ACTIVE
@@ -102,10 +51,16 @@ JOIN RAP_METRICS_DETAILS RMDT
 JOIN RAP_METRICS_PACK_MAPPING RMPM
     ON RMDT.RAP_METRICS_MAPPING_ID = RMPM.RAP_METRICS_MAPPING_ID
 
+-----------------------------------------------------------------
+-- CASCADE LOCATION TABLE
+-----------------------------------------------------------------
 JOIN METRIC_CASCADE_LOCATIONS MCL
     ON MCL.METRIC_DETAIL_ID = RMDT.METRIC_DETAIL_ID
     AND MCL.PARENT_RMM_ID = :1
 
+-----------------------------------------------------------------
+-- LATEST CASCADE ACTION
+-----------------------------------------------------------------
 LEFT JOIN (
     SELECT
         METRIC_DETAIL_ID,
