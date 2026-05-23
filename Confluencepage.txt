@@ -1,190 +1,94 @@
-906: {
-    "Qstring": """
-        SELECT
-            ACTION_ID,
-            STATUS,
-            CASCADE_VERSION
-        FROM (
-            SELECT
-                ACTION_ID,
-                STATUS,
-                CASCADE_VERSION
-            FROM METRIC_CASCADE_ACTIONS
-            WHERE METRIC_DETAIL_ID = :1
-            AND CHILD_RMM_ID = :2
-            AND IS_ACTIVE = 'Y'
-            ORDER BY CASCADE_VERSION DESC,
-                     ACTION_ID DESC
-        )
-        WHERE ROWNUM = 1
-    """
-},
+SELECT
+    RMDT.MASTER_METRIC_ID,
 
-907: {
-    "Qstring": """
-        UPDATE METRIC_CASCADE_ACTIONS
-        SET IS_ACTIVE = 'N'
-        WHERE METRIC_DETAIL_ID = :1
-        AND CHILD_RMM_ID = :2
-        AND IS_ACTIVE = 'Y'
-    """
-},
+    RMDT.METRIC_DETAIL_ID,
 
+    CASE
+        WHEN RMDT.METRICS_DISPLAY IS NULL
+        THEN RMPM.METRICS_DISP
+        ELSE RMDT.METRICS_DISPLAY
+    END AS METRIC_NAME,
 
-action_id = sql_insertData(
-    379,
+    RMDT.METRIC_NAME_CASCADE,
 
-# ##############################################################
-# DEACTIVATE OLD ACTIVE ROWS
-# ##############################################################
+    RMDT.THRESHOLD_CASCADE,
 
-sql_insertData(
-    907,
-    "NA",
-    [
-        metric_id,
-        child_rmm_id
-    ]
-)
+    RMDT.METRIC_APPLICABILITY,
 
+    MCA.CASCADE_DT_STR AS CASCADE_DT,
 
+    MCA.ACTION_BY,
 
-mcl_rmm_ids = get_mcl_locations(metric_id)
+    NVL(MCA.STATUS, 'Awaiting Acceptance') AS STATUS,
 
-mcl_rmm_ids = list(set(mcl_rmm_ids))
+    NVL(MCA.ACCEPTED_COUNT, 0) AS ACCEPTED_COUNT,
 
+    NVL(MCA.REJECTED_COUNT, 0) AS REJECTED_COUNT,
 
+    MCA.SELECTED_CASCADING_TYPE,
 
-# Step 2: Process each metric
-for metric_id in metric_ids:
+    MCA.SELECTED_EXISTING_METRIC_DETAIL_ID,
 
-    # Get all configured cascade locations (MCL)
-    mcl_rmm_ids = get_mcl_locations(metric_id)
+    MCA.CASCADE_VERSION,
 
-    # REMOVE DUPLICATES
-    mcl_rmm_ids = list(set(mcl_rmm_ids))
+    MCA.IS_ACTIVE
 
-    for child_rmm_id in mcl_rmm_ids:
+FROM RAP_METRICS_DETAILS RMDT
 
-        if child_rmm_id in valid_children:
+JOIN RAP_METRICS_PACK_MAPPING RMPM
+    ON RMDT.RAP_METRICS_MAPPING_ID =
+       RMPM.RAP_METRICS_MAPPING_ID
 
-            # ##############################################################
-            # GET CURRENT ACTIVE CASCADE
-            # ##############################################################
+JOIN (
+    SELECT
+        MCA1.METRIC_DETAIL_ID,
 
-            current_active = sql_getData(
-                906,
-                [metric_id, child_rmm_id]
-            )
+        MCA1.CHILD_RMM_ID,
 
-            cascade_version = 1
-            new_status = "Awaiting Acceptance"
+        MCA1.CASCADE_VERSION,
 
-            # ##############################################################
-            # RECASCADE SCENARIO
-            # ##############################################################
+        MCA1.ACTION_DT,
 
-            if current_active:
+        MCA1.ACTION_BY,
 
-                old_action_id = current_active[0].get(
-                    "ACTION_ID"
-                )
+        MCA1.STATUS,
 
-                old_status = current_active[0].get(
-                    "STATUS"
-                )
+        MCA1.ACTION_DT_STR AS CASCADE_DT_STR,
 
-                old_version = current_active[0].get(
-                    "CASCADE_VERSION",
-                    1
-                )
+        MCA1.SELECTED_CASCADING_TYPE,
 
-                cascade_version = old_version + 1
+        MCA1.SELECTED_EXISTING_METRIC_DETAIL_ID,
 
-                # ##########################################################
-                # AWAITING / IN PROGRESS / RE-CASCADED
-                # ##########################################################
+        MCA1.IS_ACTIVE,
 
-                if old_status in [
-                    "Awaiting Acceptance",
-                    "In Progress",
-                    "Re-Cascaded"
-                ]:
+        (
+            SELECT COUNT(*)
+            FROM METRIC_CASCADE_REVIEW_STATE MCRS
+            WHERE MCRS.CASCADED_METRIC_DETAIL_ID =
+                  MCA1.METRIC_DETAIL_ID
+            AND MCRS.REVIEW_TYPE = 'Accepted'
+        ) AS ACCEPTED_COUNT,
 
-                    # OLD ROW -> Revised Cascade
-                    sql_insertData(
-                        905,
-                        "NA",
-                        [old_action_id]
-                    )
+        (
+            SELECT COUNT(*)
+            FROM METRIC_CASCADE_REVIEW_STATE MCRS
+            WHERE MCRS.CASCADED_METRIC_DETAIL_ID =
+                  MCA1.METRIC_DETAIL_ID
+            AND MCRS.REVIEW_TYPE = 'Rejected'
+        ) AS REJECTED_COUNT
 
-                    new_status = "Re-Cascaded"
+    FROM METRIC_CASCADE_ACTIONS MCA1
 
-                # ##########################################################
-                # ACCEPTED / REJECTED
-                # ##########################################################
+    WHERE MCA1.ACTION_TYPE = 'CASCADE'
 
-                elif old_status in [
-                    "Accepted",
-                    "Rejected"
-                ]:
+) MCA
+    ON MCA.METRIC_DETAIL_ID =
+       RMDT.METRIC_DETAIL_ID
 
-                    new_status = "Awaiting Acceptance"
+   AND MCA.CHILD_RMM_ID = :1
 
-            # ##############################################################
-            # CHECK DUPLICATE VERSION
-            # ##############################################################
+WHERE RMDT.METRIC_FLAG <> 'removed'
 
-            exists = sql_getData(
-                382,
-                [
-                    metric_id,
-                    child_rmm_id,
-                    cascade_version
-                ]
-            )
-
-            if exists:
-                continue
-
-            # ##############################################################
-            # DEACTIVATE OLD ACTIVE ROWS
-            # ##############################################################
-
-            sql_insertData(
-                907,
-                "NA",
-                [
-                    metric_id,
-                    child_rmm_id
-                ]
-            )
-
-            # ##############################################################
-            # INSERT NEW CASCADE ACTION
-            # ##############################################################
-
-            action_id = sql_insertData(
-                379,
-                "ACTION_ID",
-                [
-                    metric_id,
-                    parent_rmm_id,
-                    child_rmm_id,
-                    user_id,
-                    meet_instc_id,
-                    current_time,
-                    cascade_version,
-                    new_status
-                ]
-            )
-
-            if action_id != -1:
-                cascaded.append(child_rmm_id)
-            else:
-                not_cascaded.append(child_rmm_id)
-
-        else:
-            not_cascaded.append(child_rmm_id)
-
-
+ORDER BY
+    RMDT.MASTER_METRIC_ID,
+    MCA.CASCADE_VERSION DESC
