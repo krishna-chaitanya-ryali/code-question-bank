@@ -1,104 +1,56 @@
-SELECT
-    RMDT.MASTER_METRIC_ID,
-    RMDT.METRIC_DETAIL_ID,
-
-    CASE
-        WHEN RMDT.METRICS_DISPLAY IS NULL
-            THEN RMPM.METRICS_DISP
-        ELSE RMDT.METRICS_DISPLAY
-    END AS METRIC_NAME,
-
-    RMDT.METRIC_NAME_CASCADE,
-    RMDT.THRESHOLD_CASCADE,
-    RMDT.METRIC_APPLICABILITY,
-
-    -----------------------------------------------------------------
-    -- PARENT / CHILD INFO
-    -----------------------------------------------------------------
-    MCL.PARENT_RMM_ID,
-    MCL.CHILD_RMM_ID,
-
-    -----------------------------------------------------------------
-    -- CASCADE INFO
-    -----------------------------------------------------------------
-    MCA.CASCADE_DT_STR AS CASCADE_DT,
-
-    COALESCE(
-        UT.USER_NAME,
-        (
-            SELECT UT2.USER_NAME
-            FROM USER_TAB UT2
-            WHERE UT2.PSID = MCA.ACTION_BY
-            FETCH FIRST 1 ROW ONLY
+906: {
+    "Qstring": """
+        SELECT
+            ACTION_ID,
+            STATUS,
+            CASCADE_VERSION
+        FROM (
+            SELECT
+                ACTION_ID,
+                STATUS,
+                CASCADE_VERSION
+            FROM METRIC_CASCADE_ACTIONS
+            WHERE METRIC_DETAIL_ID = :1
+            AND CHILD_RMM_ID = :2
+            AND IS_ACTIVE = 'Y'
+            ORDER BY CASCADE_VERSION DESC,
+                     ACTION_ID DESC
         )
-    ) AS ACTION_BY,
+        WHERE ROWNUM = 1
+    """
+},
 
-    -----------------------------------------------------------------
-    -- VERSIONING FIELDS
-    -----------------------------------------------------------------
-    MCL.CASCADE_VERSION,
-    MCL.CASCADE_STATUS,
-    MCL.IS_ACTIVE
+907: {
+    "Qstring": """
+        UPDATE METRIC_CASCADE_ACTIONS
+        SET IS_ACTIVE = 'N'
+        WHERE METRIC_DETAIL_ID = :1
+        AND CHILD_RMM_ID = :2
+        AND IS_ACTIVE = 'Y'
+    """
+},
 
-FROM MEET_INSTC MI
 
-JOIN RAP
-    ON MI.MEET_INSTC_ID = RAP.RAP_INSTANCE_ID
+action_id = sql_insertData(
+    379,
 
-JOIN RAP_METRICS_DETAILS RMDT
-    ON RAP.RAP_ID = RMDT.RAP_ID
+# ##############################################################
+# DEACTIVATE OLD ACTIVE ROWS
+# ##############################################################
 
-JOIN RAP_METRICS_PACK_MAPPING RMPM
-    ON RMDT.RAP_METRICS_MAPPING_ID = RMPM.RAP_METRICS_MAPPING_ID
+sql_insertData(
+    907,
+    "NA",
+    [
+        metric_id,
+        child_rmm_id
+    ]
+)
 
------------------------------------------------------------------
--- CASCADE LOCATION TABLE
------------------------------------------------------------------
-JOIN METRIC_CASCADE_LOCATIONS MCL
-    ON MCL.METRIC_DETAIL_ID = RMDT.METRIC_DETAIL_ID
-    AND MCL.PARENT_RMM_ID = :1
 
------------------------------------------------------------------
--- LATEST CASCADE ACTION
------------------------------------------------------------------
-LEFT JOIN (
-    SELECT
-        METRIC_DETAIL_ID,
-        CHILD_RMM_ID,
-        CASCADE_VERSION,
 
-        MAX(ACTION_DT) AS CASCADE_DT,
+mcl_rmm_ids = get_mcl_locations(metric_id)
 
-        MAX(ACTION_BY)
-            KEEP (
-                DENSE_RANK LAST
-                ORDER BY ACTION_DT
-            ) AS ACTION_BY,
+mcl_rmm_ids = list(set(mcl_rmm_ids))
 
-        MAX(ACTION_DT_STR)
-            KEEP (
-                DENSE_RANK LAST
-                ORDER BY ACTION_DT
-            ) AS CASCADE_DT_STR
 
-    FROM METRIC_CASCADE_ACTIONS
-
-    WHERE ACTION_TYPE = 'CASCADE'
-
-    GROUP BY
-        METRIC_DETAIL_ID,
-        CHILD_RMM_ID,
-        CASCADE_VERSION
-
-) MCA
-
-    ON MCA.METRIC_DETAIL_ID = MCL.METRIC_DETAIL_ID
-    AND MCA.CASCADE_VERSION = MCL.CASCADE_VERSION
-    AND MCA.CHILD_RMM_ID = MCL.CHILD_RMM_ID
-
-LEFT JOIN USER_TAB UT
-    ON UT.EMP_ID = MCA.ACTION_BY
-
-WHERE MI.RMM_ID = :1
-AND MI.MEET_INSTC_ID = :2
-AND RMDT.METRIC_FLAG <> 'removed'
