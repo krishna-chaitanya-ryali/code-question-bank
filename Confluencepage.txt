@@ -54,3 +54,137 @@ mcl_rmm_ids = get_mcl_locations(metric_id)
 mcl_rmm_ids = list(set(mcl_rmm_ids))
 
 
+
+# Step 2: Process each metric
+for metric_id in metric_ids:
+
+    # Get all configured cascade locations (MCL)
+    mcl_rmm_ids = get_mcl_locations(metric_id)
+
+    # REMOVE DUPLICATES
+    mcl_rmm_ids = list(set(mcl_rmm_ids))
+
+    for child_rmm_id in mcl_rmm_ids:
+
+        if child_rmm_id in valid_children:
+
+            # ##############################################################
+            # GET CURRENT ACTIVE CASCADE
+            # ##############################################################
+
+            current_active = sql_getData(
+                906,
+                [metric_id, child_rmm_id]
+            )
+
+            cascade_version = 1
+            new_status = "Awaiting Acceptance"
+
+            # ##############################################################
+            # RECASCADE SCENARIO
+            # ##############################################################
+
+            if current_active:
+
+                old_action_id = current_active[0].get(
+                    "ACTION_ID"
+                )
+
+                old_status = current_active[0].get(
+                    "STATUS"
+                )
+
+                old_version = current_active[0].get(
+                    "CASCADE_VERSION",
+                    1
+                )
+
+                cascade_version = old_version + 1
+
+                # ##########################################################
+                # AWAITING / IN PROGRESS / RE-CASCADED
+                # ##########################################################
+
+                if old_status in [
+                    "Awaiting Acceptance",
+                    "In Progress",
+                    "Re-Cascaded"
+                ]:
+
+                    # OLD ROW -> Revised Cascade
+                    sql_insertData(
+                        905,
+                        "NA",
+                        [old_action_id]
+                    )
+
+                    new_status = "Re-Cascaded"
+
+                # ##########################################################
+                # ACCEPTED / REJECTED
+                # ##########################################################
+
+                elif old_status in [
+                    "Accepted",
+                    "Rejected"
+                ]:
+
+                    new_status = "Awaiting Acceptance"
+
+            # ##############################################################
+            # CHECK DUPLICATE VERSION
+            # ##############################################################
+
+            exists = sql_getData(
+                382,
+                [
+                    metric_id,
+                    child_rmm_id,
+                    cascade_version
+                ]
+            )
+
+            if exists:
+                continue
+
+            # ##############################################################
+            # DEACTIVATE OLD ACTIVE ROWS
+            # ##############################################################
+
+            sql_insertData(
+                907,
+                "NA",
+                [
+                    metric_id,
+                    child_rmm_id
+                ]
+            )
+
+            # ##############################################################
+            # INSERT NEW CASCADE ACTION
+            # ##############################################################
+
+            action_id = sql_insertData(
+                379,
+                "ACTION_ID",
+                [
+                    metric_id,
+                    parent_rmm_id,
+                    child_rmm_id,
+                    user_id,
+                    meet_instc_id,
+                    current_time,
+                    cascade_version,
+                    new_status
+                ]
+            )
+
+            if action_id != -1:
+                cascaded.append(child_rmm_id)
+            else:
+                not_cascaded.append(child_rmm_id)
+
+        else:
+            not_cascaded.append(child_rmm_id)
+
+
