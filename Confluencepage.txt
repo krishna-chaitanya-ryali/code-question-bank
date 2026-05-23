@@ -1,39 +1,24 @@
-LEFT JOIN (
+908: {
+    "Qstring": """
+        UPDATE METRIC_CASCADE_ACTIONS
+        SET
+            STATUS = 'Revised Cascade',
+            IS_ACTIVE = 'N',
+            LAST_UPDATED_BY = :2,
+            LAST_UPDATED_DT = CURRENT_TIMESTAMP
+        WHERE ACTION_ID = :1
+    """
+},
 
-    SELECT
-        MCA1.METRIC_DETAIL_ID,
 
-        MCA1.CHILD_RMM_ID,
+sql_insertData(
+    908,
+    "NA",
+    [
+        old_action_id,
+        user_id
+    ]
+)
 
-        MCA1.CASCADE_VERSION,
+new_status = "Re-Cascaded"
 
-        MCA1.ACTION_BY,
-
-        MCA1.ACTION_DT_STR AS CASCADE_DT_STR,
-
-        MCA1.STATUS,
-
-        MCA1.ACTION_ID
-
-    FROM METRIC_CASCADE_ACTIONS MCA1
-
-    WHERE MCA1.ACTION_ID IN (
-
-        SELECT MAX(MCA2.ACTION_ID)
-
-        FROM METRIC_CASCADE_ACTIONS MCA2
-
-        WHERE MCA2.ACTION_TYPE = 'CASCADE'
-
-        GROUP BY
-            MCA2.METRIC_DETAIL_ID,
-            MCA2.CHILD_RMM_ID,
-            MCA2.CASCADE_VERSION
-    )
-
-) MCA
-    ON MCA.METRIC_DETAIL_ID = MCL.METRIC_DETAIL_ID
-
-   AND MCA.CASCADE_VERSION = MCL.CASCADE_VERSION
-
-   AND MCA.CHILD_RMM_ID = MCL.CHILD_RMM_ID
