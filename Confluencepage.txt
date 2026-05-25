@@ -1,24 +1,14 @@
-908: {
-    "Qstring": """
-        UPDATE METRIC_CASCADE_ACTIONS
-        SET
-            STATUS = 'Revised Cascade',
-            IS_ACTIVE = 'N',
-            LAST_UPDATED_BY = :2,
-            LAST_UPDATED_DT = CURRENT_TIMESTAMP
-        WHERE ACTION_ID = :1
-    """
-},
-
-
-sql_insertData(
-    908,
-    "NA",
-    [
-        old_action_id,
-        user_id
-    ]
-)
-
-new_status = "Re-Cascaded"
-
+JOIN (
+    SELECT
+        METRIC_DETAIL_ID,
+        PARENT_RMM_ID,
+        CASCADE_VERSION,
+        MAX(CHILD_RMM_ID) AS CHILD_RMM_ID,
+        MAX(CASCADE_STATUS) AS CASCADE_STATUS,
+        MAX(IS_ACTIVE) AS IS_ACTIVE
+    FROM METRIC_CASCADE_LOCATIONS
+    GROUP BY
+        METRIC_DETAIL_ID,
+        PARENT_RMM_ID,
+        CASCADE_VERSION
+) MCL
