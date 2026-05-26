@@ -1,23 +1,5 @@
-UPDATE METRIC_CASCADE_ACTIONS
-SET
-    IS_ACTIVE = 'N',
-    LAST_UPDATED_DT = CURRENT_TIMESTAMP,
-    LAST_UPDATED_BY = :1
-WHERE ACTION_ID = (
-    SELECT MAX(ACTION_ID)
-    FROM METRIC_CASCADE_ACTIONS
-    WHERE METRIC_DETAIL_ID = :2
-      AND CHILD_RMM_ID = :3
-      AND IS_ACTIVE = 'Y'
-)
-
-
-sql_insertData(
-    910,
-    "NA",
-    [
-        str(vUser),
-        int(parent_metric_detail_id),
-        child_rmm_id
-    ]
-)
+CASE
+    WHEN MCA.IS_ACTIVE IS NULL
+        THEN MCL.IS_ACTIVE
+    ELSE MCA.IS_ACTIVE
+END AS FINAL_IS_ACTIVE,
