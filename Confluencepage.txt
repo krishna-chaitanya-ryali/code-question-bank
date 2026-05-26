@@ -1,3 +1,4 @@
+-- LATEST CASCADE ACTION
 LEFT JOIN (
     SELECT
         METRIC_DETAIL_ID,
@@ -15,7 +16,13 @@ LEFT JOIN (
             KEEP (
                 DENSE_RANK LAST
                 ORDER BY ACTION_DT
-            ) AS CASCADE_DT_STR
+            ) AS CASCADE_DT_STR,
+
+        MAX(IS_ACTIVE)
+            KEEP (
+                DENSE_RANK LAST
+                ORDER BY ACTION_DT
+            ) AS IS_ACTIVE
 
     FROM METRIC_CASCADE_ACTIONS
 
@@ -26,3 +33,8 @@ LEFT JOIN (
         CASCADE_VERSION
 
 ) MCA
+    ON MCA.METRIC_DETAIL_ID = MCL.METRIC_DETAIL_ID
+   AND MCA.CASCADE_VERSION = MCL.CASCADE_VERSION
+
+
+MCA.IS_ACTIVE AS MCA_IS_ACTIVE,
