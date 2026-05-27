@@ -1,63 +1,11 @@
-cascaded_to_child_metrics = []
-
-to_be_removed_metrics = []
-
-if to_be_removed_qry != -1:
-
-    for record in to_be_removed_qry:
-
-        to_be_removed_metrics.append({
-
-            "MASTER_GRID_ID": record.get(
-                "MASTER_METRIC_ID"
-            ),
-
-            "METRIC_DETAIL_ID": record.get(
-                "METRIC_DETAIL_ID"
-            ),
-
-            "METRIC_NAME": record.get(
-                "METRIC_NAME"
-            ),
-
-            "METRIC_NAME_CASCADE": record.get(
-                "METRIC_NAME_CASCADE"
-            ),
-
-            "THRESHOLD_CASCADE": record.get(
-                "THRESHOLD_CASCADE"
-            ),
-
-            "METRIC_APPLICABILITY": record.get(
-                "METRIC_APPLICABILITY"
-            ),
-
-            "METRIC_CASCADED_DATE": record.get(
-                "CASCADE_DT"
-            ),
-
-            "METRIC_CASCADED_USER_NAME": record.get(
-                "ACTION_BY"
-            ),
-
-            "IS_ACTIVE": (
-                record.get("MCA_IS_ACTIVE")
-                if record.get("MCA_IS_ACTIVE") is not None
-                else record.get("IS_ACTIVE")
-            ),
-
-            "HAS_PENDING_CHILDREN": record.get(
-                "HAS_PENDING_CHILDREN"
-            ),
-
-            "CASCADE_VERSION": record.get(
-                "CASCADE_VERSION"
-            ),
-
-            "CASCADE_STATUS": record.get(
-                "CASCADE_STATUS"
-            )
-        })
-
-
-"TO_BE_REMOVED": to_be_removed_metrics,
+CASE
+    WHEN EXISTS (
+        SELECT 1
+        FROM METRIC_CASCADE_ACTIONS MCA3
+        WHERE MCA3.TARGET_METRIC_DETAIL_ID = RMDT.METRIC_DETAIL_ID
+          AND MCA3.CHILD_RMM_ID = :2
+          AND MCA3.STATUS = 'Accepted'
+    )
+    THEN 'GLOBAL'
+    ELSE 'LOCAL'
+END AS METRIC_SOURCE_TYPE
