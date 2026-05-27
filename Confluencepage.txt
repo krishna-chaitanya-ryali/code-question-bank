@@ -1,20 +1,28 @@
-HAS_PENDING_CHILDREN
+"IS_ACTIVE": (
+    "Y"
+    if record.get("MCA_IS_ACTIVE") is None
+    else record.get("MCA_IS_ACTIVE")
+)
 
-CASE
-    WHEN EXISTS (
-        SELECT 1
-        FROM METRIC_CASCADE_ACTIONS MCA2
-        WHERE MCA2.METRIC_DETAIL_ID = RMDT.METRIC_DETAIL_ID
-          AND MCA2.PARENT_RMM_ID = MCL.PARENT_RMM_ID
-          AND MCA2.IS_ACTIVE = 'Y'
-          AND MCA2.STATUS IN (
-                'Awaiting Acceptance',
-                'In Progress',
-                'Re-Cascaded'
-          )
-    )
-    THEN 'Y'
-    ELSE 'N'
-END AS HAS_PENDING_CHILDREN
 
-if (HAS_PENDING_CHILDREN === "N")
+cascaded_to_child_metrics.append({
+    "MASTER_GRID_ID": record.get("MASTER_METRIC_ID"),
+    "METRIC_DETAIL_ID": record.get("METRIC_DETAIL_ID"),
+    "METRIC_NAME": record.get("METRIC_NAME"),
+    "METRIC_NAME_CASCADE": record.get("METRIC_NAME_CASCADE"),
+    "THRESHOLD_CASCADE": record.get("THRESHOLD_CASCADE"),
+    "METRIC_APPLICABILITY": record.get("METRIC_APPLICABILITY"),
+    "METRIC_CASCADED_DATE": record.get("CASCADE_DT"),
+    "METRIC_CASCADED_USER_NAME": record.get("ACTION_BY"),
+
+    "IS_ACTIVE": (
+        "Y"
+        if record.get("MCA_IS_ACTIVE") is None
+        else record.get("MCA_IS_ACTIVE")
+    ),
+
+    "HAS_PENDING_CHILDREN": record.get("HAS_PENDING_CHILDREN", "N")
+})
+
+
+MCA.IS_ACTIVE AS MCA_IS_ACTIVE,
