@@ -111,3 +111,102 @@ sql_insertData(
     ]
 )
 
+
+metric_detail_id = vInfo.get("metric_detail_id")
+
+cascade_to_child = vInfo.get(
+    "cascade_to_child",
+    "No"
+)
+
+parent_rmm_id = vInfo.get("rmmid")
+
+meet_instc_id = vInfo.get("instanceid")
+
+raw_locations = vInfo.get(
+    "cascaded_locations",
+    []
+)
+
+# ##############################################################
+# NORMALIZE CASCADED LOCATIONS
+# ##############################################################
+
+selected_rmm_ids = []
+
+if isinstance(raw_locations, str):
+
+    selected_rmm_ids = [
+        int(x.strip())
+        for x in raw_locations.split(",")
+        if x.strip()
+    ]
+
+elif isinstance(raw_locations, list):
+
+    selected_rmm_ids = [
+        int(x)
+        for x in raw_locations
+        if str(x).strip()
+    ]
+
+
+
+# ##############################################################
+# REMOVE WITH CASCADE
+# ##############################################################
+
+if (
+    str(cascade_to_child).strip().lower()
+    == "yes"
+):
+
+    for child_rmm_id in selected_rmm_ids:
+
+        location_type = get_location_type(
+            child_rmm_id
+        )
+
+        sql_insertData(
+            373,
+            "CASCADED_ID",
+            [
+                metric_detail_id,
+                parent_rmm_id,
+                child_rmm_id,
+                location_type,
+                str(myinfo()),
+                "REMOVE"
+            ]
+        )
+
+    return jsonify(
+        "Metric sent to To Be Removed section"
+    )
+
+# ##############################################################
+# NORMAL REMOVE
+# ##############################################################
+
+else:
+
+    rec = sql_insertData(
+        54,
+        "NA",
+        [
+            vDate_obj,
+            metric_detail_id
+        ]
+    )
+
+    if rec != -1:
+
+        sql_insertData(
+            316,
+            "NA",
+            [metric_detail_id]
+        )
+
+    return jsonify("Record Removed")
+
+
