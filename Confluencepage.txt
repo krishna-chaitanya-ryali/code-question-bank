@@ -1,5 +1,20 @@
+HAS_PENDING_CHILDREN
+
 CASE
-    WHEN MCA.IS_ACTIVE IS NULL
-        THEN MCL.IS_ACTIVE
-    ELSE MCA.IS_ACTIVE
-END AS FINAL_IS_ACTIVE,
+    WHEN EXISTS (
+        SELECT 1
+        FROM METRIC_CASCADE_ACTIONS MCA2
+        WHERE MCA2.METRIC_DETAIL_ID = RMDT.METRIC_DETAIL_ID
+          AND MCA2.PARENT_RMM_ID = MCL.PARENT_RMM_ID
+          AND MCA2.IS_ACTIVE = 'Y'
+          AND MCA2.STATUS IN (
+                'Awaiting Acceptance',
+                'In Progress',
+                'Re-Cascaded'
+          )
+    )
+    THEN 'Y'
+    ELSE 'N'
+END AS HAS_PENDING_CHILDREN
+
+if (HAS_PENDING_CHILDREN === "N")
