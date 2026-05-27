@@ -1,10 +1,53 @@
-CASE
-    WHEN EXISTS (
-        SELECT 1
-        FROM METRIC_CASCADE_ACTIONS MCA3
-        WHERE MCA3.TARGET_METRIC_DETAIL_ID = RMDT.METRIC_DETAIL_ID
-          AND MCA3.STATUS = 'Accepted'
-    )
-    THEN 'GLOBAL'
-    ELSE 'LOCAL'
-END AS METRIC_SOURCE_TYPE
+{
+   "action_type": "REMOVE"
+}
+
+
+action_type = vInfo.get(
+    "action_type",
+    "CASCADE"
+)
+
+ACTION_TYPE = 'CASCADE'
+
+INSERT INTO METRIC_CASCADE_ACTIONS (
+    METRIC_DETAIL_ID,
+    PARENT_RMM_ID,
+    CHILD_RMM_ID,
+    ACTION_BY,
+    MEET_INSTC_ID,
+    ACTION_DT_STR,
+    CASCADE_VERSION,
+    STATUS,
+    ACTION_TYPE
+)
+VALUES (
+    :1,
+    :2,
+    :3,
+    :4,
+    :5,
+    :6,
+    :7,
+    :8,
+    :9
+)
+
+
+action_id = sql_insertData(
+    379,
+    "ACTION_ID",
+    [
+        metric_id,
+        parent_rmm_id,
+        child_rmm_id,
+        user_id,
+        meet_instc_id,
+        current_time,
+        cascade_version,
+        new_status,
+        action_type
+    ]
+)
+
+
