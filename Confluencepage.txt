@@ -85,3 +85,20 @@ to_be_removed_qry = sql_getData(
 
 to_be_removed_metrics = []
 
+
+
+{
+    "METRIC_DETAIL_ID": 233164,
+
+    "CASCADE_REMOVE": "Yes",
+
+    "CASCADED_LOCATIONS": "223,381",
+
+    "PARENT_RMM_ID": 217,
+
+    "MEET_INSTC_ID": 13733
+}
+
+
+
+
