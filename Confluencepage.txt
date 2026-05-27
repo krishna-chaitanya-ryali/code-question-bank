@@ -1,233 +1,63 @@
-ALTER TABLE METRIC_CASCADE_LOCATIONS
-ADD ACTION_TYPE VARCHAR2(20);
-
-
-UPDATE METRIC_CASCADE_LOCATIONS
-SET ACTION_TYPE = 'CASCADE'
-WHERE ACTION_TYPE IS NULL;
-
-COMMIT;
-
-373
-
-
-INSERT INTO METRIC_CASCADE_LOCATIONS (
-    CASCADED_ID,
-    METRIC_DETAIL_ID,
-    PARENT_RMM_ID,
-    CHILD_RMM_ID,
-    LOCATION_TYPE,
-    CREAT_DT,
-    CREAT_BY,
-    IS_ACTIVE,
-    CASCADE_VERSION,
-    ACTION_TYPE
-)
-VALUES (
-    METRIC_CASCADE_LOCATIONS_SEQ.NEXTVAL,
-    :1,
-    :2,
-    :3,
-    :4,
-    CURRENT_TIMESTAMP,
-    :5,
-    'Y',
-    1,
-    :6
-)
-
-
-sql_insertData(
-    373,
-    "CASCADED_ID",
-    [
-        metric_detail_id,
-        selectedRmmId,
-        rmm_id,
-        location_type,
-        vUser,
-        "CASCADE"
-    ]
-)
-
-
-sql_insertData(
-    373,
-    "CASCADED_ID",
-    [
-        metric_detail_id,
-        selectedRmmId,
-        rmm_id,
-        location_type,
-        vUser,
-        "REMOVE"
-    ]
-)
-
-
-378
-
-AND MCL.ACTION_TYPE = 'REMOVE'
-
-912
-
-CASCADE
-
-
-to_be_removed_qry = sql_getData(
-    912,
-    [
-        parent_rmm_id,
-        parent_rmm_id,
-        cap_instance_id
-    ]
-)
+cascaded_to_child_metrics = []
 
 to_be_removed_metrics = []
 
+if to_be_removed_qry != -1:
+
+    for record in to_be_removed_qry:
+
+        to_be_removed_metrics.append({
+
+            "MASTER_GRID_ID": record.get(
+                "MASTER_METRIC_ID"
+            ),
+
+            "METRIC_DETAIL_ID": record.get(
+                "METRIC_DETAIL_ID"
+            ),
+
+            "METRIC_NAME": record.get(
+                "METRIC_NAME"
+            ),
+
+            "METRIC_NAME_CASCADE": record.get(
+                "METRIC_NAME_CASCADE"
+            ),
+
+            "THRESHOLD_CASCADE": record.get(
+                "THRESHOLD_CASCADE"
+            ),
+
+            "METRIC_APPLICABILITY": record.get(
+                "METRIC_APPLICABILITY"
+            ),
+
+            "METRIC_CASCADED_DATE": record.get(
+                "CASCADE_DT"
+            ),
+
+            "METRIC_CASCADED_USER_NAME": record.get(
+                "ACTION_BY"
+            ),
+
+            "IS_ACTIVE": (
+                record.get("MCA_IS_ACTIVE")
+                if record.get("MCA_IS_ACTIVE") is not None
+                else record.get("IS_ACTIVE")
+            ),
+
+            "HAS_PENDING_CHILDREN": record.get(
+                "HAS_PENDING_CHILDREN"
+            ),
+
+            "CASCADE_VERSION": record.get(
+                "CASCADE_VERSION"
+            ),
+
+            "CASCADE_STATUS": record.get(
+                "CASCADE_STATUS"
+            )
+        })
 
 
-{
-    "METRIC_DETAIL_ID": 233164,
-
-    "CASCADE_REMOVE": "Yes",
-
-    "CASCADED_LOCATIONS": "223,381",
-
-    "PARENT_RMM_ID": 217,
-
-    "MEET_INSTC_ID": 13733
-}
-
-
-sql_insertData(
-    902,
-    "NA",
-    [
-        "Revised Cascade",
-        str(user_id),
-        metric_id,
-        child_rmm_id
-    ]
-)
-
-
-metric_detail_id = vInfo.get("metric_detail_id")
-
-cascade_to_child = vInfo.get(
-    "cascade_to_child",
-    "No"
-)
-
-parent_rmm_id = vInfo.get("rmmid")
-
-meet_instc_id = vInfo.get("instanceid")
-
-raw_locations = vInfo.get(
-    "cascaded_locations",
-    []
-)
-
-# ##############################################################
-# NORMALIZE CASCADED LOCATIONS
-# ##############################################################
-
-selected_rmm_ids = []
-
-if isinstance(raw_locations, str):
-
-    selected_rmm_ids = [
-        int(x.strip())
-        for x in raw_locations.split(",")
-        if x.strip()
-    ]
-
-elif isinstance(raw_locations, list):
-
-    selected_rmm_ids = [
-        int(x)
-        for x in raw_locations
-        if str(x).strip()
-    ]
-
-
-
-# ##############################################################
-# REMOVE WITH CASCADE
-# ##############################################################
-
-if (
-    str(cascade_to_child).strip().lower()
-    == "yes"
-):
-
-    for child_rmm_id in selected_rmm_ids:
-
-        location_type = get_location_type(
-            child_rmm_id
-        )
-
-        sql_insertData(
-            373,
-            "CASCADED_ID",
-            [
-                metric_detail_id,
-                parent_rmm_id,
-                child_rmm_id,
-                location_type,
-                str(myinfo()),
-                "REMOVE"
-            ]
-        )
-
-    return jsonify(
-        "Metric sent to To Be Removed section"
-    )
-
-# ##############################################################
-# NORMAL REMOVE
-# ##############################################################
-
-else:
-
-    rec = sql_insertData(
-        54,
-        "NA",
-        [
-            vDate_obj,
-            metric_detail_id
-        ]
-    )
-
-    if rec != -1:
-
-        sql_insertData(
-            316,
-            "NA",
-            [metric_detail_id]
-        )
-
-    return jsonify("Record Removed")
-
-
-UPDATE METRIC_CASCADE_LOCATIONS
-SET ACTION_TYPE = 'REMOVE'
-WHERE METRIC_DETAIL_ID = :1
-  AND PARENT_RMM_ID = :2
-  AND CHILD_RMM_ID = :3
-  AND IS_ACTIVE = 'Y'
-
-
-for child_rmm_id in selected_rmm_ids:
-
-    sql_insertData(
-        913,
-        "NA",
-        [
-            metric_detail_id,
-            parent_rmm_id,
-            child_rmm_id
-        ]
-    )
-
-
+"TO_BE_REMOVED": to_be_removed_metrics,
