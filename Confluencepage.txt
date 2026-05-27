@@ -210,3 +210,24 @@ else:
     return jsonify("Record Removed")
 
 
+UPDATE METRIC_CASCADE_LOCATIONS
+SET ACTION_TYPE = 'REMOVE'
+WHERE METRIC_DETAIL_ID = :1
+  AND PARENT_RMM_ID = :2
+  AND CHILD_RMM_ID = :3
+  AND IS_ACTIVE = 'Y'
+
+
+for child_rmm_id in selected_rmm_ids:
+
+    sql_insertData(
+        913,
+        "NA",
+        [
+            metric_detail_id,
+            parent_rmm_id,
+            child_rmm_id
+        ]
+    )
+
+
