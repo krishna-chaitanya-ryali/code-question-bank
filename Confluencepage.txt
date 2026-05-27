@@ -1,28 +1,87 @@
-"IS_ACTIVE": (
-    "Y"
-    if record.get("MCA_IS_ACTIVE") is None
-    else record.get("MCA_IS_ACTIVE")
+ALTER TABLE METRIC_CASCADE_LOCATIONS
+ADD ACTION_TYPE VARCHAR2(20);
+
+
+UPDATE METRIC_CASCADE_LOCATIONS
+SET ACTION_TYPE = 'CASCADE'
+WHERE ACTION_TYPE IS NULL;
+
+COMMIT;
+
+373
+
+
+INSERT INTO METRIC_CASCADE_LOCATIONS (
+    CASCADED_ID,
+    METRIC_DETAIL_ID,
+    PARENT_RMM_ID,
+    CHILD_RMM_ID,
+    LOCATION_TYPE,
+    CREAT_DT,
+    CREAT_BY,
+    IS_ACTIVE,
+    CASCADE_VERSION,
+    ACTION_TYPE
+)
+VALUES (
+    METRIC_CASCADE_LOCATIONS_SEQ.NEXTVAL,
+    :1,
+    :2,
+    :3,
+    :4,
+    CURRENT_TIMESTAMP,
+    :5,
+    'Y',
+    1,
+    :6
 )
 
 
-cascaded_to_child_metrics.append({
-    "MASTER_GRID_ID": record.get("MASTER_METRIC_ID"),
-    "METRIC_DETAIL_ID": record.get("METRIC_DETAIL_ID"),
-    "METRIC_NAME": record.get("METRIC_NAME"),
-    "METRIC_NAME_CASCADE": record.get("METRIC_NAME_CASCADE"),
-    "THRESHOLD_CASCADE": record.get("THRESHOLD_CASCADE"),
-    "METRIC_APPLICABILITY": record.get("METRIC_APPLICABILITY"),
-    "METRIC_CASCADED_DATE": record.get("CASCADE_DT"),
-    "METRIC_CASCADED_USER_NAME": record.get("ACTION_BY"),
-
-    "IS_ACTIVE": (
-        "Y"
-        if record.get("MCA_IS_ACTIVE") is None
-        else record.get("MCA_IS_ACTIVE")
-    ),
-
-    "HAS_PENDING_CHILDREN": record.get("HAS_PENDING_CHILDREN", "N")
-})
+sql_insertData(
+    373,
+    "CASCADED_ID",
+    [
+        metric_detail_id,
+        selectedRmmId,
+        rmm_id,
+        location_type,
+        vUser,
+        "CASCADE"
+    ]
+)
 
 
-MCA.IS_ACTIVE AS MCA_IS_ACTIVE,
+sql_insertData(
+    373,
+    "CASCADED_ID",
+    [
+        metric_detail_id,
+        selectedRmmId,
+        rmm_id,
+        location_type,
+        vUser,
+        "REMOVE"
+    ]
+)
+
+
+378
+
+AND MCL.ACTION_TYPE = 'REMOVE'
+
+912
+
+CASCADE
+
+
+to_be_removed_qry = sql_getData(
+    912,
+    [
+        parent_rmm_id,
+        parent_rmm_id,
+        cap_instance_id
+    ]
+)
+
+to_be_removed_metrics = []
+
