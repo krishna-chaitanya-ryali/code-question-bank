@@ -100,5 +100,14 @@ to_be_removed_metrics = []
 }
 
 
-
+sql_insertData(
+    902,
+    "NA",
+    [
+        "Revised Cascade",
+        str(user_id),
+        metric_id,
+        child_rmm_id
+    ]
+)
 
