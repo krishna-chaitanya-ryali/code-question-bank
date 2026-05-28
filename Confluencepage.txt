@@ -33,4 +33,58 @@ if action == "accept_removal_from_parent":
         ]
     )
 
+ALTER TABLE METRIC_CASCADE_DISPENSATION_DETAILS
+ADD ACTION_TYPE VARCHAR2(50)
+
+
+INSERT INTO METRIC_CASCADE_DISPENSATION_DETAILS
+(
+    DISPENSATION_ID,
+    CASCADED_METRIC_DETAIL_ID,
+    FIELD_KEY,
+    REMARKS,
+    ACTION_TYPE
+)
+VALUES
+(
+    DISPENSATION_ID_SEQ.NEXTVAL,
+    :1,
+    :2,
+    :3,
+    :4
+)
+
+
+elif action == "reject_removal_from_parent_with_rejection_remarks":
+
+    selected_metric_detail_id = vInfo.get(
+        "selected_existing_metric_detail_id"
+    )
+
+    rmm_id = vInfo.get("rmmid")
+
+    remarks = vInfo.get("remarks")
+
+    # STORE REJECTION REMARKS
+    sql_insertData(
+        919,
+        "NA",
+        [
+            selected_metric_detail_id,
+            "REMOVE_REJECTION_REMARKS",
+            remarks,
+            "REMOVE"
+        ]
+    )
+
+    # DEACTIVATE REMOVE ACTION
+    sql_insertData(
+        917,
+        "NA",
+        [
+            selected_metric_detail_id,
+            rmm_id
+        ]
+    )
+
 
