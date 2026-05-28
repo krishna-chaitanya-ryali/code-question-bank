@@ -1,18 +1,26 @@
-get_removed_metric = reqs.args.get(
-    'get_removed_metric'
-)
+JOIN METRIC_CASCADE_LOCATIONS MCL
+    ON MCL.METRIC_DETAIL_ID = RMDT.METRIC_DETAIL_ID
 
-if get_removed_metric == "remove":
 
-    details_list = sql_getData(
-        915,
-        [int(metric_id)]
-    )
+JOIN (
+    SELECT
+        METRIC_DETAIL_ID,
+        PARENT_RMM_ID,
+        ACTION_TYPE,
+        CASCADE_VERSION,
 
-else:
+        MAX(CHILD_RMM_ID) AS CHILD_RMM_ID,
+        MAX(CASCADE_STATUS) AS CASCADE_STATUS,
+        MAX(IS_ACTIVE) AS IS_ACTIVE
 
-    details_list = sql_getData(
-        522,
-        [int(metric_id)]
-    )
+    FROM METRIC_CASCADE_LOCATIONS
 
+    WHERE ACTION_TYPE = 'REMOVE'
+
+    GROUP BY
+        METRIC_DETAIL_ID,
+        PARENT_RMM_ID,
+        ACTION_TYPE,
+        CASCADE_VERSION
+) MCL
+    ON MCL.METRIC_DETAIL_ID = RMDT.METRIC_DETAIL_ID
