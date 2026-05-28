@@ -2,6 +2,8 @@ Hi Nitin,
 
 As discussed yesterday, I understand there may be some backend-related activities requiring support over the weekend. I’m okay to support on Saturday/Sunday if needed, considering the dependency and urgency from the business side.
 
-I had some doctor appointments and personal travel plans lined up for the weekend, but I’ll postpone and plan them next week after the demo/activity is completed.
+You mentioned that you may pick up one functionality related to the cascade metrics log/email-related changes. It would really help if you could take that up if possible. Otherwise, we’ll coordinate accordingly.
 
-Also, I’ve informed the team accordingly so that we can coordinate if weekend support is required.
+From my side, I’m planning to work on the pending fixes/pointers shared by Kasad during testing and related backend activities.
+
+I had some doctor appointments and personal travel plans for the weekend, but I’ll postpone and plan them next week after the demo/activity is completed. Also, I’ve informed the team accordingly so that we can coordinate if weekend support is required.
