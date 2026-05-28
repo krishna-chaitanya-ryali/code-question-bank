@@ -1,53 +1,22 @@
-{
-   "action_type": "REMOVE"
-}
+CASE
+    WHEN MCL.PARENT_RMM_ID = :2
+    THEN 'CURRENT_LOCATION'
+
+    WHEN MCL.CHILD_RMM_ID = :2
+    THEN 'PARENT_LOCATION'
+
+    ELSE NULL
+END AS REMOVE_SOURCE_TYPE
 
 
-action_type = vInfo.get(
-    "action_type",
-    "CASCADE"
-)
+"REMOVE_SOURCE_TYPE": record.get(
+    "REMOVE_SOURCE_TYPE"
+),
 
-ACTION_TYPE = 'CASCADE'
-
-INSERT INTO METRIC_CASCADE_ACTIONS (
-    METRIC_DETAIL_ID,
-    PARENT_RMM_ID,
-    CHILD_RMM_ID,
-    ACTION_BY,
-    MEET_INSTC_ID,
-    ACTION_DT_STR,
-    CASCADE_VERSION,
-    STATUS,
-    ACTION_TYPE
-)
-VALUES (
-    :1,
-    :2,
-    :3,
-    :4,
-    :5,
-    :6,
-    :7,
-    :8,
-    :9
-)
-
-
-action_id = sql_insertData(
-    379,
-    "ACTION_ID",
-    [
-        metric_id,
-        parent_rmm_id,
-        child_rmm_id,
-        user_id,
-        meet_instc_id,
-        current_time,
-        cascade_version,
-        new_status,
-        action_type
-    ]
-)
-
-
+WHERE (
+        MCL.PARENT_RMM_ID = :2
+        OR
+        MCL.CHILD_RMM_ID = :2
+      )
+  AND MI.MEET_INSTC_ID = :3
+  AND RMDT.METRIC_FLAG = 'removed'
