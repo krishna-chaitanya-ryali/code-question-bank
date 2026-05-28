@@ -19,4 +19,9 @@ WHERE (
         MCL.CHILD_RMM_ID = :2
       )
   AND MI.MEET_INSTC_ID = :3
-  AND RMDT.METRIC_FLAG = 'removed'
+  AND RMDT.METRIC_FLAG = 'remove
+
+
+"REMOVE_SOURCE_TYPE": record.get(
+    "REMOVE_SOURCE_TYPE"
+),
