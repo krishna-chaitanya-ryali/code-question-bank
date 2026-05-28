@@ -1,5 +1,40 @@
-"IS_ACTIVE": (
-    record.get("MCA_IS_ACTIVE")
-    if record.get("MCA_IS_ACTIVE") is not None
-    else record.get("IS_ACTIVE")
-),
+sql_insertData(
+    902,
+    "NA",
+    [
+        new_status,
+        str(user_id),
+        metric_id,
+        child_rmm_id
+    ]
+)
+
+
+if action_id != -1:
+
+    ############################################################
+    # DEACTIVATE PENDING QUEUE ENTRY
+    ############################################################
+
+    sql_insertData(
+        902,
+        "NA",
+        [
+            new_status,
+            str(user_id),
+            metric_id,
+            child_rmm_id
+        ]
+    )
+
+    cascaded.append(child_rmm_id)
+
+else:
+
+    not_cascaded.append(child_rmm_id)
+
+
+
+"IS_READY_FOR_CASCADE":
+    record.get("MCL_IS_ACTIVE"),
+
