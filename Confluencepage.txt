@@ -1,9 +1,36 @@
-Hi Nitin,
+UPDATE METRIC_CASCADE_ACTIONS
+SET
+    IS_ACTIVE = 'N',
+    LAST_UPDATED_DT = CURRENT_TIMESTAMP
+WHERE METRIC_DETAIL_ID = :1
+  AND CHILD_RMM_ID = :2
+  AND ACTION_TYPE = 'REMOVE'
+  AND IS_ACTIVE = 'Y'
 
-As discussed yesterday, I understand there may be some backend-related activities requiring support over the weekend. I’m okay to support on Saturday/Sunday if needed, considering the dependency and urgency from the business side.
 
-You mentioned that you may pick up one functionality related to the cascade metrics log/email-related changes. It would really help if you could take that up if possible. Otherwise, we’ll coordinate accordingly.
+if action == "accept_removal_from_parent":
 
-From my side, I’m planning to work on the pending fixes/pointers shared by Kasad during testing and related backend activities.
+    selected_metric_detail_id = vInfo.get("selected_existing_metric_detail_id")
+    rmm_id = vInfo.get("rmmid")
 
-I had some doctor appointments and personal travel plans for the weekend, but I’ll postpone and plan them next week after the demo/activity is completed. Also, I’ve informed the team accordingly so that we can coordinate if weekend support is required.
+    # REMOVE METRIC FROM DASHBOARD
+    sql_insertData(
+        54,
+        "NA",
+        [
+            current_time,
+            selected_metric_detail_id
+        ]
+    )
+
+    # DEACTIVATE REMOVE ACTION
+    sql_insertData(
+        917,
+        "NA",
+        [
+            selected_metric_detail_id,
+            rmm_id
+        ]
+    )
+
+
