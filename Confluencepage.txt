@@ -1,90 +1,125 @@
-UPDATE METRIC_CASCADE_ACTIONS
-SET
-    IS_ACTIVE = 'N',
-    LAST_UPDATED_DT = CURRENT_TIMESTAMP
-WHERE METRIC_DETAIL_ID = :1
-  AND CHILD_RMM_ID = :2
-  AND ACTION_TYPE = 'REMOVE'
-  AND IS_ACTIVE = 'Y'
+def handle_removed_metric_cascade_review(vInfo):
 
+    try:
 
-if action == "accept_removal_from_parent":
+        vDate = datetime.datetime.now().strftime('%d-%m-%Y %H:%M:%S')
+        vDate_obj = datetime.datetime.strptime(
+            vDate,
+            '%d-%m-%Y %H:%M:%S'
+        )
 
-    selected_metric_detail_id = vInfo.get("selected_existing_metric_detail_id")
-    rmm_id = vInfo.get("rmmid")
+        action = vInfo.get("action")
 
-    # REMOVE METRIC FROM DASHBOARD
-    sql_insertData(
-        54,
-        "NA",
-        [
-            current_time,
-            selected_metric_detail_id
-        ]
-    )
+        ####################################################################
+        # ACCEPT REMOVE FROM PARENT
+        ####################################################################
 
-    # DEACTIVATE REMOVE ACTION
-    sql_insertData(
-        917,
-        "NA",
-        [
-            selected_metric_detail_id,
-            rmm_id
-        ]
-    )
+        if action == "accept_removal_from_parent":
 
-ALTER TABLE METRIC_CASCADE_DISPENSATION_DETAILS
-ADD ACTION_TYPE VARCHAR2(50)
+            cascaded_metric_detail_id = vInfo.get(
+                "parent_metric_detail_id"
+            )
 
+            selected_metric_detail_id = vInfo.get(
+                "selected_existing_metric_detail_id"
+            )
 
-INSERT INTO METRIC_CASCADE_DISPENSATION_DETAILS
-(
-    DISPENSATION_ID,
-    CASCADED_METRIC_DETAIL_ID,
-    FIELD_KEY,
-    REMARKS,
-    ACTION_TYPE
-)
-VALUES
-(
-    DISPENSATION_ID_SEQ.NEXTVAL,
-    :1,
-    :2,
-    :3,
-    :4
-)
+            rmm_id = vInfo.get("rmmid")
 
+            ############################################################
+            # REMOVE METRIC FROM DASHBOARD
+            ############################################################
 
-elif action == "reject_removal_from_parent_with_rejection_remarks":
+            sql_insertData(
+                54,
+                "NA",
+                [
+                    vDate_obj,
+                    selected_metric_detail_id
+                ]
+            )
 
-    selected_metric_detail_id = vInfo.get(
-        "selected_existing_metric_detail_id"
-    )
+            ############################################################
+            # DEACTIVATE REMOVE ACTION
+            ############################################################
 
-    rmm_id = vInfo.get("rmmid")
+            sql_insertData(
+                917,
+                "NA",
+                [
+                    cascaded_metric_detail_id,
+                    rmm_id
+                ]
+            )
 
-    remarks = vInfo.get("remarks")
+            return jsonify({
+                "status": "Success",
+                "message": "Metric removed successfully"
+            })
 
-    # STORE REJECTION REMARKS
-    sql_insertData(
-        919,
-        "NA",
-        [
-            selected_metric_detail_id,
-            "REMOVE_REJECTION_REMARKS",
-            remarks,
-            "REMOVE"
-        ]
-    )
+        ####################################################################
+        # REJECT REMOVE FROM PARENT
+        ####################################################################
 
-    # DEACTIVATE REMOVE ACTION
-    sql_insertData(
-        917,
-        "NA",
-        [
-            selected_metric_detail_id,
-            rmm_id
-        ]
-    )
+        elif action == "reject_removal_from_parent_with_rejection_remarks":
 
+            cascaded_metric_detail_id = vInfo.get(
+                "parent_metric_detail_id"
+            )
 
+            rmm_id = vInfo.get("rmmid")
+
+            remarks = vInfo.get("remarks")
+
+            ############################################################
+            # STORE REJECTION REMARKS
+            ############################################################
+
+            sql_insertData(
+                918,
+                "DISPENSATION_ID",
+                [
+                    cascaded_metric_detail_id,
+                    remarks,
+                    "REMOVE"
+                ]
+            )
+
+            ############################################################
+            # DEACTIVATE REMOVE ACTION
+            ############################################################
+
+            sql_insertData(
+                917,
+                "NA",
+                [
+                    cascaded_metric_detail_id,
+                    rmm_id
+                ]
+            )
+
+            return jsonify({
+                "status": "Success",
+                "message": "Removal rejected successfully"
+            })
+
+        ####################################################################
+        # INVALID ACTION
+        ####################################################################
+
+        return jsonify({
+            "status": "Error",
+            "message": "Invalid action"
+        })
+
+    except Exception as e:
+
+        log_error.error(
+            'Error | mod_views | handle_removed_metric_cascade_review | '
+            + str(e)
+        )
+
+        return jsonify({
+            "status": "Error",
+            "message": str(e)
+        })
