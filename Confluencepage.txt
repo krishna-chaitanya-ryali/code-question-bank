@@ -1,35 +1,168 @@
-921
-
-UPDATE METRIC_CASCADE_LOCATIONS
-SET
-    IS_ACTIVE = 'N',
-    UPDT_BY = 'SYSTEM',
-    UPDT_DT = CURRENT_TIMESTAMP
+SELECT TARGET_METRIC_DETAIL_ID
+FROM METRIC_CASCADE_ACTIONS
 WHERE
-    PARENT_RMM_ID = :1
-    AND METRIC_DETAIL_ID = :2
+    METRIC_DETAIL_ID = :1
+    AND CHILD_RMM_ID = :2
+    AND STATUS = 'Accepted'
     AND IS_ACTIVE = 'Y'
+FETCH FIRST 1 ROW ONLY
 
 
-elif old_status in [
-    "Accepted",
-    "Rejected"
-]:
+accepted_metric = sql_getData(
+    922,
+    [
+        metric_id,
+        child_rmm_id
+    ]
+)
 
-    # ##########################################################
-    # DEACTIVATE EXISTING DOWNSTREAM ACTIVE CHILD CASCADES
-    # ##########################################################
+if accepted_metric:
     
-    if old_status == "Accepted":
-        sql_insertData(
-            921,
-            "NA",
-            [
-                child_rmm_id,
-                metric_id
-            ]
+    accepted_metric_id = accepted_metric[0].get(
+        "TARGET_METRIC_DETAIL_ID"
+    )
+    
+    sql_insertData(
+        921,
+        "NA",
+        [
+            child_rmm_id,
+            accepted_metric_id
+        ]
+    )
+
+
+
+
+SELECT
+    RMDT.MASTER_METRIC_ID,
+    RMDT.METRIC_DETAIL_ID,
+
+    CASE
+        WHEN RMDT.METRICS_DISPLAY IS NULL
+            THEN RMPM.METRICS_DISP
+        ELSE RMDT.METRICS_DISPLAY
+    END AS METRIC_NAME,
+
+    RMDT.METRIC_NAME_CASCADE,
+    RMDT.THRESHOLD_CASCADE,
+    RMDT.METRIC_APPLICABILITY,
+
+    -- PARENT / CHILD INFO
+    MCL.PARENT_RMM_ID,
+    MCL.CHILD_RMM_ID,
+
+    -- CASCADE INFO
+    MCA.CASCADE_DT_STR AS CASCADE_DT,
+
+    COALESCE(
+        UT.USER_NAME,
+        (
+            SELECT UT2.USER_NAME
+            FROM USER_TAB UT2
+            WHERE UT2.PSID = MCA.ACTION_BY
+            FETCH FIRST 1 ROW ONLY
         )
+    ) AS ACTION_BY,
 
-    new_status = "Awaiting Acceptance"
+    -- VERSIONING FIELDS
+    MCL.CASCADE_VERSION,
+    MCL.CASCADE_STATUS,
+    MCL.IS_ACTIVE,
+    MCA.IS_ACTIVE AS MCA_IS_ACTIVE,
 
+    CASE
+        WHEN EXISTS (
+            SELECT 1
+            FROM METRIC_CASCADE_ACTIONS MCA2
+            WHERE MCA2.METRIC_DETAIL_ID = RMDT.METRIC_DETAIL_ID
+              AND MCA2.PARENT_RMM_ID = MCL.PARENT_RMM_ID
+              AND MCA2.IS_ACTIVE = 'Y'
+              AND MCA2.STATUS IN (
+                    'Awaiting Acceptance',
+                    'In Progress'
+              )
+        )
+        THEN 'Y'
+        ELSE 'N'
+    END AS HAS_PENDING_CHILDREN
 
+FROM MEET_INSTC MI
+
+JOIN RAP
+    ON MI.MEET_INSTC_ID = RAP.RAP_INSTANCE_ID
+
+JOIN RAP_METRICS_DETAILS RMDT
+    ON RAP.RAP_ID = RMDT.RAP_ID
+
+JOIN RAP_METRICS_PACK_MAPPING RMPM
+    ON RMDT.RAP_METRICS_MAPPING_ID = RMPM.RAP_METRICS_MAPPING_ID
+
+-- CASCADE LOCATION TABLE
+JOIN (
+    SELECT
+        METRIC_DETAIL_ID,
+        PARENT_RMM_ID,
+        CHILD_RMM_ID,
+        CASCADE_VERSION,
+
+        MAX(CASCADE_STATUS) AS CASCADE_STATUS,
+
+        MIN(IS_ACTIVE) AS IS_ACTIVE
+
+    FROM METRIC_CASCADE_LOCATIONS
+
+    GROUP BY
+        METRIC_DETAIL_ID,
+        PARENT_RMM_ID,
+        CHILD_RMM_ID,
+        CASCADE_VERSION
+
+) MCL
+    ON MCL.METRIC_DETAIL_ID = RMDT.METRIC_DETAIL_ID
+   AND MCL.PARENT_RMM_ID = 217
+
+-- LATEST CASCADE ACTION
+LEFT JOIN (
+    SELECT
+        METRIC_DETAIL_ID,
+        CHILD_RMM_ID,
+        CASCADE_VERSION,
+
+        MAX(ACTION_DT) AS CASCADE_DT,
+
+        MAX(ACTION_BY) KEEP (
+            DENSE_RANK LAST
+            ORDER BY ACTION_DT
+        ) AS ACTION_BY,
+
+        MAX(CASCADE_DT_STR) KEEP (
+            DENSE_RANK LAST
+            ORDER BY ACTION_DT
+        ) AS CASCADE_DT_STR,
+
+        MAX(IS_ACTIVE) KEEP (
+            DENSE_RANK LAST
+            ORDER BY ACTION_DT
+        ) AS IS_ACTIVE
+
+    FROM METRIC_CASCADE_ACTIONS
+
+    WHERE ACTION_TYPE = 'CASCADE'
+
+    GROUP BY
+        METRIC_DETAIL_ID,
+        CHILD_RMM_ID,
+        CASCADE_VERSION
+
+) MCA
+    ON MCA.METRIC_DETAIL_ID = MCL.METRIC_DETAIL_ID
+   AND MCA.CHILD_RMM_ID = MCL.CHILD_RMM_ID
+   AND MCA.CASCADE_VERSION = MCL.CASCADE_VERSION
+
+LEFT JOIN USER_TAB UT
+    ON UT.EMP_ID = MCA.ACTION_BY
+
+WHERE MI.RMM_ID = 217
+  AND MI.MEET_INSTC_ID = 13672
+  AND RMDT.METRIC_FLAG <> 'removed'
