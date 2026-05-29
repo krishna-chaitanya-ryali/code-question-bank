@@ -1,3 +1,17 @@
+919
+UPDATE METRIC_CASCADE_LOCATIONS
+SET
+    IS_ACTIVE = 'N',
+    UPDT_BY = 'SYSTEM',
+    UPDT_DT = CURRENT_TIMESTAMP
+WHERE
+    PARENT_RMM_ID = :1
+    AND METRIC_DETAIL_ID = :2
+    AND IS_ACTIVE = 'Y'
+    AND CASCADE_STATUS = 'Accepted'
+
+921
+
 SELECT TARGET_METRIC_DETAIL_ID
 FROM METRIC_CASCADE_ACTIONS
 WHERE
@@ -8,103 +22,39 @@ WHERE
 FETCH FIRST 1 ROW ONLY
 
 
-accepted_metric = sql_getData(
-    922,
-    [
-        metric_id,
-        child_rmm_id
-    ]
-)
 
-if accepted_metric:
-    
-    accepted_metric_id = accepted_metric[0].get(
-        "TARGET_METRIC_DETAIL_ID"
-    )
-    
-    sql_insertData(
-        921,
-        "NA",
-        [
-            child_rmm_id,
-            accepted_metric_id
-        ]
-    )
+elif old_status in [
+    "Accepted",
+    "Rejected"
+]:
 
+    # ######################################################################
+    # DEACTIVATE EXISTING DOWNSTREAM ACTIVE CHILD CASCADES
+    # ######################################################################
 
+    if old_status == "Accepted":
 
-
-old_version = int(current_active[0].get("CASCADE_VERSION", 1))
-
-cascade_version = old_version + 1
-
-version_data = sql_getData(
-    923,
-    [
-        metric_id,
-        child_rmm_id
-    ]
-)
-
-cascade_version = (
-    int(version_data[0].get("CASCADE_VERSION", 0)) + 1
-)
-
-
-
-SELECT
-    NVL(MAX(CASCADE_VERSION), 0) AS CASCADE_VERSION
-FROM METRIC_CASCADE_ACTIONS
-WHERE
-    METRIC_DETAIL_ID = :1
-    AND CHILD_RMM_ID = :2
-
-
-# ##########################################################################
-# GET CURRENT ACTIVE CASCADE
-# ##########################################################################
-
-current_active = sql_getData(
-    906,
-    [
-        metric_id,
-        child_rmm_id
-    ]
-)
-
-# ##########################################################################
-# GET NEXT CASCADE VERSION
-# ##########################################################################
-
-version_data = sql_getData(
-    923,
-    [
-        metric_id,
-        child_rmm_id
-    ]
-)
-
-cascade_version = (
-    int(
-        version_data[0].get(
-            "CASCADE_VERSION",
-            0
+        accepted_metric = sql_getData(
+            921,
+            [
+                metric_id,
+                child_rmm_id
+            ]
         )
-    ) + 1
-)
 
-new_status = "Awaiting Acceptance"
+        if accepted_metric:
 
-# ##########################################################################
-# RECASCADE SCENARIO
-# ##########################################################################
+            accepted_metric_id = accepted_metric[0].get(
+                "TARGET_METRIC_DETAIL_ID"
+            )
 
-if current_active:
+            sql_insertData(
+                919,
+                "NA",
+                [
+                    child_rmm_id,
+                    accepted_metric_id
+                ]
+            )
 
-    old_action_id = current_active[0].get(
-        "ACTION_ID"
-    )
-
-    old_status = current_active[0].get(
-        "STATUS"
-    )
+    new_status = "Awaiting Acceptance"
