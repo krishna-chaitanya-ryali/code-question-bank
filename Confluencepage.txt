@@ -49,3 +49,12 @@ version_data = sql_getData(
 cascade_version = (
     int(version_data[0].get("CASCADE_VERSION", 0)) + 1
 )
+
+
+
+SELECT
+    NVL(MAX(CASCADE_VERSION), 0) AS CASCADE_VERSION
+FROM METRIC_CASCADE_ACTIONS
+WHERE
+    METRIC_DETAIL_ID = :1
+    AND CHILD_RMM_ID = :2
