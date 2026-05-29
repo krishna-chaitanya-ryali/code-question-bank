@@ -1,11 +1,35 @@
-CASE
+921
 
-    WHEN MCL.PARENT_RMM_ID = :1
-    THEN MCL.IS_ACTIVE
+UPDATE METRIC_CASCADE_LOCATIONS
+SET
+    IS_ACTIVE = 'N',
+    UPDT_BY = 'SYSTEM',
+    UPDT_DT = CURRENT_TIMESTAMP
+WHERE
+    PARENT_RMM_ID = :1
+    AND METRIC_DETAIL_ID = :2
+    AND IS_ACTIVE = 'Y'
 
-    WHEN MCL.CHILD_RMM_ID = :2
-    THEN MCA.IS_ACTIVE
 
-    ELSE 'Y'
+elif old_status in [
+    "Accepted",
+    "Rejected"
+]:
 
-END AS CASCADE_LIFECYCLE_STATUS
+    # ##########################################################
+    # DEACTIVATE EXISTING DOWNSTREAM ACTIVE CHILD CASCADES
+    # ##########################################################
+    
+    if old_status == "Accepted":
+        sql_insertData(
+            921,
+            "NA",
+            [
+                child_rmm_id,
+                metric_id
+            ]
+        )
+
+    new_status = "Awaiting Acceptance"
+
+
