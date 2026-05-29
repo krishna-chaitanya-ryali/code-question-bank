@@ -1,60 +1,17 @@
-919
-UPDATE METRIC_CASCADE_LOCATIONS
-SET
-    IS_ACTIVE = 'N',
-    UPDT_BY = 'SYSTEM',
-    UPDT_DT = CURRENT_TIMESTAMP
-WHERE
-    PARENT_RMM_ID = :1
-    AND METRIC_DETAIL_ID = :2
-    AND IS_ACTIVE = 'Y'
-    AND CASCADE_STATUS = 'Accepted'
-
 921
 
-SELECT TARGET_METRIC_DETAIL_ID
-FROM METRIC_CASCADE_ACTIONS
-WHERE
-    METRIC_DETAIL_ID = :1
-    AND CHILD_RMM_ID = :2
-    AND STATUS = 'Accepted'
-    AND IS_ACTIVE = 'Y'
-FETCH FIRST 1 ROW ONLY
-
-
-
-elif old_status in [
-    "Accepted",
-    "Rejected"
-]:
-
-    # ######################################################################
-    # DEACTIVATE EXISTING DOWNSTREAM ACTIVE CHILD CASCADES
-    # ######################################################################
-
-    if old_status == "Accepted":
-
-        accepted_metric = sql_getData(
-            921,
-            [
-                metric_id,
-                child_rmm_id
-            ]
-        )
-
-        if accepted_metric:
-
-            accepted_metric_id = accepted_metric[0].get(
-                "TARGET_METRIC_DETAIL_ID"
-            )
-
-            sql_insertData(
-                919,
-                "NA",
-                [
-                    child_rmm_id,
-                    accepted_metric_id
-                ]
-            )
-
-    new_status = "Awaiting Acceptance"
+SELECT
+    TARGET_METRIC_DETAIL_ID
+FROM (
+    SELECT
+        TARGET_METRIC_DETAIL_ID
+    FROM METRIC_CASCADE_ACTIONS
+    WHERE
+        METRIC_DETAIL_ID = :1
+        AND CHILD_RMM_ID = :2
+        AND STATUS = 'Accepted'
+    ORDER BY
+        CASCADE_VERSION DESC,
+        ACTION_ID DESC
+)
+WHERE ROWNUM = 1
