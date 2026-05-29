@@ -58,3 +58,53 @@ FROM METRIC_CASCADE_ACTIONS
 WHERE
     METRIC_DETAIL_ID = :1
     AND CHILD_RMM_ID = :2
+
+
+# ##########################################################################
+# GET CURRENT ACTIVE CASCADE
+# ##########################################################################
+
+current_active = sql_getData(
+    906,
+    [
+        metric_id,
+        child_rmm_id
+    ]
+)
+
+# ##########################################################################
+# GET NEXT CASCADE VERSION
+# ##########################################################################
+
+version_data = sql_getData(
+    923,
+    [
+        metric_id,
+        child_rmm_id
+    ]
+)
+
+cascade_version = (
+    int(
+        version_data[0].get(
+            "CASCADE_VERSION",
+            0
+        )
+    ) + 1
+)
+
+new_status = "Awaiting Acceptance"
+
+# ##########################################################################
+# RECASCADE SCENARIO
+# ##########################################################################
+
+if current_active:
+
+    old_action_id = current_active[0].get(
+        "ACTION_ID"
+    )
+
+    old_status = current_active[0].get(
+        "STATUS"
+    )
