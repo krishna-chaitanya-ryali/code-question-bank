@@ -1,61 +1,25 @@
-accepted_metric = sql_getData(
-    921,
-    [
-        metric_id,
-        child_rmm_id
-    ]
-)
-
-if accepted_metric:
-
-    accepted_metric_id = accepted_metric[0].get(
-        "TARGET_METRIC_DETAIL_ID"
+COALESCE(
+    UT.USER_NAME,
+    (
+        SELECT UT2.USER_NAME
+        FROM USER_TAB UT2
+        WHERE UT2.PSID = MCA.ACTION_BY
+        FETCH FIRST 1 ROW ONLY
     )
+) AS ACTION_BY
 
-    # ############################################################
-    # GET ALL DOWNSTREAM ACTIVE CHILD CASCADES
-    # ############################################################
 
-    downstream_children = sql_getData(
-        925,
-        [
-            accepted_metric_id
-        ]
+CASE
+    WHEN MCA.ACTION_BY = 'SYSTEM'
+    THEN 'SYSTEM'
+
+    ELSE COALESCE(
+        UT.USER_NAME,
+        (
+            SELECT UT2.USER_NAME
+            FROM USER_TAB UT2
+            WHERE UT2.PSID = MCA.ACTION_BY
+            FETCH FIRST 1 ROW ONLY
+        )
     )
-
-    for downstream in downstream_children:
-
-        downstream_child_rmm = downstream.get(
-            "CHILD_RMM_ID"
-        )
-
-        # ########################################################
-        # DEACTIVATE DOWNSTREAM ACTIVE ROWS
-        # ########################################################
-
-        sql_insertData(
-            919,
-            "NA",
-            [
-                accepted_metric_id,
-                downstream_child_rmm
-            ]
-        )
-
-        # ########################################################
-        # INSERT SYSTEM LIFECYCLE ROW
-        # ########################################################
-
-        sql_insertData(
-            922,
-            "NA",
-            [
-                accepted_metric_id,
-                child_rmm_id,
-                downstream_child_rmm,
-                current_time,
-                cascade_version
-            ]
-        )
-
-new_status = "Awaiting Acceptance"
+END AS ACTION_BY
