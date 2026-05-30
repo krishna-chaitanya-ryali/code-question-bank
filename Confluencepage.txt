@@ -6,6 +6,7 @@ SELECT
     MCA.CASCADE_VERSION,
     MCA.ACTION_BY,
     MCA.CHILD_RMM_ID,
+    MCA.PARENT_RMM_ID,
     MCA.ACTION_DT_STR,
 
     -- METRIC TITLE
@@ -19,16 +20,30 @@ SELECT
     RMDT.MASTER_METRIC_ID,
 
     -- METRIC CATEGORY
-    RMDT.METRIC_CATEGORY,
-
-    -- RMM NAME
-    RRG.RMM_DISPLAY_NAME,
+    RMDT.RAP_METRIC_CATEGORY,
 
     -- RISK TYPE
     RRT.RISK_TYPE_DISP,
 
-    -- USER NAME
+    -- CASCADE LOCATION
     CASE
+
+        -- CURRENT SCREEN IS PARENT
+        WHEN MCA.PARENT_RMM_ID = :3
+        THEN CHILD_RRG.RMM_DISPLAY_NAME
+
+        -- CURRENT SCREEN IS CHILD
+        WHEN MCA.CHILD_RMM_ID = :4
+        THEN PARENT_RRG.RMM_DISPLAY_NAME
+
+        -- FALLBACK
+        ELSE CHILD_RRG.RMM_DISPLAY_NAME
+
+    END AS CASCADE_LOCATION,
+
+    -- ACTIONED BY
+    CASE
+
         WHEN MCA.ACTION_BY = 'SYSTEM'
         THEN 'SYSTEM'
 
@@ -46,22 +61,24 @@ SELECT
                 FETCH FIRST 1 ROW ONLY
             )
         )
+
     END AS ACTIONED_BY,
 
     -- DISPENSATION
     CASE
-        WHEN MCDD.DISPENSATION_ID IS NOT NULL
+        WHEN MCDD.CASCADE_METRIC_DETAIL_ID IS NOT NULL
         THEN 'Y'
         ELSE 'N'
     END AS DISPENSATION,
 
-    -- REMARKS
+    -- REMARKS AVAILABLE
     CASE
         WHEN MCDD.REMARKS IS NOT NULL
         THEN 'Y'
         ELSE 'N'
     END AS HAS_REMARKS,
 
+    -- REMARKS
     MCDD.REMARKS
 
 FROM METRIC_CASCADE_ACTIONS MCA
@@ -78,15 +95,20 @@ LEFT JOIN RAP RP
 LEFT JOIN RAP_RISK_TYPE RRT
     ON RRT.RISK_TYPE_ID = RP.RISK_TYPE_ID
 
-LEFT JOIN RAP_RMM_GROUP RRG
-    ON RRG.RMM_ID = MCA.CHILD_RMM_ID
+-- CHILD LOCATION
+LEFT JOIN RAP_RMM_GROUP CHILD_RRG
+    ON CHILD_RRG.RMM_ID = MCA.CHILD_RMM_ID
+
+-- PARENT LOCATION
+LEFT JOIN RAP_RMM_GROUP PARENT_RRG
+    ON PARENT_RRG.RMM_ID = MCA.PARENT_RMM_ID
 
 LEFT JOIN USER_TAB UT
     ON UT.EMP_ID = MCA.ACTION_BY
 
 LEFT JOIN METRIC_CASCADE_DISPENSATION_DETAILS MCDD
-    ON MCDD.METRIC_DETAIL_ID = MCA.METRIC_DETAIL_ID
-    AND MCDD.CHILD_RMM_ID = MCA.CHILD_RMM_ID
+    ON MCDD.CASCADE_METRIC_DETAIL_ID = MCA.METRIC_DETAIL_ID
+    AND MCDD.RMM_ID = MCA.CHILD_RMM_ID
 
 WHERE
 (
@@ -96,141 +118,5 @@ WHERE
 
 AND MCA.ACTION_TYPE = 'CASCADE'
 
-ORDER BY MCA.ACTION_ID DESC
-
-
-
-def get_metric_cascade_log(vInfo):
-
-    try:
-
-        # ############################################################
-        # GET REQUEST DATA
-        # ############################################################
-
-        metric_detail_id = vInfo.get(
-            "metric_detail_id"
-        )
-
-        if not metric_detail_id:
-
-            return jsonify({
-                "status": "error",
-                "message": "metric_detail_id is required"
-            })
-
-        # ############################################################
-        # GET CASCADE LOG DATA
-        # ############################################################
-
-        result = sql_getData(
-            924,
-            [
-                metric_detail_id,
-                metric_detail_id
-            ]
-        )
-
-        # ############################################################
-        # EMPTY RESPONSE
-        # ############################################################
-
-        if not result:
-
-            return jsonify({
-                "status": "success",
-                "data": []
-            })
-
-        # ############################################################
-        # FORMAT RESPONSE
-        # ############################################################
-
-        response_data = []
-
-        for row in result:
-
-            response_data.append({
-
-                "action_id": row.get(
-                    "ACTION_ID"
-                ),
-
-                "metric_detail_id": row.get(
-                    "METRIC_DETAIL_ID"
-                ),
-
-                "target_metric_detail_id": row.get(
-                    "TARGET_METRIC_DETAIL_ID"
-                ),
-
-                "metric_id": row.get(
-                    "MASTER_METRIC_ID"
-                ),
-
-                "metric_title": row.get(
-                    "METRIC_TITLE"
-                ),
-
-                "metric_category": row.get(
-                    "METRIC_CATEGORY"
-                ),
-
-                "risk_type": row.get(
-                    "RISK_TYPE_DISP"
-                ),
-
-                "cascade_location": row.get(
-                    "RMM_DISPLAY_NAME"
-                ),
-
-                "cascade_status": row.get(
-                    "STATUS"
-                ),
-
-                "cascade_version": row.get(
-                    "CASCADE_VERSION"
-                ),
-
-                "dispensation": row.get(
-                    "DISPENSATION"
-                ),
-
-                "actioned_by": row.get(
-                    "ACTIONED_BY"
-                ),
-
-                "actioned_date": row.get(
-                    "ACTION_DT_STR"
-                ),
-
-                "has_remarks": row.get(
-                    "HAS_REMARKS"
-                ),
-
-                "remarks": row.get(
-                    "REMARKS"
-                )
-
-            })
-
-        # ############################################################
-        # FINAL RESPONSE
-        # ############################################################
-
-        return jsonify({
-            "status": "success",
-            "data": response_data
-        })
-
-    except Exception as e:
-
-        log_error.error(
-            f"Error in get_metric_cascade_log: {str(e)}"
-        )
-
-        return jsonify({
-            "status": "error",
-            "message": "Failed to fetch cascade log"
-        })
-
+ORDER BY
+    MCA.ACTION_ID DESC
