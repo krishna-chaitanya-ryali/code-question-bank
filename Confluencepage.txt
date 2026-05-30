@@ -1,11 +1,3 @@
-SELECT
-    CHILD_RMM_ID
-FROM METRIC_CASCADE_LOCATIONS
-WHERE
-    METRIC_DETAIL_ID = :1
-    AND IS_ACTIVE = 'Y'
-
-
 accepted_metric = sql_getData(
     921,
     [
