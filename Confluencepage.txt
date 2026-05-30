@@ -1,5 +1,103 @@
-if defno == 11:
-    return get_metric_cascade_log(defdata)
+SELECT
+    MCA.ACTION_ID,
+    MCA.METRIC_DETAIL_ID,
+    MCA.TARGET_METRIC_DETAIL_ID,
+    MCA.STATUS,
+    MCA.CASCADE_VERSION,
+    MCA.ACTION_BY,
+    MCA.CHILD_RMM_ID,
+    MCA.ACTION_DT_STR,
+
+    -- METRIC TITLE
+    CASE
+        WHEN RMDT.METRICS_DISPLAY IS NULL
+        THEN RMPM.METRICS_DISP
+        ELSE RMDT.METRICS_DISPLAY
+    END AS METRIC_TITLE,
+
+    -- MASTER METRIC ID
+    RMDT.MASTER_METRIC_ID,
+
+    -- METRIC CATEGORY
+    RMDT.METRIC_CATEGORY,
+
+    -- RMM NAME
+    RRG.RMM_DISPLAY_NAME,
+
+    -- RISK TYPE
+    RRT.RISK_TYPE_DISP,
+
+    -- USER NAME
+    CASE
+        WHEN MCA.ACTION_BY = 'SYSTEM'
+        THEN 'SYSTEM'
+
+        WHEN MCA.STATUS IN (
+            'Awaiting Acceptance'
+        )
+        THEN NULL
+
+        ELSE COALESCE(
+            UT.USER_NAME,
+            (
+                SELECT UT2.USER_NAME
+                FROM USER_TAB UT2
+                WHERE UT2.PSID = MCA.ACTION_BY
+                FETCH FIRST 1 ROW ONLY
+            )
+        )
+    END AS ACTIONED_BY,
+
+    -- DISPENSATION
+    CASE
+        WHEN MCDD.DISPENSATION_ID IS NOT NULL
+        THEN 'Y'
+        ELSE 'N'
+    END AS DISPENSATION,
+
+    -- REMARKS
+    CASE
+        WHEN MCDD.REMARKS IS NOT NULL
+        THEN 'Y'
+        ELSE 'N'
+    END AS HAS_REMARKS,
+
+    MCDD.REMARKS
+
+FROM METRIC_CASCADE_ACTIONS MCA
+
+LEFT JOIN RAP_METRICS_DETAILS RMDT
+    ON RMDT.METRIC_DETAIL_ID = MCA.METRIC_DETAIL_ID
+
+LEFT JOIN RAP_METRICS_PACK_MAPPING RMPM
+    ON RMPM.RAP_METRICS_MAPPING_ID = RMDT.RAP_METRICS_MAPPING_ID
+
+LEFT JOIN RAP RP
+    ON RP.RAP_ID = RMDT.RAP_ID
+
+LEFT JOIN RAP_RISK_TYPE RRT
+    ON RRT.RISK_TYPE_ID = RP.RISK_TYPE_ID
+
+LEFT JOIN RAP_RMM_GROUP RRG
+    ON RRG.RMM_ID = MCA.CHILD_RMM_ID
+
+LEFT JOIN USER_TAB UT
+    ON UT.EMP_ID = MCA.ACTION_BY
+
+LEFT JOIN METRIC_CASCADE_DISPENSATION_DETAILS MCDD
+    ON MCDD.METRIC_DETAIL_ID = MCA.METRIC_DETAIL_ID
+    AND MCDD.CHILD_RMM_ID = MCA.CHILD_RMM_ID
+
+WHERE
+(
+    MCA.METRIC_DETAIL_ID = :1
+    OR MCA.TARGET_METRIC_DETAIL_ID = :2
+)
+
+AND MCA.ACTION_TYPE = 'CASCADE'
+
+ORDER BY MCA.ACTION_ID DESC
+
 
 
 def get_metric_cascade_log(vInfo):
@@ -15,6 +113,7 @@ def get_metric_cascade_log(vInfo):
         )
 
         if not metric_detail_id:
+
             return jsonify({
                 "status": "error",
                 "message": "metric_detail_id is required"
@@ -37,6 +136,7 @@ def get_metric_cascade_log(vInfo):
         # ############################################################
 
         if not result:
+
             return jsonify({
                 "status": "success",
                 "data": []
@@ -64,7 +164,7 @@ def get_metric_cascade_log(vInfo):
                     "TARGET_METRIC_DETAIL_ID"
                 ),
 
-                "master_metric_id": row.get(
+                "metric_id": row.get(
                     "MASTER_METRIC_ID"
                 ),
 
@@ -72,7 +172,11 @@ def get_metric_cascade_log(vInfo):
                     "METRIC_TITLE"
                 ),
 
-                "risk_type_l1": row.get(
+                "metric_category": row.get(
+                    "METRIC_CATEGORY"
+                ),
+
+                "risk_type": row.get(
                     "RISK_TYPE_DISP"
                 ),
 
@@ -88,8 +192,24 @@ def get_metric_cascade_log(vInfo):
                     "CASCADE_VERSION"
                 ),
 
+                "dispensation": row.get(
+                    "DISPENSATION"
+                ),
+
                 "actioned_by": row.get(
                     "ACTIONED_BY"
+                ),
+
+                "actioned_date": row.get(
+                    "ACTION_DT_STR"
+                ),
+
+                "has_remarks": row.get(
+                    "HAS_REMARKS"
+                ),
+
+                "remarks": row.get(
+                    "REMARKS"
                 )
 
             })
@@ -113,5 +233,4 @@ def get_metric_cascade_log(vInfo):
             "status": "error",
             "message": "Failed to fetch cascade log"
         })
-
 
