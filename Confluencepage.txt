@@ -1,62 +1,74 @@
-existing_selected_rmm_ids = (
-    set(selected_rmm_ids)
-    &
-    set(existing_rmm_ids)
+active_chain = sql_getData(
+    925,
+    [
+        metric_detail_id,
+        rmm_id
+    ]
 )
 
+if not active_chain:
 
-# ############################################################
-# HANDLE EXISTING SELECTED METRICS (RE-CASCADE SCENARIO)
-# ############################################################
-
-for rmm_id in existing_selected_rmm_ids:
-
-    log_error.error(
-        f"RECASCADE EXISTING METRIC FLOW -> "
-        f"metric_detail_id={metric_detail_id}, "
-        f"rmm_id={rmm_id}"
-    )
-
-    # ########################################################
-    # CHECK IF ACTIVE MCL EXISTS
-    # ########################################################
-
-    existing_chain = sql_getData(
-        925,
+    sql_insertData(
+        903,
+        "CASCADED_ID",
         [
             metric_detail_id,
-            rmm_id
+            rmm_id,
+            location_type,
+            str(vUser),
+            None,
+            next_version,
+            selectedRmmId
         ]
     )
 
-    # ########################################################
-    # IF NO ACTIVE CHAIN -> RECREATE IT
-    # ########################################################
-
-    if not existing_chain:
-
-        location_type = get_location_type(rmm_id)
-
-        sql_insertData(
-            373,
-            "CASCADED_ID",
-            [
-                metric_detail_id,
-                rmm_id,
-                location_type,
-                vUser
-            ]
-        )
 
 
-925: {
-    "Ostring": """
-        SELECT
-            CASCADED_ID
-        FROM METRIC_CASCADE_LOCATIONS
-        WHERE
-            METRIC_DETAIL_ID = :1
-            AND CHILD_RMM_ID = :2
-            AND IS_ACTIVE = 'Y'
-    """
-},
+
+sql_insertData(
+    903,
+    "CASCADED_ID",
+    [
+        metric_detail_id,
+        rmm_id,
+        location_type,
+        str(vUser),
+        None,
+        next_version,
+        selectedRmmId
+    ]
+)
+
+
+
+# ---------------------------------------------------------------------
+# CHECK ACTIVE CHAIN
+# ---------------------------------------------------------------------
+
+active_chain = sql_getData(
+    925,
+    [
+        metric_detail_id,
+        rmm_id
+    ]
+)
+
+# ---------------------------------------------------------------------
+# RECREATE ONLY IF INACTIVE
+# ---------------------------------------------------------------------
+
+if not active_chain:
+
+    sql_insertData(
+        903,
+        "CASCADED_ID",
+        [
+            metric_detail_id,
+            rmm_id,
+            location_type,
+            str(vUser),
+            None,
+            next_version,
+            selectedRmmId
+        ]
+    )
