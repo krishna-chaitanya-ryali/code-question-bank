@@ -72,3 +72,16 @@ if not active_chain:
             selectedRmmId
         ]
     )
+
+
+925: {
+    "Ostring": """
+        SELECT
+            CASCADED_ID
+        FROM METRIC_CASCADE_LOCATIONS
+        WHERE
+            METRIC_DETAIL_ID = :1
+            AND CHILD_RMM_ID = :2
+            AND IS_ACTIVE = 'Y'
+    """
+},
