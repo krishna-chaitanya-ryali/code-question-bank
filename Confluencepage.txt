@@ -1,119 +1,151 @@
-SELECT
-    MCA.ACTION_ID,
-    MCA.METRIC_DETAIL_ID,
-    MCA.TARGET_METRIC_DETAIL_ID,
-    MCA.STATUS,
-    MCA.CASCADE_VERSION,
-    MCA.ACTION_BY,
-    MCA.CHILD_RMM_ID,
-    MCA.PARENT_RMM_ID,
-    MCA.ACTION_DT_STR,
+if defno == 12:
+    return get_cascade_status_log_download(defdata)
 
-    -- METRIC TITLE
-    CASE
-        WHEN RMDT.METRICS_DISPLAY IS NULL
-        THEN RMPM.METRICS_DISP
-        ELSE RMDT.METRICS_DISPLAY
-    END AS METRIC_TITLE,
 
-    -- MASTER METRIC ID
-    RMDT.MASTER_METRIC_ID,
+def get_cascade_status_log_download(vInfo):
 
-    -- METRIC CATEGORY
-    RMDT.RAP_METRIC_CATEGORY,
+    try:
 
-    -- RISK TYPE
-    RRT.RISK_TYPE_DISP,
-
-    -- CASCADE LOCATION
-    CASE
-
-        -- CURRENT SCREEN IS PARENT
-        WHEN MCA.PARENT_RMM_ID = :2
-        THEN CHILD_RRG.RMM_DISPLAY_NAME
-
-        -- CURRENT SCREEN IS CHILD
-        WHEN MCA.CHILD_RMM_ID = :3
-        THEN PARENT_RRG.RMM_DISPLAY_NAME
-
-        -- FALLBACK
-        ELSE CHILD_RRG.RMM_DISPLAY_NAME
-
-    END AS CASCADE_LOCATION,
-
-    -- ACTIONED BY
-    CASE
-
-        WHEN MCA.ACTION_BY = 'SYSTEM'
-        THEN 'SYSTEM'
-
-        WHEN MCA.STATUS IN (
-            'Awaiting Acceptance'
-        )
-        THEN NULL
-
-        ELSE COALESCE(
-            UT.USER_NAME,
-            (
-                SELECT UT2.USER_NAME
-                FROM USER_TAB UT2
-                WHERE UT2.PSID = MCA.ACTION_BY
-                FETCH FIRST 1 ROW ONLY
-            )
+        metric_detail_id = vInfo.get(
+            "metric_detail_id"
         )
 
-    END AS ACTIONED_BY,
+        rmm_id = vInfo.get(
+            "rmmid"
+        )
 
-    -- DISPENSATION
-    CASE
-        WHEN MCDD.CASCADE_METRIC_DETAIL_ID IS NOT NULL
-        THEN 'Y'
-        ELSE 'N'
-    END AS DISPENSATION,
+        result = sql_getData(
+            924,
+            [
+                metric_detail_id,
+                rmm_id
+            ]
+        )
 
-    -- REMARKS AVAILABLE
-    CASE
-        WHEN MCDD.REMARKS IS NOT NULL
-        THEN 'Y'
-        ELSE 'N'
-    END AS HAS_REMARKS,
+        return jsonify(result)
 
-    -- REMARKS
-    MCDD.REMARKS
+    except Exception as e:
 
-FROM METRIC_CASCADE_ACTIONS MCA
+        log_error.error(
+            f"Error in get_cascade_status_log_download: {str(e)}"
+        )
 
-LEFT JOIN RAP_METRICS_DETAILS RMDT
-    ON RMDT.METRIC_DETAIL_ID = MCA.METRIC_DETAIL_ID
+        return jsonify([])
 
-LEFT JOIN RAP_METRICS_PACK_MAPPING RMPM
-    ON RMPM.RAP_METRICS_MAPPING_ID = RMDT.RAP_METRICS_MAPPING_ID
 
-LEFT JOIN RAP RP
-    ON RP.RAP_ID = RMDT.RAP_ID
 
-LEFT JOIN RAP_RISK_TYPE RRT
-    ON RRT.RISK_TYPE_ID = RP.RISK_TYPE_ID
 
--- CHILD LOCATION
-LEFT JOIN RAP_RMM_GROUP CHILD_RRG
-    ON CHILD_RRG.RMM_ID = MCA.CHILD_RMM_ID
+@app.route(
+    "/cascade_status_log",
+    methods=["GET"]
+)
+def cascade_status_log():
 
--- PARENT LOCATION
-LEFT JOIN RAP_RMM_GROUP PARENT_RRG
-    ON PARENT_RRG.RMM_ID = MCA.PARENT_RMM_ID
+    try:
 
-LEFT JOIN USER_TAB UT
-    ON UT.EMP_ID = MCA.ACTION_BY
+        metric_detail_id = request.args.get(
+            "metric_detail_id"
+        )
 
-LEFT JOIN METRIC_CASCADE_DISPENSATION_DETAILS MCDD
-    ON MCDD.CASCADE_METRIC_DETAIL_ID = MCA.METRIC_DETAIL_ID
-    AND MCDD.RMM_ID = MCA.CHILD_RMM_ID
+        rmm_id = request.args.get(
+            "rmmId"
+        )
 
-WHERE
-    MCA.METRIC_DETAIL_ID = :1
+        result = sql_getData(
+            924,
+            [
+                metric_detail_id,
+                rmm_id
+            ]
+        )
 
-AND MCA.ACTION_TYPE = 'CASCADE'
+        if not result:
+            return jsonify({
+                "status": "error",
+                "message": "No data found"
+            })
 
-ORDER BY
-    MCA.ACTION_ID DESC
+        data = []
+
+        for row in result:
+
+            data.append({
+
+                "Metric Title": row.get(
+                    "METRIC_TITLE"
+                ),
+
+                "Metric ID": row.get(
+                    "MASTER_METRIC_ID"
+                ),
+
+                "Risk Type": row.get(
+                    "RISK_TYPE_DISP"
+                ),
+
+                "Metric Category": row.get(
+                    "RAP_METRICS_CATEGORY"
+                ),
+
+                "Cascade Location": row.get(
+                    "CASCADE_LOCATION"
+                ),
+
+                "Cascade Status": row.get(
+                    "STATUS"
+                ),
+
+                "Dispensation": row.get(
+                    "DISPENSATION"
+                ),
+
+                "Go Live Date": row.get(
+                    "GO_LIVE_DT"
+                ),
+
+                "Accepted / Rejected By": row.get(
+                    "ACTIONED_BY"
+                ),
+
+                "Accepted / Rejected Date": row.get(
+                    "ACTION_DT_STR"
+                ),
+
+                "Remarks": row.get(
+                    "REMARKS"
+                )
+
+            })
+
+        df = pd.DataFrame(data)
+
+        file_name = (
+            f"Cascade_Status_Log_{metric_detail_id}.xlsx"
+        )
+
+        file_path = os.path.join(
+            app.config["UPLOAD_FOLDER"],
+            file_name
+        )
+
+        df.to_excel(
+            file_path,
+            index=False
+        )
+
+        return send_file(
+            file_path,
+            as_attachment=True
+        )
+
+    except Exception as e:
+
+        log_error.error(
+            f"Error in cascade_status_log: {str(e)}"
+        )
+
+        return jsonify({
+            "status": "error",
+            "message": "Failed to download report"
+        })
+
