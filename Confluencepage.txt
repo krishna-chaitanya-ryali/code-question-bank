@@ -1,6 +1,15 @@
-return send_file(
-    file_path,
-    as_attachment=True,
-    download_name='Cascade_Status_Log.xlsx',
-    mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-)
+LEFT JOIN (
+    SELECT
+        *
+    FROM (
+        SELECT
+            MCDD.*,
+            ROW_NUMBER() OVER (
+                PARTITION BY MCDD.CASCADED_METRIC_DETAIL_ID
+                ORDER BY MCDD.CREAT_DT DESC
+            ) AS RN
+        FROM METRIC_CASCADE_DISPENSATION_DETAILS MCDD
+    )
+    WHERE RN = 1
+) MCDD
+    ON MCDD.CASCADED_METRIC_DETAIL_ID = MCA.METRIC_DETAIL_ID
