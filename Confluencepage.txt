@@ -1,24 +1,62 @@
-LEFT JOIN (
-    SELECT
-        *
-    FROM (
-        SELECT
-            MCDD.*,
-            ROW_NUMBER() OVER (
-                PARTITION BY MCDD.CASCADED_METRIC_DETAIL_ID
-                ORDER BY MCDD.CREAT_DT DESC
-            ) AS RN
-        FROM METRIC_CASCADE_DISPENSATION_DETAILS MCDD
+existing_selected_rmm_ids = (
+    set(selected_rmm_ids)
+    &
+    set(existing_rmm_ids)
+)
+
+
+# ############################################################
+# HANDLE EXISTING SELECTED METRICS (RE-CASCADE SCENARIO)
+# ############################################################
+
+for rmm_id in existing_selected_rmm_ids:
+
+    log_error.error(
+        f"RECASCADE EXISTING METRIC FLOW -> "
+        f"metric_detail_id={metric_detail_id}, "
+        f"rmm_id={rmm_id}"
     )
-    WHERE RN = 1
-) MCDD
-    ON MCDD.CASCADED_METRIC_DETAIL_ID = MCA.METRIC_DETAIL_ID
+
+    # ########################################################
+    # CHECK IF ACTIVE MCL EXISTS
+    # ########################################################
+
+    existing_chain = sql_getData(
+        925,
+        [
+            metric_detail_id,
+            rmm_id
+        ]
+    )
+
+    # ########################################################
+    # IF NO ACTIVE CHAIN -> RECREATE IT
+    # ########################################################
+
+    if not existing_chain:
+
+        location_type = get_location_type(rmm_id)
+
+        sql_insertData(
+            373,
+            "CASCADED_ID",
+            [
+                metric_detail_id,
+                rmm_id,
+                location_type,
+                vUser
+            ]
+        )
 
 
-
-SELECT
-    CASCADED_METRIC_DETAIL_ID,
-    COUNT(*)
-FROM METRIC_CASCADE_DISPENSATION_DETAILS
-GROUP BY CASCADED_METRIC_DETAIL_ID
-HAVING COUNT(*) > 1;
+925: {
+    "Ostring": """
+        SELECT
+            CASCADED_ID
+        FROM METRIC_CASCADE_LOCATIONS
+        WHERE
+            METRIC_DETAIL_ID = :1
+            AND CHILD_RMM_ID = :2
+            AND IS_ACTIVE = 'Y'
+    """
+},
