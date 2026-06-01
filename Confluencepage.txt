@@ -88,23 +88,31 @@ FROM (
     SELECT
         METRIC_DETAIL_ID,
         PARENT_RMM_ID,
+        CHILD_RMM_ID,
+        CASCADE_VERSION,
+        CASCADE_STATUS,
+        IS_ACTIVE,
 
-        -- UI DEDUP
-        MIN(CHILD_RMM_ID) AS CHILD_RMM_ID,
+        ROW_NUMBER() OVER (
+            PARTITION BY
+                METRIC_DETAIL_ID,
+                CASE
+                    WHEN PARENT_RMM_ID = :5
+                    THEN 'CURRENT_LOCATION'
 
-        MAX(CASCADE_VERSION) AS CASCADE_VERSION,
-
-        MAX(CASCADE_STATUS) AS CASCADE_STATUS,
-
-        MAX(IS_ACTIVE) AS IS_ACTIVE
+                    WHEN CHILD_RMM_ID = :6
+                    THEN 'PARENT_LOCATION'
+                END
+            ORDER BY CHILD_RMM_ID
+        ) AS RN
 
     FROM METRIC_CASCADE_LOCATIONS
 
     WHERE ACTION_TYPE = 'REMOVE'
-
-    GROUP BY
-        METRIC_DETAIL_ID,
-        PARENT_RMM_ID
+      AND (
+            PARENT_RMM_ID = :7
+            OR CHILD_RMM_ID = :8
+      )
 
 ) MCL
 
@@ -153,10 +161,7 @@ LEFT JOIN (
 LEFT JOIN USER_TAB UT
     ON UT.EMP_ID = MCA.ACTION_BY
 
-WHERE (
-    MCL.PARENT_RMM_ID = :5
-    OR MCL.CHILD_RMM_ID = :6
-)
+WHERE MCL.RN = 1
 
 ORDER BY
     MCA.CASCADE_DT DESC
