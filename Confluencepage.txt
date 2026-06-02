@@ -1,9 +1,16 @@
-CASE
-    WHEN MCL.PARENT_RMM_ID = :1
-    THEN NVL(MCL.IS_ACTIVE, 'N')
+Hi Mateusz,
 
-    WHEN MCL.CHILD_RMM_ID = :2
-    THEN NVL(MCA.IS_ACTIVE, 'N')
+Thank you for the support and encouragement throughout the Metric Auto-Cascade delivery.
 
-    ELSE NVL(MCL.IS_ACTIVE, MCA.IS_ACTIVE)
-END AS CASCADE_LIFECYCLE_STATUS
+I’m glad that we were able to complete and demonstrate the majority of the Phase 1 functionalities successfully within the targeted timeline. As this requirement came in parallel with ongoing activities and after the User Recertification work, it required significant effort and coordination from the team to achieve the delivery within the expected timelines.
+
+I especially appreciate the acknowledgment shared by Nitin regarding the demo and weekend efforts. I personally put considerable focus into stabilizing and completing the backend functionalities, coordinating fixes, and ensuring the core implementation was ready for the demo and upcoming UAT deployment.
+
+If possible, it would really help if you could share a brief feedback/appreciation note with my line managers (Anurag and Atul)Anurag.Jamloki@synechron.com and Atul.Kulkarni@synechron.com regarding my contribution towards this delivery. I believe it would be helpful from a performance and future growth perspective.
+
+Thank you once again for the support and guidance.
+
+Regards,
+Krishna Chaitanya
+
+
