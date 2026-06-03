@@ -1,34 +1,7 @@
-Metric Auto-Cascade – Pending Observations & Estimated Effort
-
-1. Save Draft Functionality (New Enhancement)
-   
-   - Introduce Save Draft capability in Add/Edit Metric popup screens.
-   - Persist draft data and retrieve it for subsequent updates.
-   - Design discussion and finalization of storage/retrieval approach.
-   - UI, backend, validation, and testing changes.
-   - Estimated Effort: 2 – 3 days
-
-2. Re-Cascade for Existing Edited Metrics
-   
-   - Fix observations related to re-cascading of edited metrics.
-   - Scenario validation and regression testing.
-   - Estimated Effort: 1 – 1.5 days
-
-3. Remove Cascade Functionality
-   
-   - Minor fixes and updates identified during testing.
-   - Estimated Effort: 0.5 day
-
-4. Auto-Cascade Consolidated Report
-   
-   - New report development in Consolidated Reports section.
-   - Query preparation, UI integration, testing, and validation.
-   - Estimated Effort: 2 – 3 days
-
-5. NAS Configuration (UAT)
-   
-   - Currently under discussion with DBA/Linux team.
-   - Infrastructure dependency; application-side validation may be required once completed.
-
-Overall Estimated Effort:
-Approximately 6 – 8 working days, excluding additional UAT observations, retesting cycles, and infrastructure dependencies.
+UPDATE RAPUSER.METRIC_ACCESS ma
+SET ma.USER_ROLE_ID = (
+    SELECT mur.RAP_USER_ROLE_ID
+    FROM RAPUSER.MAP_USER_ROLE mur
+    WHERE mur.USER_ID = 428
+)
+WHERE ma.USER_ID = 428;
