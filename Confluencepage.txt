@@ -1,26 +1,34 @@
 Metric Auto-Cascade – Pending Observations & Estimated Effort
 
-1. Save Draft Functionality
+1. Save Draft Functionality (New Enhancement)
    
-   - Email notification fixes and related validation updates.
-   - Estimated Effort: 0.5 – 1 day
+   - Introduce Save Draft capability in Add/Edit Metric popup screens.
+   - Persist draft data and retrieve it for subsequent updates.
+   - Design discussion and finalization of storage/retrieval approach.
+   - UI, backend, validation, and testing changes.
+   - Estimated Effort: 2 – 3 days
 
 2. Re-Cascade for Existing Edited Metrics
    
-   - Review and fix observations related to re-cascading of already cascaded metrics after edits.
-   - Includes testing and validation of impacted scenarios.
+   - Fix observations related to re-cascading of edited metrics.
+   - Scenario validation and regression testing.
    - Estimated Effort: 1 – 1.5 days
 
 3. Remove Cascade Functionality
    
-   - Minor changes and fixes identified during testing.
+   - Minor fixes and updates identified during testing.
    - Estimated Effort: 0.5 day
 
-4. NAS Configuration (UAT)
+4. Auto-Cascade Consolidated Report
    
-   - Currently under discussion with the DBA/Linux team.
-   - No development effort anticipated from the application side at this stage.
-   - Dependent on infrastructure team completion and validation.
+   - New report development in Consolidated Reports section.
+   - Query preparation, UI integration, testing, and validation.
+   - Estimated Effort: 2 – 3 days
+
+5. NAS Configuration (UAT)
+   
+   - Currently under discussion with DBA/Linux team.
+   - Infrastructure dependency; application-side validation may be required once completed.
 
 Overall Estimated Effort:
-Approximately 2 – 3 working days, excluding any additional observations identified during UAT testing and excluding NAS/infrastructure dependencies.
+Approximately 6 – 8 working days, excluding additional UAT observations, retesting cycles, and infrastructure dependencies.
