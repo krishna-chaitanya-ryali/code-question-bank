@@ -1,3 +1,69 @@
-UPDATE RAPUSER.METRIC_ACCESS
-SET USER_ROLE_ID = 10
-WHERE USER_ID = 428;
+If they ask: "Why are you looking for a change?"
+You can say:
+I have been with the same organization and project for more than five years. During this period, I have worked on end-to-end development, production support, releases, mentoring team members, and ownership of critical functionalities. While I value the experience and stability, I now feel it is the right time to take on a broader role with new challenges, larger responsibilities, and better long-term growth opportunities.
+This sounds much stronger than focusing only on salary.
+If they ask: "Why should we hire you?"
+You can highlight:
+10+ years of Python experience
+Flask/FastAPI expertise
+End-to-end ownership
+Production support experience
+Mentoring junior developers
+Working directly with business stakeholders
+Building and maintaining enterprise applications
+You can also mention:
+I have spent more than five years in the same project, which demonstrates commitment and stability. I generally don't switch frequently and prefer building long-term value wherever I work.
+If they ask about joining date
+I would not say "I have resigned" if you haven't.
+Instead:
+I have already discussed my situation with my management team. Based on those discussions, I have confidence that I can be released quickly once I receive a formal offer and complete the required formalities. Therefore, I expect my joining timeline to be around 10–15 days.
+This is truthful and professional.
+Compensation Discussion
+You originally discussed around 40+.
+Now they're discussing around 35.
+I would not immediately accept 35.
+Instead say:
+Based on my current compensation, experience level, technical expertise, and the responsibilities discussed during the interview process, I was expecting something closer to the 38–40 LPA range.
+Notice:
+38–40 sounds reasonable.
+42 may sound too far from their current number.
+It gives them room to negotiate.
+Joining Bonus
+Absolutely ask.
+You can say:
+In case there are limitations on the fixed compensation, is there any possibility of a joining bonus or sign-on bonus?
+Many companies are more flexible with joining bonuses than fixed CTC.
+Questions You Should Ask Them
+Role
+What would be the expectations from me in the first 3–6 months?
+Team
+How large is the team and what would be my level of ownership?
+Growth
+What does the career progression look like for someone joining at this level?
+Work Model
+Is the role fully remote, hybrid, or office-based?
+Performance Reviews
+How frequently are compensation and performance reviews conducted?
+Onsite Opportunities
+Since the Delivery Head is from the UK:
+Are there opportunities in the future for customer-facing engagements or onsite interactions with clients?
+Don't ask "When will I get onsite?" Ask about opportunities.
+If They Say "35 LPA is Final"
+Then ask:
+Any joining bonus?
+Variable pay percentage?
+Annual appraisal cycle?
+Performance bonus?
+Work-from-home policy?
+Medical benefits?
+Retention bonus or project bonus?
+Sometimes total package improves even when fixed salary doesn't.
+My Assessment
+Given your current compensation (~32.47 LPA), a move to 35 LPA alone is not a major financial jump.
+Before accepting, I would try to understand:
+Is the role significantly better?
+Is the work interesting?
+Is growth faster?
+Is work-life balance reasonable?
+Can they improve the offer to 37–38 LPA or add a joining bonus?
+If they can move closer to 37–38 LPA or provide a meaningful joining bonus, the opportunity becomes much more attractive.
