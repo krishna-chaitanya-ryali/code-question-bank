@@ -1,40 +1,26 @@
-SELECT
-    CONSTRAINT_NAME,
-    STATUS
-FROM USER_CONSTRAINTS
-WHERE TABLE_NAME = 'METRIC_CASCADE_LOCATIONS'
-AND CONSTRAINT_TYPE = 'U';
-
-SELECT
-    CONSTRAINT_NAME,
-    COLUMN_NAME,
-    POSITION
-FROM USER_CONS_COLUMNS
-WHERE TABLE_NAME = 'METRIC_CASCADE_LOCATIONS'
-ORDER BY CONSTRAINT_NAME, POSITION;
-
-ALTER TABLE METRIC_CASCADE_LOCATIONS
-DROP CONSTRAINT UK_MCL;
-
-ALTER TABLE METRIC_CASCADE_LOCATIONS
-ADD CONSTRAINT UK_MCL
-UNIQUE
-(
-    METRIC_DETAIL_ID,
-    CHILD_RMM_ID,
-    LOCATION_TYPE,
-    CASCADE_VERSION
-);
-
-SELECT
-    CONSTRAINT_NAME,
-    COLUMN_NAME,
-    POSITION
-FROM USER_CONS_COLUMNS
-WHERE CONSTRAINT_NAME IN (
-    'UK_MCL',
-    'UK_MCL_UNIQUE'
+update_from = vInfo.get(
+    "update_from",
+    "EDIT"
 )
-ORDER BY CONSTRAINT_NAME, POSITION;
 
 
+if (
+    cascade_flag == "Yes"
+    and update_from != "REMOVE"
+):
+
+
+
+
+update_from = vInfo.get(
+    "update_from",
+    "EDIT"
+)
+
+if update_from == "EDIT":
+
+    if cascade_flag == "Yes":
+        # existing cascade code
+
+    elif cascade_flag == "No":
+        # existing cascade code
