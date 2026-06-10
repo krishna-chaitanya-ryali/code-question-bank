@@ -1,26 +1,5 @@
-update_from = vInfo.get(
-    "update_from",
-    "EDIT"
-)
+Hi Team,
 
+Due to heavy rains, I'm facing intermittent power and network issues. I may be available on and off until things are restored.
 
-if (
-    cascade_flag == "Yes"
-    and update_from != "REMOVE"
-):
-
-
-
-
-update_from = vInfo.get(
-    "update_from",
-    "EDIT"
-)
-
-if update_from == "EDIT":
-
-    if cascade_flag == "Yes":
-        # existing cascade code
-
-    elif cascade_flag == "No":
-        # existing cascade code
+Thanks.
