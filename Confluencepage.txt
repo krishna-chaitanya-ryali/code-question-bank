@@ -40,3 +40,98 @@ for disp in dispensation_rows:
 
 
 
+
+for row in result:
+
+            child_rmm_id = row.get("CHILD_RMM_ID")
+
+            dispensation_details = []
+
+            if dispensation_rows:
+
+                for disp in dispensation_rows:
+
+                    if disp.get("RMM_ID") == child_rmm_id:
+
+                        dispensation_details.append({
+                            "field_key": disp.get("FIELD_KEY"),
+                            "remarks": disp.get("REMARKS"),
+                            "file_name": disp.get("FILE_NAME"),
+                            "file_path": disp.get("FILE_PATH"),
+                            "created_dt": disp.get("CREATED_DT")
+                        })
+
+            response_data.append({
+
+                "action_id": row.get(
+                    "ACTION_ID"
+                ),
+
+                "metric_detail_id": row.get(
+                    "METRIC_DETAIL_ID"
+                ),
+
+                "target_metric_detail_id": row.get(
+                    "TARGET_METRIC_DETAIL_ID"
+                ),
+
+                "metric_id": row.get(
+                    "MASTER_METRIC_ID"
+                ),
+
+                "metric_title": row.get(
+                    "METRIC_TITLE"
+                ),
+
+                "metric_category": row.get(
+                    "METRIC_CATEGORY"
+                ),
+
+                "risk_type": row.get(
+                    "PRIMARY_RISK_TYPE"
+                ),
+
+                "cascade_location": row.get(
+                    "CASCADE_LOCATION"
+                ),
+
+                "cascade_status": row.get(
+                    "STATUS"
+                ),
+
+                "cascade_version": row.get(
+                    "CASCADE_VERSION"
+                ),
+
+                "dispensation": row.get(
+                    "DISPENSATION"
+                ),
+
+                "actioned_by": row.get(
+                    "ACTIONED_BY"
+                ),
+
+                "actioned_date": row.get(
+                    "ACTION_DT_STR"
+                ),
+
+                "has_remarks": row.get(
+                    "HAS_REMARKS"
+                ),
+
+                "remarks": row.get(
+                    "REMARKS"
+                ),
+
+                "go_live_date": row.get(
+                    "GO_LIVE_DATE"
+                ),
+
+                "file_path": row.get(
+                    "FILE_PATH"
+                ),
+
+                "dispensation_details": dispensation_details
+            })
+
+
