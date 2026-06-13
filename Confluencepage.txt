@@ -1,5 +1,42 @@
-Hi Team,
+SELECT
+    CASCADED_METRIC_DETAIL_ID,
+    RMM_ID,
+    FIELD_KEY,
+    REMARKS,
+    FILE_NAME,
+    FILE_PATH,
+    CREATED_DT
+FROM METRIC_CASCADE_DISPENSATION_DETAILS
+WHERE CASCADED_METRIC_DETAIL_ID = :1
+ORDER BY
+    RMM_ID,
+    CREATED_DT;
 
-Due to heavy rains, I'm facing intermittent power and network issues. I may be available on and off until things are restored.
 
-Thanks.
+dispensation_rows = sql_getData(
+    926,
+    [metric_detail_id]
+)
+
+
+child_rmm_id = row.get("CHILD_RMM_ID")
+
+dispensation_details = []
+
+for disp in dispensation_rows:
+
+    if disp.get("RMM_ID") == child_rmm_id:
+
+        dispensation_details.append({
+            "field_key": disp.get("FIELD_KEY"),
+            "remarks": disp.get("REMARKS"),
+            "file_name": disp.get("FILE_NAME"),
+            "file_path": disp.get("FILE_PATH"),
+            "created_dt": disp.get("CREATED_DT")
+        })
+
+
+"dispensation_details": dispensation_details,
+
+
+
