@@ -188,3 +188,19 @@ def get_metric_cascade_log(vInfo):
             "status": "error",
             "message": "Failed to fetch cascade log"
         })
+
+
+
+SELECT
+    CASCADED_METRIC_DETAIL_ID,
+    RMM_ID,
+    FIELD_KEY,
+    REMARKS,
+    FILE_NAME,
+    FILE_PATH,
+    CREATED_DT
+FROM METRIC_CASCADE_DISPENSATION_DETAILS
+WHERE
+    CASCADED_METRIC_DETAIL_ID = :1
+    AND RMM_ID = :2
+ORDER BY CREATED_DT;
