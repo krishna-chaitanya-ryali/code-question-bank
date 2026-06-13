@@ -1,65 +1,113 @@
-SELECT
-    CASCADED_METRIC_DETAIL_ID,
-    RMM_ID,
-    FIELD_KEY,
-    REMARKS,
-    FILE_NAME,
-    FILE_PATH,
-    CREATED_DT
-FROM METRIC_CASCADE_DISPENSATION_DETAILS
-WHERE CASCADED_METRIC_DETAIL_ID = :1
-ORDER BY
-    RMM_ID,
-    CREATED_DT;
+def get_metric_cascade_log(vInfo):
+    try:
 
+        # ######################################################################
+        # GET REQUEST DATA
+        # ######################################################################
 
-dispensation_rows = sql_getData(
-    926,
-    [metric_detail_id]
-)
+        metric_detail_id = vInfo.get(
+            "metric_detail_id"
+        )
 
+        rmmid = vInfo.get(
+            "rmmid"
+        )
 
-child_rmm_id = row.get("CHILD_RMM_ID")
+        if not metric_detail_id:
+            return jsonify({
+                "status": "error",
+                "message": "metric_detail_id is required"
+            })
 
-dispensation_details = []
+        # ######################################################################
+        # GET CASCADE LOG DATA
+        # ######################################################################
 
-for disp in dispensation_rows:
+        result = sql_getData(
+            924,
+            [
+                rmmid,
+                rmmid,
+                metric_detail_id
+            ]
+        )
 
-    if disp.get("RMM_ID") == child_rmm_id:
+        # ######################################################################
+        # EMPTY RESPONSE
+        # ######################################################################
 
-        dispensation_details.append({
-            "field_key": disp.get("FIELD_KEY"),
-            "remarks": disp.get("REMARKS"),
-            "file_name": disp.get("FILE_NAME"),
-            "file_path": disp.get("FILE_PATH"),
-            "created_dt": disp.get("CREATED_DT")
-        })
+        if not result:
+            return jsonify({
+                "status": "success",
+                "data": []
+            })
 
+        # ######################################################################
+        # FORMAT RESPONSE
+        # ######################################################################
 
-"dispensation_details": dispensation_details,
+        response_data = []
 
+        for row in result:
 
+            child_rmm_id = row.get(
+                "CHILD_RMM_ID"
+            )
 
+            # ##############################################################
+            # GET DISPENSATION DETAILS
+            # ##############################################################
 
-for row in result:
+            dispensation_details = sql_getData(
+                926,
+                [
+                    metric_detail_id,
+                    child_rmm_id
+                ]
+            )
 
-            child_rmm_id = row.get("CHILD_RMM_ID")
+            if (
+                not dispensation_details
+                or dispensation_details == -1
+            ):
+                dispensation_details = []
 
-            dispensation_details = []
+            formatted_dispensation_details = []
 
-            if dispensation_rows:
+            for disp in dispensation_details:
 
-                for disp in dispensation_rows:
+                formatted_dispensation_details.append({
 
-                    if disp.get("RMM_ID") == child_rmm_id:
+                    "field_key": disp.get(
+                        "FIELD_KEY"
+                    ),
 
-                        dispensation_details.append({
-                            "field_key": disp.get("FIELD_KEY"),
-                            "remarks": disp.get("REMARKS"),
-                            "file_name": disp.get("FILE_NAME"),
-                            "file_path": disp.get("FILE_PATH"),
-                            "created_dt": disp.get("CREATED_DT")
-                        })
+                    "remarks": disp.get(
+                        "REMARKS"
+                    ),
+
+                    "file_name": disp.get(
+                        "FILE_NAME"
+                    ),
+
+                    "file_path": disp.get(
+                        "FILE_PATH"
+                    ),
+
+                    "created_dt": disp.get(
+                        "CREATED_DT"
+                    )
+                })
+
+            # ##############################################################
+            # DISPENSATION FLAG
+            # ##############################################################
+
+            dispensation_flag = (
+                "Y"
+                if formatted_dispensation_details
+                else "N"
+            )
 
             response_data.append({
 
@@ -103,9 +151,7 @@ for row in result:
                     "CASCADE_VERSION"
                 ),
 
-                "dispensation": row.get(
-                    "DISPENSATION"
-                ),
+                "dispensation": dispensation_flag,
 
                 "actioned_by": row.get(
                     "ACTIONED_BY"
@@ -115,23 +161,30 @@ for row in result:
                     "ACTION_DT_STR"
                 ),
 
-                "has_remarks": row.get(
-                    "HAS_REMARKS"
-                ),
-
-                "remarks": row.get(
-                    "REMARKS"
-                ),
-
                 "go_live_date": row.get(
                     "GO_LIVE_DATE"
                 ),
 
-                "file_path": row.get(
-                    "FILE_PATH"
-                ),
-
-                "dispensation_details": dispensation_details
+                "dispensation_details":
+                    formatted_dispensation_details
             })
 
+        # ######################################################################
+        # FINAL RESPONSE
+        # ######################################################################
 
+        return jsonify({
+            "status": "success",
+            "data": response_data
+        })
+
+    except Exception as e:
+
+        log_error.error(
+            f"Error in get_metric_cascade_log: {str(e)}"
+        )
+
+        return jsonify({
+            "status": "error",
+            "message": "Failed to fetch cascade log"
+        })
