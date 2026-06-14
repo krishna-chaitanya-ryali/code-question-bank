@@ -160,3 +160,15 @@ def get_metric_cascade_log(vInfo):
         "status": "success",
         "data": data
     })
+
+
+{
+  "instance": 13719,
+  "rmm": "208",
+  "uid": 10701,
+  "month": "MAR2026",
+  "dashboard_location": 2606,
+  "risk_type_11": 28
+}
+
+
