@@ -1,10 +1,58 @@
-worksheet = writer.sheets['Summary']
+with pd.ExcelWriter(
+    excel_file,
+    engine='xlsxwriter'
+) as writer:
 
-for idx, col in enumerate(
-    df_summary.columns
-):
-    worksheet.set_column(
-        idx,
-        idx,
-        30
+    # ---------------------------------------------------------
+    # SUMMARY SHEET
+    # ---------------------------------------------------------
+
+    df_summary = pd.DataFrame(
+        summary_data
     )
+
+    df_summary.to_excel(
+        writer,
+        index=False,
+        sheet_name='Summary'
+    )
+
+    # AUTO ADJUST COLUMN WIDTH
+    worksheet = writer.sheets['Summary']
+
+    for idx, col in enumerate(
+        df_summary.columns
+    ):
+        worksheet.set_column(
+            idx,
+            idx,
+            30
+        )
+
+    # ---------------------------------------------------------
+    # DISPENSATION SHEET
+    # ---------------------------------------------------------
+
+    df_disp = pd.DataFrame(
+        dispensation_data
+    )
+
+    df_disp.to_excel(
+        writer,
+        index=False,
+        sheet_name='Dispensation'
+    )
+
+    # AUTO ADJUST COLUMN WIDTH
+    worksheet = writer.sheets[
+        'Dispensation'
+    ]
+
+    for idx, col in enumerate(
+        df_disp.columns
+    ):
+        worksheet.set_column(
+            idx,
+            idx,
+            40
+        )
