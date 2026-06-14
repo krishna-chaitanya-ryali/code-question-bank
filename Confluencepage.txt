@@ -1,57 +1,9 @@
-def parse_cascade_date(
-    date_str
-):
-    if not date_str:
-        return datetime.datetime.min
+MCA1.LAST_UPDATED_DT
 
-    try:
-        # Remove timezone like IST/BST/EST
-        date_without_tz = (
-            date_str.rsplit(
-                " ",
-                1
-            )[0]
-        )
+ORDER BY
+    NVL(
+        MCA.LAST_UPDATED_DT,
+        MCA.ACTION_DT
+    ) DESC,
+    MCA.CASCADE_VERSION DESC
 
-        return datetime.datetime.strptime(
-            date_without_tz,
-            "%d %b %Y %I:%M:%S %p"
-        )
-
-    except Exception:
-        return datetime.datetime.min
-
-
-cascaded_from_parent_metrics.sort(
-    key=lambda x: parse_cascade_date(
-        x.get(
-            "METRIC_CASCADED_DATE"
-        )
-    ),
-    reverse=True
-)
-
-
-
-
-if (
-    cascade_from_parent_arr
-    and cascade_from_parent_arr != -1
-):
-    for record in cascade_from_parent_arr:
-
-        ...
-        cascaded_from_parent_metrics.append({
-            ...
-        })
-
-    # ← AFTER FOR LOOP ENDS
-
-    cascaded_from_parent_metrics.sort(
-        key=lambda x: parse_cascade_date(
-            x.get(
-                "METRIC_CASCADED_DATE"
-            )
-        ),
-        reverse=True
-    )
