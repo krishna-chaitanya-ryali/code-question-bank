@@ -1,17 +1,20 @@
-SELECT
-    METRIC_DETAIL_ID,
-    STATUS,
-    ACTION_DT,
-    LAST_UPDATED_DT,
-    ACTION_DT_STR,
-    NVL(
-        LAST_UPDATED_DT,
-        ACTION_DT
-    ) AS SORT_DATE
-FROM METRIC_CASCADE_ACTIONS
-WHERE CHILD_RMM_ID = 2408
-ORDER BY
-    NVL(
-        LAST_UPDATED_DT,
-        ACTION_DT
-    ) DESC;
+"ACTION_DT": record.get(
+    "ACTION_DT"
+),
+
+"LAST_UPDATED_DT": record.get(
+    "LAST_UPDATED_DT"
+),
+
+
+# ---------------------------------------------------
+# SORT BY LATEST ACTIVITY
+# ---------------------------------------------------
+
+cascaded_from_parent_metrics.sort(
+    key=lambda x: (
+        x.get("LAST_UPDATED_DT")
+        or x.get("ACTION_DT")
+    ),
+    reverse=True
+)
