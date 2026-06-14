@@ -172,3 +172,59 @@ def get_metric_cascade_log(vInfo):
 }
 
 
+
+
+927: {
+    "Ostring": """
+        SELECT DISTINCT
+            RMDT.METRIC_DETAIL_ID
+        FROM MEET_INSTC MI
+
+        JOIN RAP R
+            ON R.RAP_INSTANCE_ID =
+               MI.MEET_INSTC_ID
+
+        JOIN RAP_METRICS_DETAILS RMDT
+            ON RMDT.RAP_ID =
+               R.RAP_ID
+
+        WHERE
+                MI.MEET_INSTC_ID = :1
+            AND MI.RMM_ID = :2
+            AND RMDT.PRIMARY_RISK_TYPE = :3
+            AND NVL(
+                    RMDT.METRIC_FLAG,
+                    'ACTIVE'
+                ) <> 'removed'
+    """
+}
+
+
+def get_metric_cascade_log_data(vInfo):
+
+
+def get_metric_cascade_log_data(vInfo):
+
+return jsonify({
+    "status": "success",
+    "data": response_data
+})
+
+return response_data
+
+
+
+return []
+
+def get_metric_cascade_log(vInfo):
+
+    data = get_metric_cascade_log_data(
+        vInfo
+    )
+
+    return jsonify({
+        "status": "success",
+        "data": data
+    })
+
+
