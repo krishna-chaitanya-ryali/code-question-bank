@@ -1,143 +1,120 @@
-@auto_cascade.route(
-    "/auto_cascade_compliance_report",
-    methods=["POST"]
+@views.route(
+    "/cascade_status_log",
+    methods=["GET"]
 )
-def auto_cascade_compliance_report():
+def cascade_status_log():
 
     try:
 
-        vInfo = request.get_json()
-
-        return download_auto_cascade_compliance_report(
-            vInfo
+        metric_detail_id = request.args.get(
+            "metric_detail_id"
         )
 
-    except Exception as e:
-
-        log_error.error(
-            f"Error in auto_cascade_compliance_report: {str(e)}"
+        rmm_id = request.args.get(
+            "rmmId"
         )
 
-        return jsonify({
-            "status": "error",
-            "message": str(e)
-        })
+        result = get_metric_cascade_log_data(
+            {
+                "metric_detail_id":
+                    metric_detail_id,
 
-
-
-927: {
-    "Ostring": """
-        SELECT DISTINCT
-            RMDT.METRIC_DETAIL_ID
-        FROM MEET_INSTC MI
-
-        JOIN RAP R
-            ON R.RAP_INSTANCE_ID =
-               MI.MEET_INSTC_ID
-
-        JOIN RAP_METRICS_DETAILS RMDT
-            ON RMDT.RAP_ID =
-               R.RAP_ID
-
-        WHERE
-                MI.MEET_INSTC_ID = :1
-            AND MI.RMM_ID = :2
-            AND RMDT.PRIMARY_RISK_TYPE = :3
-            AND NVL(
-                    RMDT.METRIC_FLAG,
-                    'ACTIVE'
-                ) <> 'removed'
-    """
-}
-
-
-def download_auto_cascade_compliance_report(
-    vInfo
-):
-
-    try:
-
-        instance_id = vInfo.get(
-            "instance"
+                "rmmid":
+                    rmm_id
+            }
         )
 
-        dashboard_rmm_id = vInfo.get(
-            "dashboard_location"
-        )
-
-        risk_type_id = vInfo.get(
-            "risk_type_11"
-        )
-
-        metrics = sql_getData(
-            927,
-            [
-                instance_id,
-                dashboard_rmm_id,
-                risk_type_id
-            ]
-        )
-
-        if (
-            not metrics
-            or metrics == -1
-        ):
+        if not result:
 
             return jsonify({
                 "status": "error",
                 "message": "No data found"
             })
 
+        # ##############################################################
+        # SUMMARY SHEET
+        # ##############################################################
+
         summary_data = []
+
+        for row in result:
+
+            summary_data.append({
+
+                "Metric Title":
+                    row.get(
+                        "metric_title"
+                    ),
+
+                "Metric ID":
+                    row.get(
+                        "metric_id"
+                    ),
+
+                "Risk Type":
+                    row.get(
+                        "risk_type"
+                    ),
+
+                "Metric Category":
+                    row.get(
+                        "metric_category"
+                    ),
+
+                "Cascade Location":
+                    row.get(
+                        "cascade_location"
+                    ),
+
+                "Cascade Status":
+                    row.get(
+                        "cascade_status"
+                    ),
+
+                "Dispensation":
+                    row.get(
+                        "dispensation"
+                    ),
+
+                "Go Live Date":
+                    row.get(
+                        "go_live_date"
+                    ),
+
+                "Accepted / Rejected By":
+                    row.get(
+                        "actioned_by"
+                    ),
+
+                "Accepted / Rejected Date":
+                    row.get(
+                        "actioned_date"
+                    )
+            })
+
+        # ##############################################################
+        # DISPENSATION SHEET
+        # ##############################################################
+
         dispensation_data = []
 
-        for metric in metrics:
+        for row in result:
 
-            metric_detail_id = metric.get(
-                "METRIC_DETAIL_ID"
-            )
+            for disp in row.get(
+                "dispensation_details",
+                []
+            ):
 
-            metric_logs = (
-                get_metric_cascade_log_data(
-                    {
-                        "metric_detail_id":
-                            metric_detail_id,
-
-                        "rmmid":
-                            dashboard_rmm_id
-                    }
-                )
-            )
-
-            if not metric_logs:
-                continue
-
-            for row in metric_logs:
-
-                # ######################################################
-                # SUMMARY SHEET
-                # ######################################################
-
-                summary_data.append({
-
-                    "Metric Title":
-                        row.get(
-                            "metric_title"
-                        ),
+                dispensation_data.append({
 
                     "Metric ID":
                         row.get(
                             "metric_id"
                         ),
 
-                    "Risk Type":
+                    "Metric Title":
                         row.get(
-                            "risk_type"
-                        ),
-
-                    "Metric Category":
-                        row.get(
-                            "metric_category"
+                            "metric_title"
                         ),
 
                     "Cascade Location":
@@ -145,87 +122,31 @@ def download_auto_cascade_compliance_report(
                             "cascade_location"
                         ),
 
-                    "Cascade Status":
-                        row.get(
-                            "cascade_status"
+                    "Field Key":
+                        disp.get(
+                            "field_key"
                         ),
 
-                    "Dispensation":
-                        row.get(
-                            "dispensation"
+                    "Remarks":
+                        disp.get(
+                            "remarks"
                         ),
 
-                    "Go Live Date":
-                        row.get(
-                            "go_live_date"
+                    "File Name":
+                        disp.get(
+                            "file_name"
                         ),
 
-                    "Actioned By":
-                        row.get(
-                            "actioned_by"
+                    "File Path":
+                        disp.get(
+                            "file_path"
                         ),
 
-                    "Actioned Date":
-                        row.get(
-                            "actioned_date"
+                    "Created Date":
+                        disp.get(
+                            "created_dt"
                         )
                 })
-
-                # ######################################################
-                # DISPENSATION SHEET
-                # ######################################################
-
-                for disp in row.get(
-                    "dispensation_details",
-                    []
-                ):
-
-                    dispensation_data.append({
-
-                        "Metric ID":
-                            row.get(
-                                "metric_id"
-                            ),
-
-                        "Metric Title":
-                            row.get(
-                                "metric_title"
-                            ),
-
-                        "Cascade Location":
-                            row.get(
-                                "cascade_location"
-                            ),
-
-                        "Field Key":
-                            disp.get(
-                                "field_key"
-                            ),
-
-                        "Remarks":
-                            disp.get(
-                                "remarks"
-                            ),
-
-                        "File Name":
-                            disp.get(
-                                "file_name"
-                            ),
-
-                        "File Path":
-                            disp.get(
-                                "file_path"
-                            ),
-
-                        "Created Date":
-                            disp.get(
-                                "created_dt"
-                            )
-                    })
-
-        # ##############################################################
-        # CREATE EXCEL
-        # ##############################################################
 
         excel_file = io.BytesIO()
 
@@ -260,8 +181,8 @@ def download_auto_cascade_compliance_report(
             excel_file,
             as_attachment=True,
             download_name=
-                f"Auto_Cascade_Compliance_Report_"
-                f"{instance_id}.xlsx",
+                f"Cascade_Status_Log_"
+                f"{metric_detail_id}.xlsx",
             mimetype=
                 "application/vnd.openxmlformats-"
                 "officedocument.spreadsheetml.sheet"
@@ -270,7 +191,7 @@ def download_auto_cascade_compliance_report(
     except Exception as e:
 
         log_error.error(
-            f"Error in download_auto_cascade_compliance_report: "
+            f"Error in cascade_status_log: "
             f"{str(e)}"
         )
 
@@ -279,5 +200,3 @@ def download_auto_cascade_compliance_report(
             "message":
                 "Failed to download report"
         })
-
-
