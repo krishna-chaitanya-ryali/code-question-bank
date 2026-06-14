@@ -3,11 +3,12 @@
     methods=["POST"]
 )
 def auto_cascade_compliance_report():
+
     try:
 
-        vInfo = reqs.get_json()
+        vInfo = request.get_json()
 
-        return get_auto_cascade_compliance_report(
+        return download_auto_cascade_compliance_report(
             vInfo
         )
 
@@ -21,156 +22,6 @@ def auto_cascade_compliance_report():
             "status": "error",
             "message": str(e)
         })
-
-
-def get_auto_cascade_compliance_report(vInfo):
-    try:
-
-        # ##############################################################
-        # REQUEST DATA
-        # ##############################################################
-
-        instance_id = vInfo.get(
-            "instance"
-        )
-
-        dashboard_rmm_id = vInfo.get(
-            "dashboard_location"
-        )
-
-        risk_type_id = vInfo.get(
-            "risk_type_11"
-        )
-
-        if (
-            not instance_id
-            or not dashboard_rmm_id
-        ):
-            return jsonify({
-                "status": "error",
-                "message": "instance or dashboard location missing"
-            })
-
-        # ##############################################################
-        # GET ALL METRICS
-        # ##############################################################
-
-        metrics = sql_getData(
-            927,
-            [
-                instance_id,
-                dashboard_rmm_id,
-                risk_type_id
-            ]
-        )
-
-        if (
-            not metrics
-            or metrics == -1
-        ):
-            return jsonify({
-                "status": "success",
-                "data": []
-            })
-
-        final_response = []
-
-        # ##############################################################
-        # REUSE EXISTING LOGIC
-        # ##############################################################
-
-        for metric in metrics:
-
-            metric_detail_id = metric.get(
-                "METRIC_DETAIL_ID"
-            )
-
-            metric_info = {
-                "metric_detail_id":
-                    metric_detail_id,
-
-                "rmmid":
-                    dashboard_rmm_id
-            }
-
-            result = get_metric_cascade_log_data(
-                metric_info
-            )
-
-            if result:
-                final_response.extend(
-                    result
-                )
-
-        return jsonify({
-            "status": "success",
-            "data": final_response
-        })
-
-    except Exception as e:
-
-        log_error.error(
-            f"Error in get_auto_cascade_compliance_report: {str(e)}"
-        )
-
-        return jsonify({
-            "status": "error",
-            "message": str(e)
-        })
-
-
-
-927
-
-SELECT DISTINCT
-    RMDT.METRIC_DETAIL_ID
-FROM MEET_INSTC MI
-
-JOIN RAP R
-    ON R.RAP_INSTANCE_ID =
-       MI.MEET_INSTC_ID
-
-JOIN RAP_METRICS_DETAILS RMDT
-    ON RMDT.RAP_ID =
-       R.RAP_ID
-
-WHERE
-        MI.MEET_INSTC_ID = :1
-    AND MI.RMM_ID = :2
-
-    AND EXISTS (
-        SELECT 1
-        FROM YOUR_APPLICABLE_RISK_TYPE_TABLE ART
-        WHERE
-            ART.METRIC_DETAIL_ID =
-                RMDT.METRIC_DETAIL_ID
-            AND ART.RISK_TYPE_ID = :3
-    )
-
-    AND RMDT.METRIC_FLAG <> 'removed'
-
-
-def get_metric_cascade_log(vInfo):
-
-    data = get_metric_cascade_log_data(
-        vInfo
-    )
-
-    return jsonify({
-        "status": "success",
-        "data": data
-    })
-
-
-{
-  "instance": 13719,
-  "rmm": "208",
-  "uid": 10701,
-  "month": "MAR2026",
-  "dashboard_location": 2606,
-  "risk_type_11": 28
-}
-
 
 
 
@@ -200,56 +51,233 @@ def get_metric_cascade_log(vInfo):
 }
 
 
-def get_metric_cascade_log_data(vInfo):
+def download_auto_cascade_compliance_report(
+    vInfo
+):
 
-
-def get_metric_cascade_log_data(vInfo):
-
-return jsonify({
-    "status": "success",
-    "data": response_data
-})
-
-return response_data
-
-
-
-return []
-
-def get_metric_cascade_log(vInfo):
-
-    data = get_metric_cascade_log_data(
-        vInfo
-    )
-
-    return jsonify({
-        "status": "success",
-        "data": data
-    })
-
-
-
-def get_metric_cascade_log(vInfo):
     try:
 
-        data = get_metric_cascade_log_data(
-            vInfo
+        instance_id = vInfo.get(
+            "instance"
         )
 
-        return jsonify({
-            "status": "success",
-            "data": data
-        })
+        dashboard_rmm_id = vInfo.get(
+            "dashboard_location"
+        )
+
+        risk_type_id = vInfo.get(
+            "risk_type_11"
+        )
+
+        metrics = sql_getData(
+            927,
+            [
+                instance_id,
+                dashboard_rmm_id,
+                risk_type_id
+            ]
+        )
+
+        if (
+            not metrics
+            or metrics == -1
+        ):
+
+            return jsonify({
+                "status": "error",
+                "message": "No data found"
+            })
+
+        summary_data = []
+        dispensation_data = []
+
+        for metric in metrics:
+
+            metric_detail_id = metric.get(
+                "METRIC_DETAIL_ID"
+            )
+
+            metric_logs = (
+                get_metric_cascade_log_data(
+                    {
+                        "metric_detail_id":
+                            metric_detail_id,
+
+                        "rmmid":
+                            dashboard_rmm_id
+                    }
+                )
+            )
+
+            if not metric_logs:
+                continue
+
+            for row in metric_logs:
+
+                # ######################################################
+                # SUMMARY SHEET
+                # ######################################################
+
+                summary_data.append({
+
+                    "Metric Title":
+                        row.get(
+                            "metric_title"
+                        ),
+
+                    "Metric ID":
+                        row.get(
+                            "metric_id"
+                        ),
+
+                    "Risk Type":
+                        row.get(
+                            "risk_type"
+                        ),
+
+                    "Metric Category":
+                        row.get(
+                            "metric_category"
+                        ),
+
+                    "Cascade Location":
+                        row.get(
+                            "cascade_location"
+                        ),
+
+                    "Cascade Status":
+                        row.get(
+                            "cascade_status"
+                        ),
+
+                    "Dispensation":
+                        row.get(
+                            "dispensation"
+                        ),
+
+                    "Go Live Date":
+                        row.get(
+                            "go_live_date"
+                        ),
+
+                    "Actioned By":
+                        row.get(
+                            "actioned_by"
+                        ),
+
+                    "Actioned Date":
+                        row.get(
+                            "actioned_date"
+                        )
+                })
+
+                # ######################################################
+                # DISPENSATION SHEET
+                # ######################################################
+
+                for disp in row.get(
+                    "dispensation_details",
+                    []
+                ):
+
+                    dispensation_data.append({
+
+                        "Metric ID":
+                            row.get(
+                                "metric_id"
+                            ),
+
+                        "Metric Title":
+                            row.get(
+                                "metric_title"
+                            ),
+
+                        "Cascade Location":
+                            row.get(
+                                "cascade_location"
+                            ),
+
+                        "Field Key":
+                            disp.get(
+                                "field_key"
+                            ),
+
+                        "Remarks":
+                            disp.get(
+                                "remarks"
+                            ),
+
+                        "File Name":
+                            disp.get(
+                                "file_name"
+                            ),
+
+                        "File Path":
+                            disp.get(
+                                "file_path"
+                            ),
+
+                        "Created Date":
+                            disp.get(
+                                "created_dt"
+                            )
+                    })
+
+        # ##############################################################
+        # CREATE EXCEL
+        # ##############################################################
+
+        excel_file = io.BytesIO()
+
+        with pd.ExcelWriter(
+            excel_file,
+            engine='xlsxwriter'
+        ) as writer:
+
+            df_summary = pd.DataFrame(
+                summary_data
+            )
+
+            df_summary.to_excel(
+                writer,
+                index=False,
+                sheet_name='Summary'
+            )
+
+            df_disp = pd.DataFrame(
+                dispensation_data
+            )
+
+            df_disp.to_excel(
+                writer,
+                index=False,
+                sheet_name='Dispensation'
+            )
+
+        excel_file.seek(0)
+
+        return send_file(
+            excel_file,
+            as_attachment=True,
+            download_name=
+                f"Auto_Cascade_Compliance_Report_"
+                f"{instance_id}.xlsx",
+            mimetype=
+                "application/vnd.openxmlformats-"
+                "officedocument.spreadsheetml.sheet"
+        )
 
     except Exception as e:
 
         log_error.error(
-            f"Error in get_metric_cascade_log: {str(e)}"
+            f"Error in download_auto_cascade_compliance_report: "
+            f"{str(e)}"
         )
 
         return jsonify({
             "status": "error",
-            "message": "Failed to fetch cascade log"
+            "message":
+                "Failed to download report"
         })
 
 
