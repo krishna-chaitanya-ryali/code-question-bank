@@ -1,206 +1,162 @@
-def get_metric_cascade_log(vInfo):
+@auto_cascade.route(
+    "/auto_cascade_compliance_report",
+    methods=["POST"]
+)
+def auto_cascade_compliance_report():
     try:
 
-        # ######################################################################
-        # GET REQUEST DATA
-        # ######################################################################
+        vInfo = reqs.get_json()
 
-        metric_detail_id = vInfo.get(
-            "metric_detail_id"
+        return get_auto_cascade_compliance_report(
+            vInfo
         )
 
-        rmmid = vInfo.get(
-            "rmmid"
+    except Exception as e:
+
+        log_error.error(
+            f"Error in auto_cascade_compliance_report: {str(e)}"
         )
 
-        if not metric_detail_id:
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        })
+
+
+def get_auto_cascade_compliance_report(vInfo):
+    try:
+
+        # ##############################################################
+        # REQUEST DATA
+        # ##############################################################
+
+        instance_id = vInfo.get(
+            "instance"
+        )
+
+        dashboard_rmm_id = vInfo.get(
+            "dashboard_location"
+        )
+
+        risk_type_id = vInfo.get(
+            "risk_type_11"
+        )
+
+        if (
+            not instance_id
+            or not dashboard_rmm_id
+        ):
             return jsonify({
                 "status": "error",
-                "message": "metric_detail_id is required"
+                "message": "instance or dashboard location missing"
             })
 
-        # ######################################################################
-        # GET CASCADE LOG DATA
-        # ######################################################################
+        # ##############################################################
+        # GET ALL METRICS
+        # ##############################################################
 
-        result = sql_getData(
-            924,
+        metrics = sql_getData(
+            927,
             [
-                rmmid,
-                rmmid,
-                metric_detail_id
+                instance_id,
+                dashboard_rmm_id,
+                risk_type_id
             ]
         )
 
-        # ######################################################################
-        # EMPTY RESPONSE
-        # ######################################################################
-
-        if not result:
+        if (
+            not metrics
+            or metrics == -1
+        ):
             return jsonify({
                 "status": "success",
                 "data": []
             })
 
-        # ######################################################################
-        # FORMAT RESPONSE
-        # ######################################################################
+        final_response = []
 
-        response_data = []
+        # ##############################################################
+        # REUSE EXISTING LOGIC
+        # ##############################################################
 
-        for row in result:
+        for metric in metrics:
 
-            child_rmm_id = row.get(
-                "CHILD_RMM_ID"
+            metric_detail_id = metric.get(
+                "METRIC_DETAIL_ID"
             )
 
-            # ##############################################################
-            # GET DISPENSATION DETAILS
-            # ##############################################################
-
-            dispensation_details = sql_getData(
-                926,
-                [
+            metric_info = {
+                "metric_detail_id":
                     metric_detail_id,
-                    child_rmm_id
-                ]
+
+                "rmmid":
+                    dashboard_rmm_id
+            }
+
+            result = get_metric_cascade_log_data(
+                metric_info
             )
 
-            if (
-                not dispensation_details
-                or dispensation_details == -1
-            ):
-                dispensation_details = []
-
-            formatted_dispensation_details = []
-
-            for disp in dispensation_details:
-
-                formatted_dispensation_details.append({
-
-                    "field_key": disp.get(
-                        "FIELD_KEY"
-                    ),
-
-                    "remarks": disp.get(
-                        "REMARKS"
-                    ),
-
-                    "file_name": disp.get(
-                        "FILE_NAME"
-                    ),
-
-                    "file_path": disp.get(
-                        "FILE_PATH"
-                    ),
-
-                    "created_dt": disp.get(
-                        "CREATED_DT"
-                    )
-                })
-
-            # ##############################################################
-            # DISPENSATION FLAG
-            # ##############################################################
-
-            dispensation_flag = (
-                "Y"
-                if formatted_dispensation_details
-                else "N"
-            )
-
-            response_data.append({
-
-                "action_id": row.get(
-                    "ACTION_ID"
-                ),
-
-                "metric_detail_id": row.get(
-                    "METRIC_DETAIL_ID"
-                ),
-
-                "target_metric_detail_id": row.get(
-                    "TARGET_METRIC_DETAIL_ID"
-                ),
-
-                "metric_id": row.get(
-                    "MASTER_METRIC_ID"
-                ),
-
-                "metric_title": row.get(
-                    "METRIC_TITLE"
-                ),
-
-                "metric_category": row.get(
-                    "METRIC_CATEGORY"
-                ),
-
-                "risk_type": row.get(
-                    "PRIMARY_RISK_TYPE"
-                ),
-
-                "cascade_location": row.get(
-                    "CASCADE_LOCATION"
-                ),
-
-                "cascade_status": row.get(
-                    "STATUS"
-                ),
-
-                "cascade_version": row.get(
-                    "CASCADE_VERSION"
-                ),
-
-                "dispensation": dispensation_flag,
-
-                "actioned_by": row.get(
-                    "ACTIONED_BY"
-                ),
-
-                "actioned_date": row.get(
-                    "ACTION_DT_STR"
-                ),
-
-                "go_live_date": row.get(
-                    "GO_LIVE_DATE"
-                ),
-
-                "dispensation_details":
-                    formatted_dispensation_details
-            })
-
-        # ######################################################################
-        # FINAL RESPONSE
-        # ######################################################################
+            if result:
+                final_response.extend(
+                    result
+                )
 
         return jsonify({
             "status": "success",
-            "data": response_data
+            "data": final_response
         })
 
     except Exception as e:
 
         log_error.error(
-            f"Error in get_metric_cascade_log: {str(e)}"
+            f"Error in get_auto_cascade_compliance_report: {str(e)}"
         )
 
         return jsonify({
             "status": "error",
-            "message": "Failed to fetch cascade log"
+            "message": str(e)
         })
 
 
 
-SELECT
-    CASCADED_METRIC_DETAIL_ID,
-    RMM_ID,
-    FIELD_KEY,
-    REMARKS,
-    FILE_NAME,
-    FILE_PATH,
-    CREATED_DT
-FROM METRIC_CASCADE_DISPENSATION_DETAILS
+927
+
+SELECT DISTINCT
+    RMDT.METRIC_DETAIL_ID
+FROM MEET_INSTC MI
+
+JOIN RAP R
+    ON R.RAP_INSTANCE_ID =
+       MI.MEET_INSTC_ID
+
+JOIN RAP_METRICS_DETAILS RMDT
+    ON RMDT.RAP_ID =
+       R.RAP_ID
+
 WHERE
-    CASCADED_METRIC_DETAIL_ID = :1
-    AND RMM_ID = :2
-ORDER BY CREATED_DT;
+        MI.MEET_INSTC_ID = :1
+    AND MI.RMM_ID = :2
+
+    AND EXISTS (
+        SELECT 1
+        FROM YOUR_APPLICABLE_RISK_TYPE_TABLE ART
+        WHERE
+            ART.METRIC_DETAIL_ID =
+                RMDT.METRIC_DETAIL_ID
+            AND ART.RISK_TYPE_ID = :3
+    )
+
+    AND RMDT.METRIC_FLAG <> 'removed'
+
+
+def get_metric_cascade_log(vInfo):
+
+    data = get_metric_cascade_log_data(
+        vInfo
+    )
+
+    return jsonify({
+        "status": "success",
+        "data": data
+    })
