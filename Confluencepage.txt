@@ -1,11 +1,8 @@
-from datetime import datetime
-
-
 def parse_cascade_date(
     date_str
 ):
     if not date_str:
-        return datetime.min
+        return datetime.datetime.min
 
     try:
         # Remove timezone like IST/BST/EST
@@ -16,13 +13,13 @@ def parse_cascade_date(
             )[0]
         )
 
-        return datetime.strptime(
+        return datetime.datetime.strptime(
             date_without_tz,
             "%d %b %Y %I:%M:%S %p"
         )
 
     except Exception:
-        return datetime.min
+        return datetime.datetime.min
 
 
 cascaded_from_parent_metrics.sort(
