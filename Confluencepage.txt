@@ -1,58 +1,23 @@
-with pd.ExcelWriter(
-    excel_file,
-    engine='xlsxwriter'
-) as writer:
+SELECT
+    MCA1.METRIC_DETAIL_ID,
+    MCA1.CHILD_RMM_ID,
+    MCA1.CASCADE_VERSION,
+    MCA1.ACTION_DT,
+    MCA1.LAST_UPDATED_DT,
+    MCA1.ACTION_BY,
+    MCA1.STATUS,
+    MCA1.ACTION_DT_STR AS CASCADE_DT_STR,
+    MCA1.SELECTED_CASCADING_TYPE,
+    MCA1.SELECTED_EXISTING_METRIC_DETAIL_ID,
+    MCA1.IS_ACTIVE
+FROM METRIC_CASCADE_ACTIONS MCA1
+WHERE MCA1.ACTION_TYPE = 'CASCADE'
 
-    # ---------------------------------------------------------
-    # SUMMARY SHEET
-    # ---------------------------------------------------------
 
-    df_summary = pd.DataFrame(
-        summary_data
-    )
 
-    df_summary.to_excel(
-        writer,
-        index=False,
-        sheet_name='Summary'
-    )
-
-    # AUTO ADJUST COLUMN WIDTH
-    worksheet = writer.sheets['Summary']
-
-    for idx, col in enumerate(
-        df_summary.columns
-    ):
-        worksheet.set_column(
-            idx,
-            idx,
-            30
-        )
-
-    # ---------------------------------------------------------
-    # DISPENSATION SHEET
-    # ---------------------------------------------------------
-
-    df_disp = pd.DataFrame(
-        dispensation_data
-    )
-
-    df_disp.to_excel(
-        writer,
-        index=False,
-        sheet_name='Dispensation'
-    )
-
-    # AUTO ADJUST COLUMN WIDTH
-    worksheet = writer.sheets[
-        'Dispensation'
-    ]
-
-    for idx, col in enumerate(
-        df_disp.columns
-    ):
-        worksheet.set_column(
-            idx,
-            idx,
-            40
-        )
+ORDER BY
+    NVL(
+        MCA.LAST_UPDATED_DT,
+        MCA.ACTION_DT
+    ) DESC,
+    MCA.CASCADE_VERSION DESC
