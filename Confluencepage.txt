@@ -1,9 +1,28 @@
-MCA1.LAST_UPDATED_DT
+SELECT 1
+FROM METRIC_CASCADE_LOCATIONS
+WHERE METRIC_DETAIL_ID = :1
+  AND IS_ACTIVE = 'Y'
+  AND ACTION_TYPE = 'CASCADE'
+FETCH FIRST 1 ROW ONLY;
 
-ORDER BY
-    NVL(
-        MCA.LAST_UPDATED_DT,
-        MCA.ACTION_DT
-    ) DESC,
-    MCA.CASCADE_VERSION DESC
 
+cascade_rows = sql_getData(
+    928,
+    [
+        selected_metric_detail_id
+    ]
+)
+
+is_cascade_to_child = (
+    "Y"
+    if cascade_rows
+    and cascade_rows != -1
+    else "N"
+)
+
+
+{
+    "status": "Success",
+    "message": "Metric removed successfully",
+    "isCascadeToChild": "Y"
+}
