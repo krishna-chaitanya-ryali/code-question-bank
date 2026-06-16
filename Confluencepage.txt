@@ -1,7 +1,1 @@
-ORDER BY
-    CASE
-        WHEN MCA.ACTION_DT IS NULL THEN 0
-        ELSE 1
-    END,
-    MCA.ACTION_DT DESC,
-    MCL.CASCADE_VERSION DESC
+Hi Matt, hope you're doing well. I had a brief discussion with Anurag today and we are planning to connect later regarding appraisal and future opportunities. I just wanted to check if there is any feedback from your side or anything you may have already shared with Anurag/Atul that I should be aware of before the discussion. Thanks for all your support.
