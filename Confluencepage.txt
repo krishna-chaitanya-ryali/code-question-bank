@@ -1,1 +1,4 @@
-Hi Matt, hope you're doing well. I had a brief discussion with Anurag today and we are planning to connect later regarding appraisal and future opportunities. I just wanted to check if there is any feedback from your side or anything you may have already shared with Anurag/Atul that I should be aware of before the discussion. Thanks for all your support.
+ALTER TABLE METRIC_CASCADE_LOCATIONS
+ADD MEET_INSTC_ID NUMBER;
+
+AND MCL.MEET_INSTC_ID = :2
