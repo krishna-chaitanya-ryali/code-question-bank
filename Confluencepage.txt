@@ -1,4 +1,14 @@
-ALTER TABLE METRIC_CASCADE_LOCATIONS
-ADD MEET_INSTC_ID NUMBER;
-
-AND MCL.MEET_INSTC_ID = :2
+AND TRUNC(
+        RMDT.GO_LIVE_DATE,
+        'MM'
+    ) =
+    TRUNC(
+        ADD_MONTHS(
+            TO_DATE(
+                :CURRENT_DRAFT_MONTH,
+                'YYYYMMDD'
+            ),
+            -1
+        ),
+        'MM'
+    )
