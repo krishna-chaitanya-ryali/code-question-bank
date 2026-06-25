@@ -1,55 +1,24 @@
+if isinstance(selected_child_locations, str):
+    selected_child_locations = [
+        x.strip()
+        for x in selected_child_locations.split(",")
+        if x.strip()
+    ]
+
+
+selected_locations = set(
+    map(str, selected_child_locations)
+)
+
+result = [
+    row
+    for row in result
+    if str(row.get("CHILD_RMM_ID")) in selected_locations
+]
+
+
+
 log_debug.debug(
-    "Selected Child Locations : %s",
+    "After conversion : %s",
     selected_child_locations
 )
-
-log_debug.debug("===== BEFORE FILTER =====")
-
-for row in result or []:
-    log_debug.debug(
-        "ACTION_ID=%s | CHILD_RMM_ID=%s | LOCATION=%s | STATUS=%s",
-        row.get("ACTION_ID"),
-
-log_debug.debug("===== AFTER FILTER =====")
-
-for row in result:
-    log_debug.debug(
-        "ACTION_ID=%s | CHILD_RMM_ID=%s | LOCATION=%s",
-        row.get("ACTION_ID"),
-        row.get("CHILD_RMM_ID"),
-        row.get("CASCADE_LOCATION")
-    )
-        row.get("CHILD_RMM_ID"),
-        row.get("CASCADE_LOCATION"),
-        row.get("STATUS")
-    )
-
-
-log_debug.debug(
-    "Sending Location=%s Child=%s",
-    row.get("CASCADE_LOCATION"),
-    row.get("CHILD_RMM_ID")
-)
-
-
-log_debug.debug(
-    "Selected=%s ReturnedChild=%s ReturnedLocation=%s",
-    selected_child_locations,
-    row.get("CHILD_RMM_ID"),
-    row.get("CASCADE_LOCATION")
-)
-
-
-
-
-log_debug.debug("===== BEFORE FILTER =====")
-
-for row in result or []:
-    log_debug.debug(
-        "ACTION_ID=%s | CHILD_RMM_ID=%s | LOCATION=%s | STATUS=%s",
-        row.get("ACTION_ID"),
-        row.get("CHILD_RMM_ID"),
-        row.get("CASCADE_LOCATION"),
-        row.get("STATUS")
-    )
-
