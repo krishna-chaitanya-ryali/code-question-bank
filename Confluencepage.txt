@@ -1,3 +1,39 @@
+if selected_child_locations:
+
+    selected_locations = set(
+        map(
+            str,
+            selected_child_locations
+        )
+    )
+
+    result = [
+        row
+        for row in result
+        if str(
+            row.get("CHILD_RMM_ID")
+        ) in selected_locations
+    ]
+
+log_debug.debug("===== AFTER FILTER =====")
+
+for row in result:
+    log_debug.debug(
+        "ACTION_ID=%s | CHILD_RMM_ID=%s | LOCATION=%s | STATUS=%s",
+        row.get("ACTION_ID"),
+        row.get("CHILD_RMM_ID"),
+        row.get("CASCADE_LOCATION"),
+        row.get("STATUS")
+    )
+
+
+
+selected_child_locations = vInfo.get(
+    "selected_child_locations",
+    []
+)
+
+# Convert comma-separated string to list
 if isinstance(selected_child_locations, str):
     selected_child_locations = [
         x.strip()
@@ -5,20 +41,47 @@ if isinstance(selected_child_locations, str):
         if x.strip()
     ]
 
-
-selected_locations = set(
-    map(str, selected_child_locations)
-)
-
-result = [
-    row
-    for row in result
-    if str(row.get("CHILD_RMM_ID")) in selected_locations
-]
-
-
-
 log_debug.debug(
-    "After conversion : %s",
+    "Selected child Locations : %s",
     selected_child_locations
 )
+
+log_debug.debug("===== BEFORE FILTER =====")
+
+for row in result:
+    log_debug.debug(
+        "ACTION_ID=%s | CHILD_RMM_ID=%s | LOCATION=%s | STATUS=%s",
+        row.get("ACTION_ID"),
+        row.get("CHILD_RMM_ID"),
+        row.get("CASCADE_LOCATION"),
+        row.get("STATUS")
+    )
+
+# Replace your old filtering block with this one
+if selected_child_locations:
+
+    selected_locations = set(
+        map(
+            str,
+            selected_child_locations
+        )
+    )
+
+    result = [
+        row
+        for row in result
+        if str(
+            row.get("CHILD_RMM_ID")
+        ) in selected_locations
+    ]
+
+log_debug.debug("===== AFTER FILTER =====")
+
+for row in result:
+    log_debug.debug(
+        "ACTION_ID=%s | CHILD_RMM_ID=%s | LOCATION=%s | STATUS=%s",
+        row.get("ACTION_ID"),
+        row.get("CHILD_RMM_ID"),
+        row.get("CASCADE_LOCATION"),
+        row.get("STATUS")
+    )
