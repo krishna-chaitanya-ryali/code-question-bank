@@ -41,3 +41,15 @@ log_debug.debug(
 
 
 
+
+log_debug.debug("===== BEFORE FILTER =====")
+
+for row in result or []:
+    log_debug.debug(
+        "ACTION_ID=%s | CHILD_RMM_ID=%s | LOCATION=%s | STATUS=%s",
+        row.get("ACTION_ID"),
+        row.get("CHILD_RMM_ID"),
+        row.get("CASCADE_LOCATION"),
+        row.get("STATUS")
+    )
+
