@@ -1,5 +1,43 @@
-Hi Jay, hope you're doing well.
+log_debug.debug(
+    "Selected Child Locations : %s",
+    selected_child_locations
+)
 
-I wanted to check with you regarding my career progression. I've been working on the RAP project for quite some time now, and I was wondering if there are any internal opportunities or movements within HSBC that might be suitable for my profile. If you have any guidance or suggestions, I'd really appreciate it.
+log_debug.debug("===== BEFORE FILTER =====")
 
-Thanks!
+for row in result or []:
+    log_debug.debug(
+        "ACTION_ID=%s | CHILD_RMM_ID=%s | LOCATION=%s | STATUS=%s",
+        row.get("ACTION_ID"),
+
+log_debug.debug("===== AFTER FILTER =====")
+
+for row in result:
+    log_debug.debug(
+        "ACTION_ID=%s | CHILD_RMM_ID=%s | LOCATION=%s",
+        row.get("ACTION_ID"),
+        row.get("CHILD_RMM_ID"),
+        row.get("CASCADE_LOCATION")
+    )
+        row.get("CHILD_RMM_ID"),
+        row.get("CASCADE_LOCATION"),
+        row.get("STATUS")
+    )
+
+
+log_debug.debug(
+    "Sending Location=%s Child=%s",
+    row.get("CASCADE_LOCATION"),
+    row.get("CHILD_RMM_ID")
+)
+
+
+log_debug.debug(
+    "Selected=%s ReturnedChild=%s ReturnedLocation=%s",
+    selected_child_locations,
+    row.get("CHILD_RMM_ID"),
+    row.get("CASCADE_LOCATION")
+)
+
+
+
