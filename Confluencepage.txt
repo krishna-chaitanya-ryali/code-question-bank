@@ -1,52 +1,5 @@
-metrics = []
+Hi Jay, hope you're doing well.
 
-risk_type_list = [
-    x.strip()
-    for x in risk_type_id.split(",")
-]
+I wanted to check with you regarding my career progression. I've been working on the RAP project for quite some time now, and I was wondering if there are any internal opportunities or movements within HSBC that might be suitable for my profile. If you have any guidance or suggestions, I'd really appreciate it.
 
-for risk_type in risk_type_list:
-
-    result = sql_getData(
-        927,
-        [
-            instance_id,
-            dashboard_rmm_id,
-            risk_type,
-            dashboard_section
-        ]
-    )
-
-    if result and result != -1:
-        metrics.extend(result)
-
-
-selected_child_locations = vInfo.get(
-    "selected_child_locations",
-    []
-)
-
-if selected_child_locations:
-
-    result = [
-        row
-        for row in result
-        if str(
-            row.get(
-                "CHILD_RMM_ID"
-            )
-        ) in [
-            str(x)
-            for x in selected_child_locations
-        ]
-    ]
-
-
-metric_logs = get_metric_cascade_log_data(
-    {
-        "metric_detail_id": metric_detail_id,
-        "rmmid": dashboard_rmm_id,
-        "selected_child_locations":
-            selected_child_locations
-    }
-)
+Thanks!
