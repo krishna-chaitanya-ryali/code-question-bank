@@ -1,87 +1,14 @@
-if selected_child_locations:
+Hi Matt,
 
-    selected_locations = set(
-        map(
-            str,
-            selected_child_locations
-        )
-    )
+Thank you for your earlier email and for all the guidance and support throughout my time on the RAP project.
 
-    result = [
-        row
-        for row in result
-        if str(
-            row.get("CHILD_RMM_ID")
-        ) in selected_locations
-    ]
+I wanted to update you that I have recently received an external opportunity and have decided to pursue it. I have already initiated discussions with my parent company regarding my transition.
 
-log_debug.debug("===== AFTER FILTER =====")
+As we discussed earlier, I will ensure that the Metric Auto Cascade Phase 1 activities are completed and will fully support the knowledge transfer and handover to the team so that the remaining work can continue smoothly.
 
-for row in result:
-    log_debug.debug(
-        "ACTION_ID=%s | CHILD_RMM_ID=%s | LOCATION=%s | STATUS=%s",
-        row.get("ACTION_ID"),
-        row.get("CHILD_RMM_ID"),
-        row.get("CASCADE_LOCATION"),
-        row.get("STATUS")
-    )
+Since you are currently on leave, I have copied Ipsita so that the team is aware of my transition planning. I would appreciate it if we could align on a suitable transition timeline and handover plan.
 
+It has been a great learning experience working with you and the team, and I sincerely appreciate all the support and opportunities over the years.
 
-
-selected_child_locations = vInfo.get(
-    "selected_child_locations",
-    []
-)
-
-# Convert comma-separated string to list
-if isinstance(selected_child_locations, str):
-    selected_child_locations = [
-        x.strip()
-        for x in selected_child_locations.split(",")
-        if x.strip()
-    ]
-
-log_debug.debug(
-    "Selected child Locations : %s",
-    selected_child_locations
-)
-
-log_debug.debug("===== BEFORE FILTER =====")
-
-for row in result:
-    log_debug.debug(
-        "ACTION_ID=%s | CHILD_RMM_ID=%s | LOCATION=%s | STATUS=%s",
-        row.get("ACTION_ID"),
-        row.get("CHILD_RMM_ID"),
-        row.get("CASCADE_LOCATION"),
-        row.get("STATUS")
-    )
-
-# Replace your old filtering block with this one
-if selected_child_locations:
-
-    selected_locations = set(
-        map(
-            str,
-            selected_child_locations
-        )
-    )
-
-    result = [
-        row
-        for row in result
-        if str(
-            row.get("CHILD_RMM_ID")
-        ) in selected_locations
-    ]
-
-log_debug.debug("===== AFTER FILTER =====")
-
-for row in result:
-    log_debug.debug(
-        "ACTION_ID=%s | CHILD_RMM_ID=%s | LOCATION=%s | STATUS=%s",
-        row.get("ACTION_ID"),
-        row.get("CHILD_RMM_ID"),
-        row.get("CASCADE_LOCATION"),
-        row.get("STATUS")
-    )
+Regards,
+Krishna Chaitanya
