@@ -1,7 +1,18 @@
-TO_CHAR(
-    TO_DATE(
-        RMDT.GO_LIVE_DATE,
-        'YYYY-MM'
-    ),
-    'FMMonth YYYY'
-) AS GO_LIVE_DATE,
+workbook = writer.book
+
+left_align = workbook.add_format({
+    "align": "left",
+    "valign": "vcenter"
+})
+
+worksheet = writer.sheets["Summary"]
+
+for idx, col in enumerate(
+    df_summary.columns
+):
+    worksheet.set_column(
+        idx,
+        idx,
+        30,
+        left_align
+    )
