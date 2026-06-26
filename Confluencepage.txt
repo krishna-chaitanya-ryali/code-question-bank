@@ -1,14 +1,7 @@
-Hi Matt,
-
-Thank you for your earlier email and for all the guidance and support throughout my time on the RAP project.
-
-I wanted to update you that I have recently received an external opportunity and have decided to pursue it. I have already initiated discussions with my parent company regarding my transition.
-
-As we discussed earlier, I will ensure that the Metric Auto Cascade Phase 1 activities are completed and will fully support the knowledge transfer and handover to the team so that the remaining work can continue smoothly.
-
-Since you are currently on leave, I have copied Ipsita so that the team is aware of my transition planning. I would appreciate it if we could align on a suitable transition timeline and handover plan.
-
-It has been a great learning experience working with you and the team, and I sincerely appreciate all the support and opportunities over the years.
-
-Regards,
-Krishna Chaitanya
+TO_CHAR(
+    TO_DATE(
+        RMDT.GO_LIVE_DATE,
+        'YYYY-MM'
+    ),
+    'FMMonth YYYY'
+) AS GO_LIVE_DATE,
