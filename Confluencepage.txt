@@ -1,22 +1,39 @@
-for disp in dispensation_details:
+Hi Sandip,
 
-    field_key = FIELD_KEY_MAPPING.get(
-        disp.get("FIELD_KEY"),
-        disp.get("FIELD_KEY")
-    )
+Please find the updates below for the observations raised:
 
-    formatted_dispensation_details.append({
-        "field_key": field_key,
-        "remarks": disp.get(
-            "REMARKS"
-        ),
-        "file_name": disp.get(
-            "FILE_NAME"
-        ),
-        "file_path": disp.get(
-            "FILE_PATH"
-        ),
-        "created_dt": disp.get(
-            "CREATED_DT"
-        )
-    })
+1. Metric Cascade Status Log
+
+- We have implemented the required changes for displaying Accepted By, Rejected By, and the corresponding dates.
+- As discussed during the call, these columns were introduced recently in the database. Therefore, historical records will not display these values. Going forward, any new Accept/Reject actions will populate these fields automatically.
+- We request you to validate this scenario with newly performed Accept/Reject actions.
+- The Go-Live Date format has been updated to MMM YYYY and the change is reflected in both the UI and the report.
+
+2. Revised Cascade Status
+
+- The "No Action Required" status has been removed from the Metric Cascade Status Log in both the UI and the report as requested.
+
+3. Cascade Compliance Report
+The following changes have been completed:
+
+- Left alignment has been applied in both the Summary and Rejection Remarks tabs.
+- Cascade Location has been renamed to Cascaded Location.
+- Remarks has been renamed to Rejection Remarks.
+- Rejected Key has been renamed to Rejected Key Fields.
+- Field names have been aligned with the UI naming conventions and unnecessary underscores have been removed.
+
+Regarding the observation that Rejected Fields are repeated multiple times, this will be addressed along with the ongoing re-cascade changes and will be included in the upcoming build.
+
+4. Cascade Compliance Report Generation
+
+- This issue has been fixed and the report is now being generated successfully.
+
+5. To Be Removed Section
+
+- The required changes for the "To Be Removed" section are currently in progress.
+- We are targeting to complete these changes along with the Rejection Remarks updates and share them in the next build, planned by Monday.
+
+The remaining observations are currently under analysis, and we will provide further updates as we progress.
+
+Thanks,
+Krishna Chaitanya
