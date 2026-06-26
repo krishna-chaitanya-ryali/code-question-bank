@@ -1,33 +1,22 @@
-FIELD_KEY_MAPPING = {
-    "PRIMARY_RISK_TYPE": "Risk Type (L1)",
-    "MASTER_METRIC": "Metric Title",
-    "RAS_CATEGORY": "Metric Category",
-    "FREQUENCY": "Frequency",
-    "INEFFICIENCY_VALUE1": "Inefficiency Trigger (IT)",
-    "WARNING_TRIGGER_VALUE1": "Warning Trigger (WT)",
-    "TOLERANCE_THRESHOLD_VALUE1": "Tolerance Threshold (TT)",
-    "BCBS_METRIC": "BCBS Metrics"
-}
+for disp in dispensation_details:
 
+    field_key = FIELD_KEY_MAPPING.get(
+        disp.get("FIELD_KEY"),
+        disp.get("FIELD_KEY")
+    )
 
-
-"field_key": disp.get("FIELD_KEY"),
-
-
-field_key = FIELD_KEY_MAPPING.get(
-    disp.get("FIELD_KEY"),
-    disp.get("FIELD_KEY")
-)
-
-formatted_dispensation_details.append({
-    "field_key": field_key,
-    "remarks": disp.get("REMARKS"),
-    "file_name": disp.get("FILE_NAME"),
-    "file_path": disp.get("FILE_PATH"),
-    "created_dt": disp.get("CREATED_DT")
-})
-
-
-"Rejected Key Fields":
-    disp.get("field_key")
-
+    formatted_dispensation_details.append({
+        "field_key": field_key,
+        "remarks": disp.get(
+            "REMARKS"
+        ),
+        "file_name": disp.get(
+            "FILE_NAME"
+        ),
+        "file_path": disp.get(
+            "FILE_PATH"
+        ),
+        "created_dt": disp.get(
+            "CREATED_DT"
+        )
+    })
