@@ -1,39 +1,104 @@
-Hi Sandip,
+929: {
+"Qstring": """
+SELECT
+    METRIC_DETAIL_ID,
+    CHILD_RMM_ID,
+    CASCADE_VERSION
+FROM METRIC_CASCADE_LOCATIONS
+WHERE
+    METRIC_DETAIL_ID = :1
+AND PARENT_RMM_ID = :2
+AND ACTION_TYPE = 'REMOVE'
+AND IS_ACTIVE = 'Y'
+"""
+},
 
-Please find the updates below for the observations raised:
 
-1. Metric Cascade Status Log
+930: {
+"Qstring": """
+UPDATE METRIC_CASCADE_LOCATIONS
+SET
+    PARENT_RMM_ID = :1
+WHERE
+    METRIC_DETAIL_ID = :2
+AND CHILD_RMM_ID = :3
+AND ACTION_TYPE='REMOVE'
+AND IS_ACTIVE='Y'
+"""
+},
 
-- We have implemented the required changes for displaying Accepted By, Rejected By, and the corresponding dates.
-- As discussed during the call, these columns were introduced recently in the database. Therefore, historical records will not display these values. Going forward, any new Accept/Reject actions will populate these fields automatically.
-- We request you to validate this scenario with newly performed Accept/Reject actions.
-- The Go-Live Date format has been updated to MMM YYYY and the change is reflected in both the UI and the report.
 
-2. Revised Cascade Status
 
-- The "No Action Required" status has been removed from the Metric Cascade Status Log in both the UI and the report as requested.
+931: {
+"Qstring": """
+INSERT INTO METRIC_CASCADE_ACTIONS
+(
+    METRIC_DETAIL_ID,
+    PARENT_RMM_ID,
+    CHILD_RMM_ID,
+    ACTION_TYPE,
+    STATUS,
+    IS_ACTIVE,
+    CASCADE_VERSION,
+    ACTION_BY,
+    ACTION_DT
+)
+VALUES
+(
+    :1,
+    :2,
+    :3,
+    'REMOVE',
+    'Awaiting Acceptance',
+    'Y',
+    :4,
+    :5,
+    CURRENT_TIMESTAMP
+)
+"""
+},
 
-3. Cascade Compliance Report
-The following changes have been completed:
 
-- Left alignment has been applied in both the Summary and Rejection Remarks tabs.
-- Cascade Location has been renamed to Cascaded Location.
-- Remarks has been renamed to Rejection Remarks.
-- Rejected Key has been renamed to Rejected Key Fields.
-- Field names have been aligned with the UI naming conventions and unnecessary underscores have been removed.
+##################################################
+# PREPARE NEXT LEVEL REMOVE CASCADE
+##################################################
 
-Regarding the observation that Rejected Fields are repeated multiple times, this will be addressed along with the ongoing re-cascade changes and will be included in the upcoming build.
+next_level_rows = sql_getData(
+    929,
+    [
+        selected_metric_detail_id,
+        rmm_id
+    ]
+)
 
-4. Cascade Compliance Report Generation
+if next_level_rows and next_level_rows != -1:
 
-- This issue has been fixed and the report is now being generated successfully.
+    for row in next_level_rows:
 
-5. To Be Removed Section
+        child_rmm = row.get("CHILD_RMM_ID")
 
-- The required changes for the "To Be Removed" section are currently in progress.
-- We are targeting to complete these changes along with the Rejection Remarks updates and share them in the next build, planned by Monday.
+        cascade_version = row.get("CASCADE_VERSION")
 
-The remaining observations are currently under analysis, and we will provide further updates as we progress.
+        sql_insertData(
+            930,
+            "NA",
+            [
+                rmm_id,
+                selected_metric_detail_id,
+                child_rmm
+            ]
+        )
 
-Thanks,
-Krishna Chaitanya
+        sql_insertData(
+            931,
+            "NA",
+            [
+                selected_metric_detail_id,
+                rmm_id,
+                child_rmm,
+                cascade_version,
+                user_id
+            ]
+        )
+
+
