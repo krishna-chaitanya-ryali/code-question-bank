@@ -1,104 +1,134 @@
 929: {
-"Qstring": """
-SELECT
-    METRIC_DETAIL_ID,
-    CHILD_RMM_ID,
-    CASCADE_VERSION
-FROM METRIC_CASCADE_LOCATIONS
-WHERE
-    METRIC_DETAIL_ID = :1
-AND PARENT_RMM_ID = :2
-AND ACTION_TYPE = 'REMOVE'
-AND IS_ACTIVE = 'Y'
-"""
+    "Qstring": """
+        SELECT
+            CHILD_RMM_ID,
+            PARENT_RMM_ID,
+            CASCADE_VERSION
+        FROM METRIC_CASCADE_LOCATIONS
+        WHERE METRIC_DETAIL_ID = :1
+        AND ACTION_TYPE = 'REMOVE'
+        AND IS_ACTIVE = 'Y'
+    """
 },
 
 
 930: {
-"Qstring": """
-UPDATE METRIC_CASCADE_LOCATIONS
-SET
-    PARENT_RMM_ID = :1
-WHERE
-    METRIC_DETAIL_ID = :2
-AND CHILD_RMM_ID = :3
-AND ACTION_TYPE='REMOVE'
-AND IS_ACTIVE='Y'
-"""
+    "Qstring": """
+        UPDATE METRIC_CASCADE_LOCATIONS
+        SET
+            PARENT_RMM_ID = :1,
+            UPDT_BY = :2,
+            UPDT_DT = CURRENT_TIMESTAMP
+        WHERE
+            METRIC_DETAIL_ID = :3
+        AND CHILD_RMM_ID = :4
+        AND ACTION_TYPE = 'REMOVE'
+        AND IS_ACTIVE = 'Y'
+    """
 },
-
 
 
 931: {
-"Qstring": """
-INSERT INTO METRIC_CASCADE_ACTIONS
-(
-    METRIC_DETAIL_ID,
-    PARENT_RMM_ID,
-    CHILD_RMM_ID,
-    ACTION_TYPE,
-    STATUS,
-    IS_ACTIVE,
-    CASCADE_VERSION,
-    ACTION_BY,
-    ACTION_DT
-)
-VALUES
-(
-    :1,
-    :2,
-    :3,
-    'REMOVE',
-    'Awaiting Acceptance',
-    'Y',
-    :4,
-    :5,
-    CURRENT_TIMESTAMP
-)
-"""
+    "Qstring": """
+        INSERT INTO METRIC_CASCADE_ACTIONS
+        (
+            METRIC_DETAIL_ID,
+            PARENT_RMM_ID,
+            CHILD_RMM_ID,
+            ACTION_TYPE,
+            STATUS,
+            CASCADE_VERSION,
+            ACTION_BY,
+            ACTION_DT,
+            LAST_UPDATED_BY,
+            LAST_UPDATED_DT,
+            LAST_UPDATED_DT_STR,
+            IS_ACTIVE
+        )
+        VALUES
+        (
+            :1,
+            :2,
+            :3,
+            'REMOVE',
+            'Awaiting Acceptance',
+            :4,
+            :5,
+            CURRENT_TIMESTAMP,
+            :5,
+            CURRENT_TIMESTAMP,
+            :6,
+            'Y'
+        )
+    """
 },
 
 
-##################################################
+########################################################
 # PREPARE NEXT LEVEL REMOVE CASCADE
-##################################################
+########################################################
 
-next_level_rows = sql_getData(
+remove_locations = sql_getData(
     929,
     [
-        selected_metric_detail_id,
-        rmm_id
+        cascaded_metric_detail_id
     ]
 )
 
-if next_level_rows and next_level_rows != -1:
+if remove_locations and remove_locations != -1:
 
-    for row in next_level_rows:
+    for location in remove_locations:
 
-        child_rmm = row.get("CHILD_RMM_ID")
+        child_rmm = location.get(
+            "CHILD_RMM_ID"
+        )
 
-        cascade_version = row.get("CASCADE_VERSION")
+        parent_rmm = location.get(
+            "PARENT_RMM_ID"
+        )
+
+        cascade_version = location.get(
+            "CASCADE_VERSION"
+        )
+
+        # Skip current accepted location
+        if child_rmm == int(rmm_id):
+            continue
+
+        # Only process immediate children
+        if parent_rmm != int(rmm_id):
+            continue
+
+        ################################################
+        # UPDATE PARENT RELATIONSHIP
+        ################################################
 
         sql_insertData(
             930,
             "NA",
             [
-                rmm_id,
-                selected_metric_detail_id,
+                int(rmm_id),
+                user_id,
+                cascaded_metric_detail_id,
                 child_rmm
             ]
         )
+
+        ################################################
+        # INSERT NEXT REMOVE ACTION
+        ################################################
 
         sql_insertData(
             931,
             "NA",
             [
-                selected_metric_detail_id,
-                rmm_id,
+                cascaded_metric_detail_id,
+                int(rmm_id),
                 child_rmm,
                 cascade_version,
-                user_id
+                user_id,
+                vInfo.get(
+                    "last_updated_dt_str"
+                )
             ]
         )
-
-
