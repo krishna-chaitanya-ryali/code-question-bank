@@ -1,122 +1,126 @@
+932:
+{
+"Qstring": """
+SELECT PARENT_RMM_ID
+FROM METRIC_CASCADE_LOCATIONS
+WHERE METRIC_DETAIL_ID = :1
+AND CHILD_RMM_ID = :2
+AND ACTION_TYPE = 'REMOVE'
+AND IS_ACTIVE = 'Y'
+FETCH FIRST 1 ROW ONLY"""
+},
+
+
+933:
+{
+"Qstring": """
 SELECT
     CHILD_RMM_ID,
     LOCATION_TYPE,
     CASCADE_VERSION
 FROM METRIC_CASCADE_LOCATIONS
 WHERE METRIC_DETAIL_ID = :1
-  AND PARENT_RMM_ID = :2
-  AND ACTION_TYPE = 'REMOVE'
-  AND IS_ACTIVE = 'Y'
-  AND CHILD_RMM_ID <> :3
-ORDER BY CHILD_RMM_ID;
+AND PARENT_RMM_ID = :2
+AND ACTION_TYPE = 'REMOVE'
+AND IS_ACTIVE = 'Y'
+AND CHILD_RMM_ID <> :3
+ORDER BY CHILD_RMM_ID"""
+},
 
 
-
-[
-    cascaded_metric_detail_id,   # Parent metric (123)
-    parent_rmm_id,               # 14
-    int(rmm_id)                  # 217
-]
-
-
+935:
+{
+"Qstring": """
 UPDATE METRIC_CASCADE_LOCATIONS
 SET
-    IS_ACTIVE = 'N',
-    UPDT_BY = :1,
-    UPDT_DT = CURRENT_TIMESTAMP
-WHERE METRIC_DETAIL_ID = :2
-  AND PARENT_RMM_ID = :3
-  AND ACTION_TYPE = 'REMOVE'
-  AND IS_ACTIVE = 'Y';
-
-
-
-[
-    user_id,
-    cascaded_metric_detail_id,
-    parent_rmm_id
-]
-
-
-
-INSERT INTO METRIC_CASCADE_LOCATIONS
-(
-    METRIC_DETAIL_ID,
-    CHILD_RMM_ID,
-    LOCATION_TYPE,
-    CREAT_BY,
-    CASCADE_STATUS,
-    IS_ACTIVE,
-    CASCADE_VERSION,
-    PARENT_RMM_ID,
-    ACTION_TYPE
-)
-VALUES
-(
-    :1,
-    :2,
-    :3,
-    :4,
-    :5,
-    'Y',
-    :6,
-    :7,
-    'REMOVE'
-)
-
-
-remove_locations = sql_getData(...)
-
-for location in remove_locations:
-    ...
-    sql_insertData(930, ...)
-    sql_insertData(931, ...)
+    IS_ACTIVE='N',
+    UPDT_BY=:1,
+    UPDT_DT=CURRENT_TIMESTAMP
+WHERE METRIC_DETAIL_ID=:2
+AND PARENT_RMM_ID=:3
+AND ACTION_TYPE='REMOVE'
+AND IS_ACTIVE='Y'"""
+},
 
 
 ##############################################################
-# GET NEXT LEVEL REMOVE LOCATIONS
+# GET PREVIOUS PARENT RMM
 ##############################################################
 
-remove_locations = sql_getData(
+parent_data = sql_getData(
     932,
     [
         cascaded_metric_detail_id,
-        parent_rmm_id,
+        int(rmm_id)
+    ]
+)
+
+if (
+    not parent_data
+    or parent_data == -1
+):
+    return jsonify({
+        "status": "Error",
+        "message": "Previous parent RMM not found."
+    })
+
+previous_parent_rmm = parent_data[0].get(
+    "PARENT_RMM_ID"
+)
+
+##############################################################
+# GET NEXT REMOVE LOCATIONS
+##############################################################
+
+remove_locations = sql_getData(
+    933,
+    [
+        cascaded_metric_detail_id,
+        previous_parent_rmm,
         int(rmm_id)
     ]
 )
 
 if remove_locations and remove_locations != -1:
 
+    ##########################################################
+    # INSERT NEW REMOVE HIERARCHY
+    ##########################################################
+
     for location in remove_locations:
 
-        child_rmm = location.get("CHILD_RMM_ID")
+        child_rmm = location.get(
+            "CHILD_RMM_ID"
+        )
 
-        location_type = location.get("LOCATION_TYPE")
+        location_type = location.get(
+            "LOCATION_TYPE"
+        )
 
-        cascade_version = location.get("CASCADE_VERSION")
+        cascade_version = location.get(
+            "CASCADE_VERSION"
+        )
 
-        ##########################################################
-        # INSERT NEW REMOVE LOCATION
-        ##########################################################
+        ###############################################
+        # INSERT INTO METRIC_CASCADE_LOCATIONS
+        ###############################################
 
         sql_insertData(
-            934,
+            373,
             "NA",
             [
                 selected_metric_detail_id,
+                int(rmm_id),
                 child_rmm,
                 location_type,
                 user_id,
-                "Awaiting Acceptance",
-                cascade_version,
-                int(rmm_id)
+                "REMOVE"
             ]
         )
 
-        ##########################################################
-        # INSERT REMOVE ACTION
-        ##########################################################
+        ###############################################
+        # INSERT INTO METRIC_CASCADE_ACTIONS
+        ###############################################
 
         sql_insertData(
             931,
@@ -134,17 +138,45 @@ if remove_locations and remove_locations != -1:
             ]
         )
 
+    ##########################################################
+    # DEACTIVATE OLD REMOVE HIERARCHY
+    ##########################################################
 
-##############################################################
-# DEACTIVATE OLD REMOVE HIERARCHY
-##############################################################
+    sql_insertData(
+        935,
+        "NA",
+        [
+            user_id,
+            cascaded_metric_detail_id,
+            previous_parent_rmm
+        ]
+    )
+
+
+935:
+{
+"Qstring": """
+UPDATE METRIC_CASCADE_LOCATIONS
+SET
+    IS_ACTIVE='N',
+    UPDT_BY=:1,
+    UPDT_DT=CURRENT_TIMESTAMP
+WHERE METRIC_DETAIL_ID=:2
+AND PARENT_RMM_ID=:3
+AND ACTION_TYPE='REMOVE'
+AND IS_ACTIVE='Y'
+AND CHILD_RMM_ID <> :4"""
+},
+
+
 
 sql_insertData(
-    933,
+    935,
     "NA",
     [
         user_id,
         cascaded_metric_detail_id,
-        parent_rmm_id
+        previous_parent_rmm,
+        int(rmm_id)
     ]
 )
