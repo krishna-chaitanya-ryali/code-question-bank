@@ -1,134 +1,14 @@
-929: {
-    "Qstring": """
-        SELECT
-            CHILD_RMM_ID,
-            PARENT_RMM_ID,
-            CASCADE_VERSION
-        FROM METRIC_CASCADE_LOCATIONS
-        WHERE METRIC_DETAIL_ID = :1
-        AND ACTION_TYPE = 'REMOVE'
-        AND IS_ACTIVE = 'Y'
-    """
-},
+SELECT
+    METRIC_DETAIL_ID,
+    PARENT_RMM_ID,
+    CHILD_RMM_ID,
+    CASCADE_VERSION,
+    ACTION_TYPE,
+    STATUS,
+    IS_ACTIVE,
+    ACTION_DT_STR
+FROM METRIC_CASCADE_ACTIONS
+WHERE METRIC_DETAIL_ID = 237399
+ORDER BY ACTION_DT;
 
 
-930: {
-    "Qstring": """
-        UPDATE METRIC_CASCADE_LOCATIONS
-        SET
-            PARENT_RMM_ID = :1,
-            UPDT_BY = :2,
-            UPDT_DT = CURRENT_TIMESTAMP
-        WHERE
-            METRIC_DETAIL_ID = :3
-        AND CHILD_RMM_ID = :4
-        AND ACTION_TYPE = 'REMOVE'
-        AND IS_ACTIVE = 'Y'
-    """
-},
-
-
-931: {
-    "Qstring": """
-        INSERT INTO METRIC_CASCADE_ACTIONS
-        (
-            METRIC_DETAIL_ID,
-            PARENT_RMM_ID,
-            CHILD_RMM_ID,
-            ACTION_TYPE,
-            STATUS,
-            CASCADE_VERSION,
-            ACTION_BY,
-            ACTION_DT,
-            LAST_UPDATED_BY,
-            LAST_UPDATED_DT,
-            LAST_UPDATED_DT_STR,
-            IS_ACTIVE
-        )
-        VALUES
-        (
-            :1,
-            :2,
-            :3,
-            'REMOVE',
-            'Awaiting Acceptance',
-            :4,
-            :5,
-            CURRENT_TIMESTAMP,
-            :5,
-            CURRENT_TIMESTAMP,
-            :6,
-            'Y'
-        )
-    """
-},
-
-
-########################################################
-# PREPARE NEXT LEVEL REMOVE CASCADE
-########################################################
-
-remove_locations = sql_getData(
-    929,
-    [
-        cascaded_metric_detail_id
-    ]
-)
-
-if remove_locations and remove_locations != -1:
-
-    for location in remove_locations:
-
-        child_rmm = location.get(
-            "CHILD_RMM_ID"
-        )
-
-        parent_rmm = location.get(
-            "PARENT_RMM_ID"
-        )
-
-        cascade_version = location.get(
-            "CASCADE_VERSION"
-        )
-
-        # Skip current accepted location
-        if child_rmm == int(rmm_id):
-            continue
-
-        # Only process immediate children
-        if parent_rmm != int(rmm_id):
-            continue
-
-        ################################################
-        # UPDATE PARENT RELATIONSHIP
-        ################################################
-
-        sql_insertData(
-            930,
-            "NA",
-            [
-                int(rmm_id),
-                user_id,
-                cascaded_metric_detail_id,
-                child_rmm
-            ]
-        )
-
-        ################################################
-        # INSERT NEXT REMOVE ACTION
-        ################################################
-
-        sql_insertData(
-            931,
-            "NA",
-            [
-                cascaded_metric_detail_id,
-                int(rmm_id),
-                child_rmm,
-                cascade_version,
-                user_id,
-                vInfo.get(
-                    "last_updated_dt_str"
-                )
-            ]
-        )
