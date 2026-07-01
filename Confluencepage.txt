@@ -1,14 +1,23 @@
-for child_rmm_id in selected_rmm_ids:
+WHERE ACTION_TYPE = 'REMOVE'
+AND
+(
+    ------------------------------------------------------------------
+    -- Parent always sees its own REMOVE
+    ------------------------------------------------------------------
+    PARENT_RMM_ID = :7
 
-    rec = sql_insertData(
-        913,
-        "NA",
-        [
-            metric_detail_id,
-            parent_rmm_id,
-            child_rmm_id
-        ]
+    ------------------------------------------------------------------
+    -- Child sees REMOVE only after parent has cascaded it
+    ------------------------------------------------------------------
+    OR EXISTS
+    (
+        SELECT 1
+        FROM METRIC_CASCADE_ACTIONS MCA4
+        WHERE MCA4.METRIC_DETAIL_ID = METRIC_CASCADE_LOCATIONS.METRIC_DETAIL_ID
+          AND MCA4.CHILD_RMM_ID = METRIC_CASCADE_LOCATIONS.CHILD_RMM_ID
+          AND MCA4.CASCADE_VERSION = METRIC_CASCADE_LOCATIONS.CASCADE_VERSION
+          AND MCA4.ACTION_TYPE = 'REMOVE'
+          AND MCA4.IS_ACTIVE = 'Y'
+          AND MCA4.CHILD_RMM_ID = :8
     )
-
-    # If 913 updated 0 rows (no existing CASCADE row),
-    # then insert a brand-new REMOVE row.
+)
