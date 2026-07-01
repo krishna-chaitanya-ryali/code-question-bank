@@ -1,10 +1,12 @@
-sql_insertData(
-    938,
-    "NA",
-    [
-        int(rmm_id),                  # New owner (217)
-        cascaded_metric_detail_id,    # Parent metric detail id (e.g. 237335)
-        previous_parent_rmm,          # Parent RMM (14)
-        int(rmm_id)                   # Child RMM (217)
-    ]
+WHERE ACTION_TYPE='REMOVE'
+AND (
+    VISIBLE_AT_RMM_ID = :7
+    OR EXISTS (
+        SELECT 1
+        FROM METRIC_CASCADE_ACTIONS MCA
+        WHERE MCA.METRIC_DETAIL_ID = METRIC_CASCADE_LOCATIONS.METRIC_DETAIL_ID
+          AND MCA.CHILD_RMM_ID = :7
+          AND MCA.ACTION_TYPE='REMOVE'
+          AND MCA.STATUS='Awaiting Acceptance'
+    )
 )
