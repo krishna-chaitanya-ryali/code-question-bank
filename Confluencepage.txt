@@ -1,20 +1,9 @@
-936: {
-    "Qstring": """
-        SELECT
-            NVL(MAX(CASCADE_VERSION), 0) + 1 AS CASCADE_VERSION
-        FROM METRIC_CASCADE_LOCATIONS
-        WHERE METRIC_DETAIL_ID = :1
-          AND CHILD_RMM_ID = :2
-          AND LOCATION_TYPE = :3
-    """
-},
-
-
-version_data = sql_getData(
-    936,
-    [
-        selected_metric_detail_id,
-        child_rmm,
-        location_type
-    ]
-)
+SELECT
+    METRIC_DETAIL_ID,
+    MASTER_METRIC_ID,
+    RMM_ID,
+    ACTIVE,
+    CREAT_DT
+FROM RAP_METRICS_DETAILS
+WHERE MASTER_METRIC_ID = 8534
+ORDER BY METRIC_DETAIL_ID;
