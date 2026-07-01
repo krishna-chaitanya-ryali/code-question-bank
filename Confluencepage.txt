@@ -1,44 +1,59 @@
-(
-    METRIC_DETAIL_ID,
-    PARENT_RMM_ID,
-    CHILD_RMM_ID,
-    LOCATION_TYPE,
-    CASCADE_VERSION,
-    CREAT_BY,
-    ACTION_TYPE,
-    VISIBLE_AT_RMM_ID,
-    REMOVE_PENDING_FOR_RMM_ID
-)
-VALUES
-(
-    :1,:2,:3,:4,:5,:6,:7,:8,:9
-)
-
-
-
-sql_insertData(
-    937,
-    "NA",
+action_id = sql_insertData(
+    379,
+    "ACTION_ID",
     [
-        selected_metric_detail_id,
-        int(rmm_id),
-        child_rmm,
-        location_type,
-        new_cascade_version,
+        metric_id,
+        parent_rmm_id,
+        child_rmm_id,
         user_id,
-        "REMOVE",
-        int(rmm_id),   # VISIBLE_AT_RMM_ID
-        child_rmm      # REMOVE_PENDING_FOR_RMM_ID
+        meet_instc_id,
+        current_time,
+        cascade_version,
+        new_status,
+        action_type
     ]
 )
 
-UPDATE METRIC_CASCADE_LOCATIONS
-SET REMOVE_PENDING_FOR_RMM_ID = :1,
-    UPDT_BY = :2,
-    UPDT_DT = CURRENT_TIMESTAMP
-WHERE METRIC_DETAIL_ID = :3
-  AND PARENT_RMM_ID = :4
-  AND CHILD_RMM_ID = :5
-  AND ACTION_TYPE = 'REMOVE'
-  AND CASCADE_VERSION = :6;
+if action_id != -1:
 
+    # -------------------------------------------------------------
+    # REMOVE FLOW - MAKE REMOVE VISIBLE TO NEXT CHILD
+    # -------------------------------------------------------------
+    if action_type == "REMOVE":
+        sql_insertData(
+            960,
+            "NA",
+            [
+                child_rmm_id,      # REMOVE_PENDING_FOR_RMM_ID
+                user_id,
+                metric_id,
+                parent_rmm_id,
+                child_rmm_id,
+                cascade_version
+            ]
+        )
+
+    sql_insertData(
+        902,
+        "NA",
+        [
+            new_status,
+            str(user_id),
+            metric_id,
+            child_rmm_id
+        ]
+    )
+
+    cascaded.append(child_rmm_id)
+
+else:
+    not_cascaded.append(child_rmm_id)
+
+
+
+
+WHERE ACTION_TYPE = 'REMOVE'
+AND (
+    VISIBLE_AT_RMM_ID = :7
+    OR REMOVE_PENDING_FOR_RMM_ID = :8
+)
