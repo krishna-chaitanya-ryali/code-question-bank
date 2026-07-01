@@ -1,15 +1,38 @@
-ALTER TABLE METRIC_CASCADE_LOCATIONS
-ADD VISIBLE_AT_RMM_ID NUMBER;
+938: {
+    "Qstring": """
+        UPDATE METRIC_CASCADE_LOCATIONS
+        SET VISIBLE_AT_RMM_ID = :1
+        WHERE METRIC_DETAIL_ID = :2
+          AND PARENT_RMM_ID = :3
+          AND CHILD_RMM_ID = :4
+          AND ACTION_TYPE = 'REMOVE'
+          AND IS_ACTIVE = 'Y'
+    """
+},
 
 
 
-UPDATE METRIC_CASCADE_LOCATIONS
-SET VISIBLE_AT_RMM_ID = CHILD_RMM_ID
-WHERE METRIC_DETAIL_ID = :1
-AND PARENT_RMM_ID = :2
-AND CHILD_RMM_ID = :3
-AND ACTION_TYPE = 'REMOVE'
-AND CASCADE_VERSION = :4;
+for child_rmm_id in selected_rmm_ids:
 
-WHERE ACTION_TYPE='REMOVE'
-AND VISIBLE_AT_RMM_ID = :7
+    # Convert CASCADE -> REMOVE
+    sql_insertData(
+        913,
+        "NA",
+        [
+            metric_detail_id,
+            parent_rmm_id,
+            child_rmm_id
+        ]
+    )
+
+    # Initially visible only in current(parent) dashboard
+    sql_insertData(
+        938,
+        "NA",
+        [
+            parent_rmm_id,
+            metric_detail_id,
+            parent_rmm_id,
+            child_rmm_id
+        ]
+    )
