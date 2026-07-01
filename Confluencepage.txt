@@ -1,23 +1,13 @@
-WHERE ACTION_TYPE = 'REMOVE'
-AND
-(
-    ------------------------------------------------------------------
-    -- Parent always sees its own REMOVE
-    ------------------------------------------------------------------
-    PARENT_RMM_ID = :7
+elif (
+    action_type == "CASCADE"
+    and old_status in [
+        "Accepted",
+        "Rejected"
+    ]
+):
 
-    ------------------------------------------------------------------
-    -- Child sees REMOVE only after parent has cascaded it
-    ------------------------------------------------------------------
-    OR EXISTS
-    (
-        SELECT 1
-        FROM METRIC_CASCADE_ACTIONS MCA4
-        WHERE MCA4.METRIC_DETAIL_ID = METRIC_CASCADE_LOCATIONS.METRIC_DETAIL_ID
-          AND MCA4.CHILD_RMM_ID = METRIC_CASCADE_LOCATIONS.CHILD_RMM_ID
-          AND MCA4.CASCADE_VERSION = METRIC_CASCADE_LOCATIONS.CASCADE_VERSION
-          AND MCA4.ACTION_TYPE = 'REMOVE'
-          AND MCA4.IS_ACTIVE = 'Y'
-          AND MCA4.CHILD_RMM_ID = :8
-    )
-)
+
+if action_type == "REMOVE":
+    new_status = "Awaiting Acceptance"
+else:
+    accepted_metric = sql_getData(...)
