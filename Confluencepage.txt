@@ -1,16 +1,13 @@
-action_id = sql_insertData(379,...)
-
+if action_id != -1:
 
 if action_type == "REMOVE":
-
     sql_insertData(
         938,
         "NA",
         [
-            child_rmm_id,
+            child_rmm_id,     # VISIBLE_AT_RMM_ID
             metric_id,
             parent_rmm_id,
-            child_rmm_id,
-            cascade_version
+            child_rmm_id
         ]
     )
