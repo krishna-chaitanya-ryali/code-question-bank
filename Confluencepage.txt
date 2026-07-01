@@ -4,72 +4,17 @@
             NVL(MAX(CASCADE_VERSION), 0) + 1 AS CASCADE_VERSION
         FROM METRIC_CASCADE_LOCATIONS
         WHERE METRIC_DETAIL_ID = :1
+          AND CHILD_RMM_ID = :2
+          AND LOCATION_TYPE = :3
     """
 },
 
-
-
-937: {
-    "Ostring": """
-        INSERT INTO METRIC_CASCADE_LOCATIONS
-        (
-            METRIC_DETAIL_ID,
-            PARENT_RMM_ID,
-            CHILD_RMM_ID,
-            LOCATION_TYPE,
-            CASCADE_VERSION,
-            CREAT_BY,
-            ACTION_TYPE
-        )
-        VALUES
-        (
-            :1,
-            :2,
-            :3,
-            :4,
-            :5,
-            :6,
-            :7
-        )
-    """
-},
-
-
-###################################
-# GET NEXT CASCADE VERSION
-###################################
 
 version_data = sql_getData(
     936,
     [
-        selected_metric_detail_id
-    ]
-)
-
-if (
-    not version_data
-    or version_data == -1
-):
-    return jsonify({
-        "status": "Error",
-        "message": "Unable to determine cascade version."
-    })
-
-new_cascade_version = version_data[0].get(
-    "CASCADE_VERSION"
-)
-
-
-sql_insertData(
-    937,
-    "NA",
-    [
         selected_metric_detail_id,
-        int(rmm_id),
         child_rmm,
-        location_type,
-        new_cascade_version,
-        user_id,
-        "REMOVE"
+        location_type
     ]
 )
