@@ -1,25 +1,16 @@
-WHERE ACTION_TYPE = 'REMOVE'
-  AND VISIBLE_AT_RMM_ID = :7
+action_id = sql_insertData(379,...)
 
 
-WHERE ACTION_TYPE = 'REMOVE'
-  AND (
-      -----------------------------------------------------------------
-      -- Parent always sees its own REMOVE
-      -----------------------------------------------------------------
-      PARENT_RMM_ID = :7
-      
-      -----------------------------------------------------------------
-      -- Child sees REMOVE only after parent has cascaded it
-      -----------------------------------------------------------------
-      OR EXISTS (
-          SELECT 1
-          FROM METRIC_CASCADE_ACTIONS MCA4
-          WHERE MCA4.METRIC_DETAIL_ID = METRIC_CASCADE_LOCATIONS.METRIC_DETAIL_ID
-            AND MCA4.CHILD_RMM_ID = METRIC_CASCADE_LOCATIONS.CHILD_RMM_ID
-            AND MCA4.CASCADE_VERSION = METRIC_CASCADE_LOCATIONS.CASCADE_VERSION
-            AND MCA4.ACTION_TYPE = 'REMOVE'
-            AND MCA4.IS_ACTIVE = 'Y'
-            AND MCA4.CHILD_RMM_ID = :8
-      )
-  )
+if action_type == "REMOVE":
+
+    sql_insertData(
+        938,
+        "NA",
+        [
+            child_rmm_id,
+            metric_id,
+            parent_rmm_id,
+            child_rmm_id,
+            cascade_version
+        ]
+    )
