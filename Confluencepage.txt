@@ -1,35 +1,99 @@
-FROM (
-    SELECT
-        METRIC_DETAIL_ID,
-        PARENT_RMM_ID,
-        MAX(CHILD_RMM_ID) AS CHILD_RMM_ID,
-        CASCADE_VERSION,
-        MAX(CASCADE_STATUS) AS CASCADE_STATUS,
-        MIN(IS_ACTIVE) AS IS_ACTIVE,
-        MAX(CREAT_DT) AS CREAT_DT,
+########################################################################
+# GET EXISTING CASCADED CHILD LOCATIONS
+########################################################################
 
-        ROW_NUMBER() OVER (
-            PARTITION BY
-                METRIC_DETAIL_ID,
-                CASE
-                    WHEN PARENT_RMM_ID = :5 THEN 'CURRENT_LOCATION'
-                    WHEN MAX(CHILD_RMM_ID) = :6 THEN 'PARENT_LOCATION'
-                END
-            ORDER BY
-                CASCADE_VERSION DESC,
-                MAX(CREAT_DT) DESC
-        ) AS RN
+existing_rows = sql_getData(
+    374,
+    [
+        metric_detail_id
+    ]
+)
 
-    FROM METRIC_CASCADE_LOCATIONS
+existing_rmm_ids = set()
 
-    WHERE ACTION_TYPE = 'REMOVE'
-      AND (
-            PARENT_RMM_ID = :7
-            OR CHILD_RMM_ID = :8
-      )
+if existing_rows and existing_rows != -1:
+    existing_rmm_ids = {
+        int(row["CHILD_RMM_ID"])
+        for row in existing_rows
+    }
 
-    GROUP BY
-        METRIC_DETAIL_ID,
-        PARENT_RMM_ID,
-        CASCADE_VERSION
-) MCL
+existing_selected = (
+    existing_rmm_ids
+    &
+    set(selected_rmm_ids)
+)
+
+new_selected = (
+    set(selected_rmm_ids)
+    -
+    existing_rmm_ids
+)
+
+
+
+########################################################################
+# CONVERT EXISTING CASCADE ROWS TO REMOVE
+########################################################################
+
+for child_rmm_id in existing_selected:
+
+    sql_insertData(
+        913,
+        "NA",
+        [
+            metric_detail_id,
+            parent_rmm_id,
+            child_rmm_id
+        ]
+    )
+
+
+
+########################################################################
+# INSERT BRAND NEW REMOVE LOCATIONS
+########################################################################
+
+for child_rmm_id in new_selected:
+
+    location_type = get_location_type(
+        child_rmm_id
+    )
+
+    ####################################################################
+    # GET NEXT CASCADE VERSION
+    ####################################################################
+
+    version_rows = sql_getData(
+        936,
+        [
+            metric_detail_id
+        ]
+    )
+
+    next_version = 1
+
+    if version_rows and version_rows != -1:
+        next_version = version_rows[0].get(
+            "CASCADE_VERSION",
+            1
+        )
+
+    ####################################################################
+    # INSERT REMOVE ROW
+    ####################################################################
+
+    sql_insertData(
+        937,
+        "NA",
+        [
+            metric_detail_id,
+            parent_rmm_id,
+            child_rmm_id,
+            location_type,
+            next_version,
+            str(myinfo()),
+            "REMOVE"
+        ]
+    )
+
+
