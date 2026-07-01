@@ -1,4 +1,4 @@
-938: {
+939: {
     "Qstring": """
         UPDATE METRIC_CASCADE_LOCATIONS
         SET VISIBLE_AT_RMM_ID = :1
@@ -6,33 +6,41 @@
           AND PARENT_RMM_ID = :3
           AND CHILD_RMM_ID = :4
           AND ACTION_TYPE = 'REMOVE'
+          AND CASCADE_VERSION = :5
           AND IS_ACTIVE = 'Y'
     """
 },
 
 
+if action_id != -1:
 
-for child_rmm_id in selected_rmm_ids:
-
-    # Convert CASCADE -> REMOVE
     sql_insertData(
-        913,
+        902,
         "NA",
         [
-            metric_detail_id,
-            parent_rmm_id,
+            new_status,
+            str(user_id),
+            metric_id,
             child_rmm_id
         ]
     )
 
-    # Initially visible only in current(parent) dashboard
-    sql_insertData(
-        938,
-        "NA",
-        [
-            parent_rmm_id,
-            metric_detail_id,
-            parent_rmm_id,
-            child_rmm_id
-        ]
-    )
+    ####################################################
+    # MOVE REMOVE WORKFLOW TO CHILD DASHBOARD
+    ####################################################
+
+    if action_type == "REMOVE":
+
+        sql_insertData(
+            939,
+            "NA",
+            [
+                child_rmm_id,        # New owner
+                metric_id,
+                parent_rmm_id,
+                child_rmm_id,
+                cascade_version
+            ]
+        )
+
+    cascaded.append(child_rmm_id)
