@@ -1,27 +1,35 @@
-WHERE
-(
-    PARENT_RMM_ID = :7
-    OR CHILD_RMM_ID = :8
-)
-AND
-(
-    PARENT_RMM_ID = :7
+FROM (
+    SELECT
+        METRIC_DETAIL_ID,
+        PARENT_RMM_ID,
+        MAX(CHILD_RMM_ID) AS CHILD_RMM_ID,
+        CASCADE_VERSION,
+        MAX(CASCADE_STATUS) AS CASCADE_STATUS,
+        MIN(IS_ACTIVE) AS IS_ACTIVE,
+        MAX(CREAT_DT) AS CREAT_DT,
 
-    OR EXISTS
-    (
-        SELECT 1
-        FROM METRIC_CASCADE_ACTIONS MCA
-        WHERE MCA.METRIC_DETAIL_ID =
-              METRIC_CASCADE_LOCATIONS.METRIC_DETAIL_ID
+        ROW_NUMBER() OVER (
+            PARTITION BY
+                METRIC_DETAIL_ID,
+                CASE
+                    WHEN PARENT_RMM_ID = :5 THEN 'CURRENT_LOCATION'
+                    WHEN MAX(CHILD_RMM_ID) = :6 THEN 'PARENT_LOCATION'
+                END
+            ORDER BY
+                CASCADE_VERSION DESC,
+                MAX(CREAT_DT) DESC
+        ) AS RN
 
-          AND MCA.CHILD_RMM_ID =
-              METRIC_CASCADE_LOCATIONS.CHILD_RMM_ID
+    FROM METRIC_CASCADE_LOCATIONS
 
-          AND MCA.CASCADE_VERSION =
-              METRIC_CASCADE_LOCATIONS.CASCADE_VERSION
+    WHERE ACTION_TYPE = 'REMOVE'
+      AND (
+            PARENT_RMM_ID = :7
+            OR CHILD_RMM_ID = :8
+      )
 
-          AND MCA.ACTION_TYPE='REMOVE'
-
-          AND MCA.IS_ACTIVE='Y'
-    )
-)
+    GROUP BY
+        METRIC_DETAIL_ID,
+        PARENT_RMM_ID,
+        CASCADE_VERSION
+) MCL
