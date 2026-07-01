@@ -1,12 +1,50 @@
-WHERE ACTION_TYPE='REMOVE'
+ALTER TABLE METRIC_CASCADE_LOCATIONS
+ADD REMOVE_PENDING_FOR_RMM_ID NUMBER;
+
+
+UPDATE METRIC_CASCADE_LOCATIONS
+SET REMOVE_PENDING_FOR_RMM_ID = :1,
+    UPDT_DT = CURRENT_TIMESTAMP,
+    UPDT_BY = :2
+WHERE METRIC_DETAIL_ID = :3
+  AND PARENT_RMM_ID = :4
+  AND CHILD_RMM_ID = :5
+  AND ACTION_TYPE = 'REMOVE'
+  AND CASCADE_VERSION = :6;
+
+
+
+if action_type == "REMOVE":
+    sql_insertData(
+        939,
+        "NA",
+        [
+            child_rmm_id,          # REMOVE_PENDING_FOR_RMM_ID
+            user_id,
+            metric_id,
+            parent_rmm_id,
+            child_rmm_id,
+            cascade_version
+        ]
+    )
+
+
+
+UPDATE METRIC_CASCADE_LOCATIONS
+SET
+    VISIBLE_AT_RMM_ID = :1,
+    REMOVE_PENDING_FOR_RMM_ID = NULL,
+    UPDT_DT = CURRENT_TIMESTAMP,
+    UPDT_BY = :2
+WHERE METRIC_DETAIL_ID = :3
+  AND PARENT_RMM_ID = :4
+  AND CHILD_RMM_ID = :5
+  AND ACTION_TYPE = 'REMOVE'
+  AND CASCADE_VERSION = :6;
+
+
+WHERE ACTION_TYPE = 'REMOVE'
 AND (
     VISIBLE_AT_RMM_ID = :7
-    OR EXISTS (
-        SELECT 1
-        FROM METRIC_CASCADE_ACTIONS MCA
-        WHERE MCA.METRIC_DETAIL_ID = METRIC_CASCADE_LOCATIONS.METRIC_DETAIL_ID
-          AND MCA.CHILD_RMM_ID = :7
-          AND MCA.ACTION_TYPE='REMOVE'
-          AND MCA.STATUS='Awaiting Acceptance'
-    )
+    OR REMOVE_PENDING_FOR_RMM_ID = :8
 )
