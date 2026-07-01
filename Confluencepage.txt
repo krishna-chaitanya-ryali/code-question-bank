@@ -1,13 +1,28 @@
-elif (
-    action_type == "CASCADE"
-    and old_status in [
-        "Accepted",
-        "Rejected"
+SELECT
+    ACTION_ID,
+    STATUS,
+    CASCADE_VERSION
+FROM (
+    SELECT
+        ACTION_ID,
+        STATUS,
+        CASCADE_VERSION
+    FROM METRIC_CASCADE_ACTIONS
+    WHERE METRIC_DETAIL_ID = :1
+      AND CHILD_RMM_ID = :2
+      AND ACTION_TYPE = :3
+    ORDER BY CASCADE_VERSION DESC,
+             ACTION_ID DESC
+)
+WHERE ROWNUM = 1
+
+
+
+current_active = sql_getData(
+    906,
+    [
+        metric_id,
+        child_rmm_id,
+        action_type
     ]
-):
-
-
-if action_type == "REMOVE":
-    new_status = "Awaiting Acceptance"
-else:
-    accepted_metric = sql_getData(...)
+)
