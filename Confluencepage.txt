@@ -1,43 +1,6 @@
-########################################################################
-# GET EXISTING CASCADED CHILD LOCATIONS
-########################################################################
+for child_rmm_id in selected_rmm_ids:
 
-existing_rows = sql_getData(
-    374,
-    [
-        metric_detail_id
-    ]
-)
-
-existing_rmm_ids = set()
-
-if existing_rows and existing_rows != -1:
-    existing_rmm_ids = {
-        int(row["CHILD_RMM_ID"])
-        for row in existing_rows
-    }
-
-existing_selected = (
-    existing_rmm_ids
-    &
-    set(selected_rmm_ids)
-)
-
-new_selected = (
-    set(selected_rmm_ids)
-    -
-    existing_rmm_ids
-)
-
-
-
-########################################################################
-# CONVERT EXISTING CASCADE ROWS TO REMOVE
-########################################################################
-
-for child_rmm_id in existing_selected:
-
-    sql_insertData(
+    rec = sql_insertData(
         913,
         "NA",
         [
@@ -47,53 +10,5 @@ for child_rmm_id in existing_selected:
         ]
     )
 
-
-
-########################################################################
-# INSERT BRAND NEW REMOVE LOCATIONS
-########################################################################
-
-for child_rmm_id in new_selected:
-
-    location_type = get_location_type(
-        child_rmm_id
-    )
-
-    ####################################################################
-    # GET NEXT CASCADE VERSION
-    ####################################################################
-
-    version_rows = sql_getData(
-        936,
-        [
-            metric_detail_id
-        ]
-    )
-
-    next_version = 1
-
-    if version_rows and version_rows != -1:
-        next_version = version_rows[0].get(
-            "CASCADE_VERSION",
-            1
-        )
-
-    ####################################################################
-    # INSERT REMOVE ROW
-    ####################################################################
-
-    sql_insertData(
-        937,
-        "NA",
-        [
-            metric_detail_id,
-            parent_rmm_id,
-            child_rmm_id,
-            location_type,
-            next_version,
-            str(myinfo()),
-            "REMOVE"
-        ]
-    )
-
-
+    # If 913 updated 0 rows (no existing CASCADE row),
+    # then insert a brand-new REMOVE row.
