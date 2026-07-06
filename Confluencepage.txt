@@ -1,59 +1,11 @@
-action_id = sql_insertData(
-    379,
-    "ACTION_ID",
-    [
-        metric_id,
-        parent_rmm_id,
-        child_rmm_id,
-        user_id,
-        meet_instc_id,
-        current_time,
-        cascade_version,
-        new_status,
-        action_type
-    ]
-)
+Hi Team,
 
-if action_id != -1:
+I reviewed the screenshots, and the observations were correct.
 
-    # -------------------------------------------------------------
-    # REMOVE FLOW - MAKE REMOVE VISIBLE TO NEXT CHILD
-    # -------------------------------------------------------------
-    if action_type == "REMOVE":
-        sql_insertData(
-            960,
-            "NA",
-            [
-                child_rmm_id,      # REMOVE_PENDING_FOR_RMM_ID
-                user_id,
-                metric_id,
-                parent_rmm_id,
-                child_rmm_id,
-                cascade_version
-            ]
-        )
+DEV: The Compass RMM was not added from the Super Admin portal, so it wasn't appearing in the Risk Appetite Profile dropdown while adding a new user.
 
-    sql_insertData(
-        902,
-        "NA",
-        [
-            new_status,
-            str(user_id),
-            metric_id,
-            child_rmm_id
-        ]
-    )
+UAT: The Risk Taxonomy needed to be updated for the metrics available in the dashboard before adding a new user.
 
-    cascaded.append(child_rmm_id)
+We have now updated both of these from the backend. Could you please verify from your end and let us know if you still face any issues?
 
-else:
-    not_cascaded.append(child_rmm_id)
-
-
-
-
-WHERE ACTION_TYPE = 'REMOVE'
-AND (
-    VISIBLE_AT_RMM_ID = :7
-    OR REMOVE_PENDING_FOR_RMM_ID = :8
-)
+Thanks.
