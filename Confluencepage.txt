@@ -1,11 +1,16 @@
-Hi Team,
+Hi Gupta,
 
-I reviewed the screenshots, and the observations were correct.
+I just wanted to personally let you know that I've submitted my resignation and will most likely be moving on from the HSBC project over the coming weeks.
 
-DEV: The Compass RMM was not added from the Super Admin portal, so it wasn't appearing in the Risk Appetite Profile dropdown while adding a new user.
+It has been a wonderful experience working under your guidance over the past few years. Thank you for all the support, trust, and encouragement you've given me throughout my journey. I've learned a lot during my time here, and I'll always be grateful for the opportunity.
 
-UAT: The Risk Taxonomy needed to be updated for the metrics available in the dashboard before adding a new user.
+Wishing you and the team all the very best. Hope we'll stay in touch.
 
-We have now updated both of these from the backend. Could you please verify from your end and let us know if you still face any issues?
 
-Thanks.
+Hi Sudhir,
+
+Just wanted to let you know that I've submitted my resignation and will most likely be moving on from the HSBC project over the coming weeks.
+
+It was great working with you. Thank you for all your support and help whenever I needed it. Wishing you all the very best, and hope we'll stay in touch.
+
+Take care!
