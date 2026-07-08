@@ -1,16 +1,7 @@
-Hi Gupta,
+-- Disable the broken trigger
+ALTER TRIGGER RAPUSER_ERR.TRG_METRIC_ACCESS_DELETE DISABLE;
 
-I just wanted to personally let you know that I've submitted my resignation and will most likely be moving on from the HSBC project over the coming weeks.
+-- [Run your DELETE statement here]
 
-It has been a wonderful experience working under your guidance over the past few years. Thank you for all the support, trust, and encouragement you've given me throughout my journey. I've learned a lot during my time here, and I'll always be grateful for the opportunity.
-
-Wishing you and the team all the very best. Hope we'll stay in touch.
-
-
-Hi Sudhir,
-
-Just wanted to let you know that I've submitted my resignation and will most likely be moving on from the HSBC project over the coming weeks.
-
-It was great working with you. Thank you for all your support and help whenever I needed it. Wishing you all the very best, and hope we'll stay in touch.
-
-Take care!
+-- Enable it back so it can be fixed later
+ALTER TRIGGER RAPUSER_ERR.TRG_METRIC_ACCESS_DELETE ENABLE;
