@@ -1,7 +1,9 @@
--- Disable the broken trigger
-ALTER TRIGGER RAPUSER_ERR.TRG_METRIC_ACCESS_DELETE DISABLE;
+Hi Team,
 
--- [Run your DELETE statement here]
+Just a quick clarification. As discussed earlier, the agreed approach was to first onboard the Risk Compass pack in UAT and validate it successfully before proceeding with the Production onboarding.
 
--- Enable it back so it can be fixed later
-ALTER TRIGGER RAPUSER_ERR.TRG_METRIC_ACCESS_DELETE ENABLE;
+During the previous onboarding, we identified a few issues with the template and resolved them in UAT before moving forward. If we directly onboard the same template into Production, we won't be able to make immediate data corrections if any issues arise.
+
+Hence, I would recommend completing and validating the onboarding in UAT first. Once it is successful, we can proceed with the Production onboarding confidently.
+
+Thanks.
