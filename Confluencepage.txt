@@ -1,2 +1,6 @@
-Sure Nitin, I'll share the Confluence page once I complete the remaining documentation. I've already shared the KT documents with Triveni, and I'll make sure everyone has the latest version.
-Regarding the other tasks, I had a discussion with Matt as well, and we've aligned that my primary focus for the remaining time is the KT and transition activities. Happy to guide on the onboarding and Demise RMM items if anyone needs help, but I'd like to prioritize completing the handover first.
+Hi Matt,
+Thanks for the clarification. My understanding has always been that I would continue supporting the ongoing delivery activities in parallel with the KT sessions, not that I would focus only on KT.
+Regarding the onboarding queries, we've been supporting the team continuously. We had a detailed discussion with Nitin, Satadru, Sandip, Kailash and the team, where we walked through the scenarios, explained the required post-onboarding steps, and addressed the questions raised.
+For example, the recent Risk Compass onboarding query was also investigated from our side, and we identified that the Risk Taxonomy needed to be updated before adding a new user. This information had already been shared with the team earlier (including the email sent on 7th Monday), and I also shared the relevant screenshot in the Teams chat for reference.
+Whenever a new issue comes in, we investigate it first, identify the root cause, and then share the required solution or workaround. That is the approach we've been following, and I'll continue supporting the team in the same way.
+I'll also continue responding to the pending queries, support the ongoing delivery work, and share the KT materials prepared so far while working with Triveni and Anish to ensure a smooth knowledge transfer.
