@@ -1,2 +1,2 @@
-Sorry for the delayed responses over the last couple of days. I've been occupied with the onboarding activities, UAT refresh, database updates, and preparing the KT documentation.
-Since the remaining time on the project is limited, I'd like us to align on priorities so I can focus on completing the KT sessions and handover while supporting the team on the most important open items. Let me know a convenient time, and we can quickly go through the pending work together
+Sure Nitin, I'll share the Confluence page once I complete the remaining documentation. I've already shared the KT documents with Triveni, and I'll make sure everyone has the latest version.
+Regarding the other tasks, I had a discussion with Matt as well, and we've aligned that my primary focus for the remaining time is the KT and transition activities. Happy to guide on the onboarding and Demise RMM items if anyone needs help, but I'd like to prioritize completing the handover first.
