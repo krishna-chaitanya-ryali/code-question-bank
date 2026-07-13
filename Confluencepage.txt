@@ -1,4 +1,3 @@
-Thanks for checking in. Everything is fine on my side, and I hope you're doing well too.
-My primary focus over the coming weeks is to ensure a smooth transition. I'm working on completing the knowledge transfer, preparing the required documentation and Confluence pages, and making sure Triveni and the team have all the necessary information to support the application going forward.
-To make the transition as effective as possible, it would be helpful if I could primarily focus on the KT activities and handover rather than taking on new development or production tickets during this period. Of course, I'm happy to support the team by providing guidance, answering questions, and assisting wherever required to ensure nothing is missed.
-My goal is to leave the project in a stable state with a smooth handover for everyone.
+Hi Nitin,
+Just wanted to keep you informed. I had a discussion with Matt regarding my transition, and we've aligned that my primary focus over the remaining time should be completing the KT sessions, Confluence documentation, and ensuring Triveni and the team have all the necessary knowledge for a smooth handover.
+Since I have limited time left on the project, I would like to prioritize these transition activities so that the team is well prepared after my release. For any open items, I'm happy to provide guidance and support the team wherever required, but I'd like to keep my primary focus on completing the handover successfully.
