@@ -1,9 +1,4 @@
-Hi Team,
-
-Just a quick clarification. As discussed earlier, the agreed approach was to first onboard the Risk Compass pack in UAT and validate it successfully before proceeding with the Production onboarding.
-
-During the previous onboarding, we identified a few issues with the template and resolved them in UAT before moving forward. If we directly onboard the same template into Production, we won't be able to make immediate data corrections if any issues arise.
-
-Hence, I would recommend completing and validating the onboarding in UAT first. Once it is successful, we can proceed with the Production onboarding confidently.
-
-Thanks.
+Thanks for checking in. Everything is fine on my side, and I hope you're doing well too.
+My primary focus over the coming weeks is to ensure a smooth transition. I'm working on completing the knowledge transfer, preparing the required documentation and Confluence pages, and making sure Triveni and the team have all the necessary information to support the application going forward.
+To make the transition as effective as possible, it would be helpful if I could primarily focus on the KT activities and handover rather than taking on new development or production tickets during this period. Of course, I'm happy to support the team by providing guidance, answering questions, and assisting wherever required to ensure nothing is missed.
+My goal is to leave the project in a stable state with a smooth handover for everyone.
