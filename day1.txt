@@ -1,0 +1,107 @@
+🚀 Mission AI Engineer (Version 1.0)
+Duration: 8 Weeks
+Daily Time: 5 Hours
+Goal:
+Crack Python + AI interviews
+Build a strong GitHub portfolio
+Update your resume every week
+Be ready for AI Engineer roles
+Week 1 — Foundation
+Day 1 (Today)
+Step 1: Install the tools
+✅ Cursor AI
+✅ Claude account
+✅ Git
+✅ Python 3.12+
+✅ Google AI Studio (Gemini)
+✅ Postman
+✅ GitHub (if not already set up)
+Step 2: Learn these topics
+Don't go deep yet.
+Understand:
+What is AI?
+What is Generative AI?
+What is an LLM?
+Tokens
+Temperature
+Context Window
+That's enough for Day 1.
+Step 3: Prompt Engineering
+Learn:
+Zero-shot
+One-shot
+Few-shot
+Role prompting
+Chain of Thought
+Structured Output
+These six techniques are enough to start.
+Step 4: Practice
+Try prompts like:
+You are a Senior Python Backend Engineer.
+
+Generate a FastAPI CRUD API for Employee Management.
+
+Explain every line.
+Or:
+You are an Oracle SQL Expert.
+
+Optimize this SQL query and explain why.
+Step 5: Notes
+Create a folder:
+AI-Journey/
+
+    Notes/
+
+    Projects/
+
+    Resume/
+
+    Interview/
+Every day, write down:
+What you learned
+Useful prompts
+Interview questions
+Mistakes you made
+This Weekend — First Project
+We'll build:
+AI Resume Reviewer
+Features:
+Upload resume
+AI reviews it
+ATS improvement suggestions
+Skills gap analysis
+Better bullet points
+Tech stack:
+Python
+FastAPI
+Claude or Gemini API
+HTML (or Streamlit later if we want a quick UI)
+GitHub
+Create a repository named:
+python-ai-engineer-journey
+Every project goes there.
+By the end of eight weeks, you'll have a portfolio to show recruiters.
+Resume
+Every Sunday we'll update it.
+Not by adding random buzzwords, but by adding real work you've completed.
+Interview Preparation
+We'll maintain a document with:
+AI interview questions
+Python interview questions
+FastAPI questions
+MCP questions
+Prompt Engineering questions
+Context Engineering questions
+By the time you interview, you'll have your own personalized knowledge base.
+One rule
+Build more than you watch.
+For every hour of videos or reading, spend multiple hours coding.
+You'll retain much more that way.
+One promise from me
+Krishna, from today onward, I'll mentor you as if you're preparing to become a Senior Python Backend & AI Engineer.
+Whenever a new AI framework or trend appears, we'll evaluate it together and ask:
+Does it help in interviews?
+Does it help us build real applications?
+Is it worth putting on your resume?
+If the answer is "yes," we'll learn it.
+If it's just hype, we'll skip it.
