@@ -1,69 +1,15 @@
-RAP Onboarding Investigation – Findings & Troubleshooting Guide
-Objective
-This document summarizes the key findings identified during the investigation of RAP onboarding issues. These observations should help troubleshoot common onboarding failures before escalating them to the technical team.
-1. Validate the Template Before Onboarding
-Always click Validate Data before starting the onboarding process.
-Review all validation errors displayed on the right-hand side of the page.
-Resolve every validation error before proceeding to the onboarding steps.
-Note: Even if validation completes successfully, onboarding may still fail due to data-related issues described below.
-2. Verify User Email IDs and PSIDs
-During the investigation, we observed that several onboarding failures were caused by incorrect user information.
-Ensure that:
-Email IDs are copied correctly without formatting issues.
-The email address belongs to the correct user.
-PSID matches the corresponding user.
-Avoid copy-paste mistakes while populating the template.
-Invalid or mismatched PSIDs can cause onboarding failures.
-3. New Users Must Already Have RAP Access
-This was one of the major findings.
-Users who do not already have RAP access cannot be directly onboarded using the onboarding template.
-Before adding a user:
-Verify whether the user already has RAP access.
-The user should have at least one existing Pack access.
-If the user is completely new:
-Raise an access request through the RAP Request Access page.
-The request must be approved by the appropriate Global Capturer/Approver.
-Once the access is granted, the user can be added through the onboarding template.
-If this prerequisite is not met, onboarding will fail.
-4. Verify Metric Tab Drop-down Values
-For every metric, ensure that the following fields are selected from the provided drop-down list instead of manually typing values:
-Actual Type
-Reporting Unit
-Decimal Places
-If onboarding fails unexpectedly, manually reselect these values using the available drop-down options instead of relying on copied values.
-5. Verify Appetite and Tolerance Values
-For metrics containing qualitative values such as:
-Very High (VH)
-High (H)
-Do not enter text values such as:
-VH
-H
-Instead, enter only the corresponding numeric values.
-Example:
-Appetite Value 1 = 1
-Appetite Value 2 = 0
-Follow the same approach for Tolerance values.
-Incorrect values in these columns may cause onboarding failures.
-6. Verify Special Characters and Language Formatting
-During the Turkey onboarding, some user details contained non-English (Turkish) characters.
-Verify:
-User names
-Email addresses
-Any copied values containing special or regional characters
-Incorrect encoding or unsupported characters may result in onboarding issues.
-7. Validation Success Does Not Always Mean Successful Onboarding
-A successful validation does not guarantee successful onboarding.
-If onboarding fails during any of the processing steps:
-Recheck template data.
-Verify user access.
-Validate PSIDs and email addresses.
-Verify dropdown selections.
-Review qualitative value mappings.
-Summary of Major Findings
-Validate all template errors before onboarding.
-Verify Email IDs and PSIDs carefully.
-Ensure users already have RAP access before onboarding.
-Use dropdown selections for Actual Type, Reporting Unit, and Decimal Places.
-Use numeric values instead of VH/H text values.
-Verify special/non-English characters.
-Successful validation does not necessarily guarantee successful onboarding.
+Hi Team,
+As part of the ongoing knowledge transfer, I have consolidated the technical documentation and investigation findings in the Krishna KT Confluence space.
+The documentation covers several key areas, including:
+Cyberflow SAST issue fixes and implementation details.
+Evergreen server details, project structure, and environment setup.
+Jenkins & Ansible configuration for RAP and Pack Builder deployments.
+Metric Auto Cascade – backend implementation, current progress, and important technical considerations.
+Password encryption steps for production and related configurations.
+Important points to be considered before CR creation and deployment.
+RAP Backend setup, database configuration, and the latest RAP DB schema.
+RAP Onboarding Investigation – consolidated findings from recent onboarding issues, including common validation failures, user access prerequisites, template validations, and troubleshooting guidelines.
+Production support queries – commonly used SQL queries and troubleshooting steps to help the team resolve production requests more efficiently.
+Documentation related to recent RAP enhancements, backend implementations, and other project-specific knowledge.
+The objective of this documentation is to provide a centralized knowledge base that will help the team during development, production support, onboarding investigations, deployments, and future enhancements.
+Please refer to the Krishna KT Confluence page whenever required. I will continue updating the documentation with any additional findings or KT topics as needed.
