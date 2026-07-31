@@ -1,15 +1,11 @@
-Hi Team,
-As part of the ongoing knowledge transfer, I have consolidated the technical documentation and investigation findings in the Krishna KT Confluence space.
-The documentation covers several key areas, including:
-Cyberflow SAST issue fixes and implementation details.
-Evergreen server details, project structure, and environment setup.
-Jenkins & Ansible configuration for RAP and Pack Builder deployments.
-Metric Auto Cascade – backend implementation, current progress, and important technical considerations.
-Password encryption steps for production and related configurations.
-Important points to be considered before CR creation and deployment.
-RAP Backend setup, database configuration, and the latest RAP DB schema.
-RAP Onboarding Investigation – consolidated findings from recent onboarding issues, including common validation failures, user access prerequisites, template validations, and troubleshooting guidelines.
-Production support queries – commonly used SQL queries and troubleshooting steps to help the team resolve production requests more efficiently.
-Documentation related to recent RAP enhancements, backend implementations, and other project-specific knowledge.
-The objective of this documentation is to provide a centralized knowledge base that will help the team during development, production support, onboarding investigations, deployments, and future enhancements.
-Please refer to the Krishna KT Confluence page whenever required. I will continue updating the documentation with any additional findings or KT topics as needed.
+Thank you, everyone, for taking the time to join this call. I really appreciate it.
+It's a bit emotional because I've been part of this project for almost five years. During this journey, I had the opportunity to work with many talented people and learned a lot, both technically and professionally.
+I'd like to thank the business team, the development team, QA, and everyone I've worked with over the years. Thank you for your guidance, support, and collaboration. Whatever I've been able to contribute has been possible because of the teamwork we've had.
+We've gone through production issues, critical releases, tight deadlines, and many challenging enhancements together. Those experiences have taught me a lot and will stay with me throughout my career.
+I hope the KT documents and Confluence pages I've prepared will be useful for the team going forward. Even after I move on, I genuinely hope the project continues to be successful.
+I wish everyone the very best, both personally and professionally. It has been a pleasure working with all of you. Let's stay in touch, and thank you once again for all the support and wonderful memories.
+If Matt or Nitin asks you specifically
+You can add:
+"Thank you for trusting me with different responsibilities over the years. I really enjoyed working on this project, and I'm grateful for the opportunities and support."
+End with a smile
+"Thanks again, everyone. I'll definitely miss working with you all. Wishing you all the very best!"
