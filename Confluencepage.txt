@@ -1,1 +1,273 @@
-Thanks a lot, Prasad! ❤️ I really enjoyed working with you. All the very best, and let's stay connected! 😊
+WS5 Procurement Risk Assessment Solution – High-Level Architecture
+1. Solution Overview
+The WS5 solution aims to automate supplier risk assessment by consolidating information from multiple HSBC source systems into a single AI-driven reporting platform. Instead of manually reviewing contracts, supplier hierarchy, business applications, operational resilience information, and incidents, the platform aggregates structured and unstructured data to generate comprehensive supplier assessment reports.
+The solution leverages Retrieval-Augmented Generation (RAG), Azure AI services, FastAPI-based microservices, Azure AI Search, Cosmos DB Graph, SQL Database, and Azure OpenAI to provide contextual insights from procurement contracts and enterprise metadata.
+2. Business Objective
+The primary objective of the solution is to provide Procurement and Third-Party Risk Management (TPRM) analysts with a unified view of supplier information by combining:
+Supplier hierarchy
+Engagements
+Contracts
+Business Applications
+Business Services
+Operational Resilience
+Disaster Recovery
+Data Recovery
+Incidents
+Service Dependencies
+This information enables business users to make informed supplier risk and resilience decisions.
+3. High-Level Business Data Flow
+The overall business flow follows the supplier hierarchy.
+Global Third Party
+        │
+        ▼
+Third Party Entity
+        │
+        ▼
+Engagement
+        │
+        ▼
+Contract
+        │
+        ▼
+Business Application
+        │
+        ▼
+Business Service
+        │
+        ▼
+Business Process
+Additional information is gathered from enterprise systems, including:
+Assets (ALCP)
+Business Impact Analysis (BIA)
+Business Continuity Plans (BCP)
+BSO Tolerance Attributes
+Disaster Recovery (SCOTT)
+Data Recovery (BRET)
+Operational Incidents
+Recovery Objectives (RTO/RPO)
+All these datasets contribute to the final supplier assessment.
+4. Source Systems
+The solution integrates with multiple enterprise platforms.
+Source System
+Purpose
+Coupa
+Supplier onboarding, contracts, attachments
+OneTPM
+Engagement lifecycle and assessments
+CXO
+Consolidated structured business data
+D&B
+Supplier hierarchy (Global Ultimate Supplier)
+PCA
+Procurement Contract Assistant for contract intelligence
+SCOTT
+Disaster Recovery and Operational Resilience
+BRET
+Backup and Data Recovery information
+ARIS
+Business Services and Business Processes
+CTOI
+Business Applications and Technology Inventory
+5. Procurement Contract Assistant (PCA)
+PCA is the AI platform responsible for extracting information from procurement contracts.
+The platform converts contract documents into structured knowledge and exposes AI-powered retrieval capabilities.
+Its responsibilities include:
+Contract parsing
+Metadata extraction
+Clause identification
+Cross-reference detection
+Vector indexing
+Knowledge Graph creation
+Context retrieval
+AI-assisted question answering
+6. PCA Processing Pipeline
+The end-to-end document processing workflow is as follows:
+Coupa
+
+↓
+
+Blob Storage
+
+↓
+
+Contract Parser
+
+↓
+
+Structured JSON
+
+↓
+
+Ingester
+
+↓
+
+Azure AI Search
+(Vector Store)
+
++
+
+Cosmos DB
+(Graph Database)
+
+↓
+
+Retriever
+
+↓
+
+Azure OpenAI
+
+↓
+
+Answer Generation
+7. PCA Microservice Architecture
+The Procurement Contract Assistant follows a microservice-based architecture.
+Core Services include:
+Contract Parser
+Ingester
+Retriever
+Orchestrator
+Supporting Services include:
+Session Service
+User Profile Service
+Configuration Service
+Feedback Service
+Evaluation Service
+Moderation Service
+Monitoring Dashboard
+8. Responsibilities of Core Services
+Contract Parser
+Responsible for:
+Reading PDF and DOCX contracts
+Converting documents into Markdown
+Identifying headings
+Creating structured JSON
+Detecting clauses
+Detecting parent-child relationships
+Detecting cross references
+Capturing metadata
+Ingester
+Responsible for:
+Reading Parser JSON output
+Creating embeddings
+Loading documents into Azure AI Search
+Creating graph nodes in Cosmos DB
+Retriever
+Responsible for:
+Hybrid Search (Semantic + BM25)
+Context Retrieval
+Graph Expansion
+Deep Search
+Quick Search
+Orchestrator
+Responsible for:
+Understanding user query
+Coordinating microservices
+Selecting retrieval strategy
+Streaming responses
+Returning final answer
+9. Retrieval Strategy
+The platform supports two retrieval modes.
+Quick Search
+Top-K semantic retrieval
+Fast response
+Limited graph expansion
+Deep Search
+Larger semantic search
+Graph traversal
+Parent-child expansion
+Cross-reference expansion
+Richer context for LLM
+10. AI Workflow
+User Question
+↓
+Session Validation
+↓
+Orchestrator
+↓
+Retriever
+↓
+Azure AI Search
+↓
+Cosmos Graph
+↓
+Azure OpenAI
+↓
+Generated Response
+↓
+Evaluation
+↓
+Moderation
+↓
+Feedback
+↓
+History Storage
+11. Data Storage
+The solution uses multiple storage technologies.
+Technology
+Purpose
+Azure Blob Storage
+Contract documents
+Azure SQL Database
+Application metadata, sessions, feedback
+Azure AI Search
+Vector embeddings
+Cosmos DB Graph
+Relationship traversal
+Azure Application Insights
+Monitoring
+Azure Monitor
+Infrastructure metrics
+12. User Interaction Flow
+The end-user workflow consists of:
+User Login
+Supplier Selection
+Contract Selection
+Session Creation
+Prompt Selection or Custom Query
+Orchestrator Execution
+Retriever Processing
+AI Response Generation
+User Feedback
+Session History
+13. Sprint 1 Functional Scope
+The initial implementation focuses on:
+Supplier hierarchy traversal
+Parent supplier identification
+Engagement discovery
+Contract mapping
+Business application mapping
+Business service mapping
+Structured data ingestion
+Initial report generation
+14. Technologies Used
+Category
+Technology
+Backend
+Python
+API Framework
+FastAPI
+Frontend
+React
+AI
+Azure OpenAI
+Document Parsing
+Azure Document Intelligence
+Vector Store
+Azure AI Search
+Graph Database
+Cosmos DB
+Relational Database
+Azure SQL
+Cloud
+Microsoft Azure
+ETL
+Azure Data Factory
+Infrastructure
+Terraform
+Source Control
+Azure DevOps
+CI/CD
+Azure Pipelines
+My recommendation
