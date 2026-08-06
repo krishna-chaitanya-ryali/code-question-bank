@@ -178,3 +178,11 @@ pandas
 openpyxl
 pyodbc
 azure-identity
+
+
+SQLAlchemy==2.0.41
+pandas==2.3.1
+openpyxl==3.1.5
+pyodbc==5.2.0
+azure-identity==1.23.0
+azure-core==1.35.0
