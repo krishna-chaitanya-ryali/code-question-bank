@@ -1,12 +1,11 @@
-SELECT
-    CONTRACTS_DETAIL_CONTRACT_ID,
-    CONTRACTS_DETAIL_CONTRACT_NUMBER,
-    ENGAGEMENT_DETAIL_ENGAGEMENT_ID,
-    SUPPLIER_KEY_TEXT
-FROM <your_contract_source>
-WHERE ENGAGEMENT_DETAIL_ENGAGEMENT_ID IN (
-    'EN-021445',
-    'ENG-1162865',
-    'ENG-362309'
-)
-ORDER BY ENGAGEMENT_DETAIL_ENGAGEMENT_ID;
+ALTER TABLE CONTRACT
+ADD
+    contract_id VARCHAR(100) NULL,
+    contract_name VARCHAR(500) NULL,
+    regional_coverage VARCHAR(500) NULL,
+    termination_notice VARCHAR(500) NULL,
+    termination_notice_length VARCHAR(100) NULL,
+    terminated VARCHAR(20) NULL,
+    termination_reason VARCHAR(200) NULL,
+    supplier_notice_period_days VARCHAR(50) NULL,
+    termination_convenience_right VARCHAR(20) NULL;
