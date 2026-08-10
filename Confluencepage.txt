@@ -1,14 +1,22 @@
-import pandas as pd
+SELECT
+    contract_ref_num,
+    contract_engagement_id,
+    contract_third_party_id,
+    contract_id,
+    contract_name,
+    contract_status
+FROM CONTRACT
+ORDER BY contract_engagement_id;
 
 
-df = pd.read_excel(
-    "engagement_info.xlsx",
-    sheet_name="Contract level info",
-)
-
-print("\nExcel columns:\n")
-
-for column in df.columns:
-    print(column)
-
-print("\nTotal rows:", len(df))
+SELECT
+    c.contract_ref_num,
+    c.contract_engagement_id,
+    e.engagement_name,
+    c.contract_third_party_id,
+    t.name AS third_party_name
+FROM CONTRACT c
+LEFT JOIN ENGAGEMENT e
+    ON c.contract_engagement_id = e.engagement_id
+LEFT JOIN THIRD_PARTY t
+    ON c.contract_third_party_id = t.third_party_id;
