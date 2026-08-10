@@ -1,22 +1,93 @@
-SELECT
-    contract_ref_num,
-    contract_engagement_id,
-    contract_third_party_id,
-    contract_id,
-    contract_name,
-    contract_status
-FROM CONTRACT
-ORDER BY contract_engagement_id;
+Current Database Structure / Relationship Understanding
+For the current POC, we have created and populated the following core tables in Azure SQL:
+1. ENGAGEMENT
+This is the parent/master table for engagement information.
+Primary Key: engagement_id
+Contains engagement-level information such as engagement name, supplier key, status, category, business service information, etc.
+Currently populated with the three agreed in-scope engagement records.
+2. THIRD_PARTY
+This table represents the supplier/third-party information.
+Primary Key: third_party_id
+Currently populated with the required third-party records.
+The third_party_id corresponds to the supplier identifier such as tpp-319827 and tpp-282191.
+3. CONTRACT
+This table contains contract information associated with an engagement and a third party.
+Primary Key: contract_ref_num
+Foreign Key: contract_engagement_id → ENGAGEMENT.engagement_id
+Foreign Key: contract_third_party_id → THIRD_PARTY.third_party_id
+Contains contract-level information such as contract ID, contract name, description, status, termination details, regional coverage, etc.
+Therefore, each contract is associated with:
 
 
-SELECT
-    c.contract_ref_num,
-    c.contract_engagement_id,
-    e.engagement_name,
-    c.contract_third_party_id,
-    t.name AS third_party_name
-FROM CONTRACT c
-LEFT JOIN ENGAGEMENT e
-    ON c.contract_engagement_id = e.engagement_id
-LEFT JOIN THIRD_PARTY t
-    ON c.contract_third_party_id = t.third_party_id;
+One Engagement
+       +
+One Third Party
+       =
+Contract
+
+
+For the current POC, we have successfully loaded 7 contract records across the three in-scope engagements.
+Relationship Flow
+The current relationship is understood as:
+
+
+ENGAGEMENT
+   |
+   | 1-to-many
+   |
+   +--------> CONTRACT <--------+
+                 |              |
+                 |              |
+          FK: contract_         FK: contract_
+          engagement_id         third_party_id
+                 |              |
+                 v              v
+             ENGAGEMENT     THIRD_PARTY
+
+more simple 
+
+
+ENGAGEMENT
+    |
+    | engagement_id
+    |
+    v
+CONTRACT
+    ^
+    |
+    | third_party_id
+    |
+THIRD_PARTY
+
+
+So, ENGAGEMENT and THIRD_PARTY are the parent/reference entities, and CONTRACT acts as the entity that links a particular engagement with a particular third party.
+GTP_ENG_CONTR_REL
+We also have the ORM model planned for:
+GTP_ENG_CONTR_REL
+The intention of this table is to represent the relationship/association between:
+Third Party
+Engagement
+Contract
+It will contain the corresponding IDs and additional relationship information such as relationship type/remarks.
+The expected relationship is:
+
+THIRD_PARTY
+      |
+      |
+      +----------------+
+                       |
+                       v
+                  GTP_ENG_CONTR_REL
+                       ^
+                       |
+      +----------------+
+      |
+      |
+ENGAGEMENT ---- CONTRACT
+
+The important point is that we have not loaded relationship data into GTP_ENG_CONTR_REL yet, because we want to confirm the actual source fields and relationship rules before inserting records.
+Current Validation
+We have already validated that all 7 loaded contracts successfully resolve to:
+a valid ENGAGEMENT record, and
+a valid THIRD_PARTY record.
+So the current ENGAGEMENT → CONTRACT → THIRD_PARTY relationship is working successfully in Azure SQL.
