@@ -404,3 +404,90 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+
+
+class Contract(Base):
+    """Contract records associated with an engagement and third party."""
+
+    __tablename__ = "CONTRACT"
+
+    __table_args__ = (
+        UniqueConstraint(
+            "contract_ref_num",
+            "contract_engagement_id",
+            "contract_third_party_id",
+            name="UQ_CONTRACT_REF_ENG_TP",
+        ),
+    )
+
+    # CONTRACTS_DETAIL_CONTRACT_NUMBER
+    contract_ref_num = Column(
+        String(100),
+        primary_key=True,
+    )
+
+    # ENGAGEMENT_DETAIL_ENGAGEMENT_ID
+    contract_engagement_id = Column(
+        String(100),
+        ForeignKey("ENGAGEMENT.engagement_id"),
+        nullable=False,
+    )
+
+    # SUPPLIER_KEY_TEXT
+    contract_third_party_id = Column(
+        String(100),
+        ForeignKey("THIRD_PARTY.third_party_id"),
+        nullable=False,
+    )
+
+    # CONTRACTS_DETAIL_CONTRACT_ID
+    contract_id = Column(String(100))
+
+    # CONTRACTS_DETAIL_CONTRACT_NAME
+    contract_name = Column(String(500))
+
+    # CONTRACTS_DETAIL_CONTRACT_DESC
+    contract_desc = Column(String(1000))
+
+    # CONTRACTS_DETAIL_REGIONAL_COVERAGE_TEXT
+    regional_coverage = Column(String(500))
+
+    # CONTRACTS_DETAIL_CONTRACT_STATUS_CODE
+    contract_status = Column(String(100))
+
+    # CONTRACTS_DETAIL_TERMINATION_NOTICE_TEXT
+    termination_notice = Column(String(500))
+
+    # CONTRACTS_DETAIL_TERMINATION_NOTICE_LENGTH_TEXT
+    termination_notice_length = Column(String(100))
+
+    # CONTRACTS_DETAIL_TERMINATED_TEXT
+    terminated = Column(String(20))
+
+    # CONTRACTS_DETAIL_TERMINATION_REASON_CODE
+    termination_reason = Column(String(200))
+
+    # CONTRACTS_DETAIL_SUPPLIER_NOTICE_PERIOD_DAYS_NUM
+    supplier_notice_period_days = Column(String(50))
+
+    # CONTRACTS_DETAIL_TERMINATION_CONVENIENCE_RIGHT_IND
+    termination_convenience_right = Column(String(20))
+
+    engagement = relationship(
+        "Engagement",
+        back_populates="contracts",
+        foreign_keys=[contract_engagement_id],
+    )
+
+    third_party = relationship(
+        "ThirdParty",
+        back_populates="contracts",
+        foreign_keys=[contract_third_party_id],
+    )
+
+    gtp_relations = relationship(
+        "GtpEngContractRelation",
+        back_populates="contract",
+        overlaps="gtp_relations,third_party,engagement",
+    )
