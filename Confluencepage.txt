@@ -1,371 +1,178 @@
-class Contract(Base):
-    """Contract records associated with an engagement and third party."""
+"""Load contract data from Excel into Azure SQL.
 
-    __tablename__ = "CONTRACT"
-
-    __table_args__ = (
-        UniqueConstraint(
-            "contract_ref_num",
-            "engagement_id",
-            "third_party_id",
-            name="UQ_CONTRACT_REF_ENG_TP",
-        ),
-    )
-
-    # Source: CONTRACTS_DETAIL_CONTRACT_NUMBER
-    # Existing PK used by the current model and GTP relationship.
-    contract_ref_num = Column(
-        String(100),
-        primary_key=True,
-    )
-
-    # Source: ENGAGEMENT_DETAIL_ENGAGEMENT_ID
-    contract_engagement_id = Column(
-        String(100),
-        ForeignKey("ENGAGEMENT.engagement_id"),
-        nullable=False,
-    )
-
-    # Source: SUPPLIER_KEY_TEXT
-    contract_third_party_id = Column(
-        String(100),
-        ForeignKey("THIRD_PARTY.third_party_id"),
-        nullable=False,
-    )
-
-    # Source: CONTRACTS_DETAIL_CONTRACT_ID
-    contract_id = Column(String(100))
-
-    # Source: CONTRACTS_DETAIL_CONTRACT_NAME
-    contract_name = Column(String(500))
-
-    # Source: CONTRACTS_DETAIL_CONTRACT_DESC
-    contract_desc = Column(String(1000))
-
-    # Source: CONTRACTS_DETAIL_REGIONAL_COVERAGE_TEXT
-    regional_coverage = Column(String(500))
-
-    # Source: CONTRACTS_DETAIL_CONTRACT_STATUS_CODE
-    contract_status = Column(String(100))
-
-    # Source: CONTRACTS_DETAIL_TERMINATION_NOTICE_TEXT
-    termination_notice = Column(String(500))
-
-    # Source: CONTRACTS_DETAIL_TERMINATION_NOTICE_LENGTH_TEXT
-    termination_notice_length = Column(String(100))
-
-    # Source: CONTRACTS_DETAIL_TERMINATED_TEXT
-    terminated = Column(String(20))
-
-    # Source: CONTRACTS_DETAIL_TERMINATION_REASON_CODE
-    termination_reason = Column(String(200))
-
-    # Source: CONTRACTS_DETAIL_SUPPLIER_NOTICE_PERIOD_DAYS_NUM
-    supplier_notice_period_days = Column(String(50))
-
-    # Source: CONTRACTS_DETAIL_TERMINATION_CONVENIENCE_RIGHT_IND
-    termination_convenience_right = Column(String(20))
-
-    engagement = relationship(
-        "Engagement",
-        back_populates="contracts",
-        foreign_keys=[contract_engagement_id],
-    )
-
-    third_party = relationship(
-        "ThirdParty",
-        back_populates="contracts",
-        foreign_keys=[contract_third_party_id],
-    )
-
-    gtp_relations = relationship(
-        "GtpEngContractRelation",
-        back_populates="contract",
-        overlaps="gtp_relations,third_party,engagement",
-    )
-
-
-
-class GtpEngContractRelation(Base):
-    """Association table for third-party, engagement, and contract tuples."""
-
-    __tablename__ = "GTP_ENG_CONTR_REL"
-
-    __table_args__ = (
-        ForeignKeyConstraint(
-            ["contract_ref_num", "engagement_id", "third_party_id"],
-            [
-                "CONTRACT.contract_ref_num",
-                "CONTRACT.contract_engagement_id",
-                "CONTRACT.contract_third_party_id",
-            ],
-            name="FK_GTP_ENG_CONTR_REL_CONTRACT_TUPLE",
-        ),
-    )
-
-    third_party_id = Column(
-        String(100),
-        ForeignKey("THIRD_PARTY.third_party_id"),
-        primary_key=True,
-    )
-
-    engagement_id = Column(
-        String(100),
-        ForeignKey("ENGAGEMENT.engagement_id"),
-        primary_key=True,
-    )
-
-    contract_ref_num = Column(
-        String(100),
-        primary_key=True,
-    )
-
-    global_tp_id = Column(String(100))
-
-    relationship_type = Column(String(100))
-
-    remarks = Column(String(500))
-
-    third_party = relationship(
-        "ThirdParty",
-        back_populates="gtp_relations",
-        overlaps="gtp_relations",
-    )
-
-    engagement = relationship(
-        "Engagement",
-        back_populates="gtp_relations",
-        overlaps="gtp_relations",
-    )
-
-    contract = relationship(
-        "Contract",
-        back_populates="gtp_relations",
-        overlaps="gtp_relations,third_party,engagement",
-    )
-
-
-contracts = relationship(
-    "Contract",
-    back_populates="engagement",
-)
-
-contracts = relationship(
-    "Contract",
-    back_populates="third_party",
-)
-
-
-
-"""Recreate the Contract-related tables using the SQLAlchemy connection."""
-
-from sqlalchemy import text
-from sqlalchemy.exc import SQLAlchemyError
-
-from db import engine
-from models import Base
-
-
-def main() -> int:
-    """Drop and recreate Contract-related tables."""
-
-    try:
-        with engine.begin() as conn:
-
-            print("Dropping GTP_ENG_CONTR_REL table...")
-
-            conn.execute(
-                text(
-                    """
-                    IF OBJECT_ID(
-                        'dbo.GTP_ENG_CONTR_REL',
-                        'U'
-                    ) IS NOT NULL
-                    DROP TABLE dbo.GTP_ENG_CONTR_REL;
-                    """
-                )
-            )
-
-            print("Dropping CONTRACT table...")
-
-            conn.execute(
-                text(
-                    """
-                    IF OBJECT_ID(
-                        'dbo.CONTRACT',
-                        'U'
-                    ) IS NOT NULL
-                    DROP TABLE dbo.CONTRACT;
-                    """
-                )
-            )
-
-        print("Existing Contract tables removed.")
-
-        # Recreate tables from the current SQLAlchemy models.
-        Base.metadata.create_all(bind=engine)
-
-        print("Contract-related tables recreated successfully.")
-
-        return 0
-
-    except SQLAlchemyError as exc:
-        print("Failed to recreate Contract-related tables.")
-        print(f"Error: {exc}")
-        return 1
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
-
-
-"""Load Contract data for the three in-scope engagements."""
+The script reads the 'Contract level info' worksheet and loads contracts
+for the three in-scope engagement IDs used for the current POC.
+"""
 
 import pandas as pd
+
 from sqlalchemy.orm import Session
 
 from db import engine
 from models import Contract
 
 
-ENGAGEMENT_IDS = {
+# ---------------------------------------------------------
+# In-scope engagements for the current POC
+# ---------------------------------------------------------
+
+IN_SCOPE_ENGAGEMENT_IDS = {
     "EN-021445",
     "ENG-1162865",
     "ENG-362309",
 }
 
 
+# ---------------------------------------------------------
+# Read Excel
+# ---------------------------------------------------------
+
 def read_contract_excel(
     file_path: str = "engagement_info.xlsx",
 ) -> pd.DataFrame:
-    """Read Contract worksheet from Excel."""
+    """Read contract records from the Contract level info worksheet."""
 
     return pd.read_excel(
         file_path,
-        sheet_name="Contract",
+        sheet_name="Contract level info",
     )
 
 
+# ---------------------------------------------------------
+# Clean values
+# ---------------------------------------------------------
+
 def clean_value(value):
-    """Convert pandas NaN values to None."""
+    """Convert pandas NaN values to None and normalize text."""
 
     if pd.isna(value):
         return None
 
-    return value
+    return str(value).strip()
 
+
+# ---------------------------------------------------------
+# Load contracts
+# ---------------------------------------------------------
 
 def load_contract_rows(df: pd.DataFrame) -> int:
-    """Load Contract rows for the selected engagements."""
+    """Insert/update contract rows using contract_ref_num as the key."""
 
+    # Keep only contracts belonging to the three in-scope engagements.
     df = df[
-        df["ENGAGEMENT_DETAIL_ENGAGEMENT_ID"].isin(
-            ENGAGEMENT_IDS
-        )
+        df["ENGAGEMENT_DETAIL_ENGAGEMENT_ID"]
+        .astype(str)
+        .str.strip()
+        .isin(IN_SCOPE_ENGAGEMENT_IDS)
     ].copy()
 
-    print(f"Contract rows selected: {len(df)}")
+    print(
+        f"Contracts found for in-scope engagements: {len(df)}"
+    )
+
+    if df.empty:
+        print("No contract records found for the selected engagements.")
+        return 0
 
     session = Session(engine)
+
+    processed_count = 0
 
     try:
 
         for _, row in df.iterrows():
 
+            engagement_id = clean_value(
+                row["ENGAGEMENT_DETAIL_ENGAGEMENT_ID"]
+            )
+
+            supplier_id = clean_value(
+                row["SUPPLIER_KEY_TEXT"]
+            )
+
+            contract_number = clean_value(
+                row["CONTRACTS_DETAIL_CONTRACT_NUMBER"]
+            )
+
+            # -------------------------------------------------
+            # Basic validation
+            # -------------------------------------------------
+
+            if not contract_number:
+                print(
+                    "Skipping row because CONTRACT_NUMBER is empty."
+                )
+                continue
+
+            if engagement_id not in IN_SCOPE_ENGAGEMENT_IDS:
+                print(
+                    f"Skipping contract {contract_number}: "
+                    f"engagement {engagement_id} is out of scope."
+                )
+                continue
+
+            if not supplier_id:
+                print(
+                    f"Skipping contract {contract_number}: "
+                    "SUPPLIER_KEY_TEXT is empty."
+                )
+                continue
+
+            # -------------------------------------------------
+            # Create ORM object
+            # -------------------------------------------------
+
             contract = Contract(
-                # CONTRACTS_DETAIL_CONTRACT_NUMBER
-                contract_ref_num=str(
-                    clean_value(
-                        row["CONTRACTS_DETAIL_CONTRACT_NUMBER"]
-                    )
-                ),
+                contract_ref_num=contract_number,
 
-                # ENGAGEMENT_DETAIL_ENGAGEMENT_ID
-                contract_engagement_id=str(
-                    row["ENGAGEMENT_DETAIL_ENGAGEMENT_ID"]
-                ),
+                contract_engagement_id=engagement_id,
 
-                # SUPPLIER_KEY_TEXT
-                contract_third_party_id=str(
-                    row["SUPPLIER_KEY_TEXT"]
-                ),
+                contract_third_party_id=supplier_id,
 
-                # CONTRACTS_DETAIL_CONTRACT_ID
                 contract_id=clean_value(
                     row["CONTRACTS_DETAIL_CONTRACT_ID"]
                 ),
 
-                # CONTRACTS_DETAIL_CONTRACT_NAME
                 contract_name=clean_value(
                     row["CONTRACTS_DETAIL_CONTRACT_NAME"]
                 ),
 
-                # CONTRACTS_DETAIL_CONTRACT_DESC
                 contract_desc=clean_value(
                     row["CONTRACTS_DETAIL_CONTRACT_DESC"]
                 ),
 
-                # CONTRACTS_DETAIL_REGIONAL_COVERAGE_TEXT
                 regional_coverage=clean_value(
-                    row[
-                        "CONTRACTS_DETAIL_REGIONAL_COVERAGE_TEXT"
-                    ]
+                    row["CONTRACTS_DETAIL_REGIONAL_COVERAGE_TEXT"]
                 ),
 
-                # CONTRACTS_DETAIL_CONTRACT_STATUS_CODE
                 contract_status=clean_value(
-                    row[
-                        "CONTRACTS_DETAIL_CONTRACT_STATUS_CODE"
-                    ]
+                    row["CONTRACTS_DETAIL_CONTRACT_STATUS_CODE"]
                 ),
 
-                # CONTRACTS_DETAIL_TERMINATION_NOTICE_TEXT
                 termination_notice=clean_value(
-                    row[
-                        "CONTRACTS_DETAIL_TERMINATION_NOTICE_TEXT"
-                    ]
+                    row["CONTRACTS_DETAIL_TERMINATION_NOTICE_TEXT"]
                 ),
 
-                # CONTRACTS_DETAIL_TERMINATION_NOTICE_LENGTH_TEXT
                 termination_notice_length=clean_value(
                     row[
                         "CONTRACTS_DETAIL_TERMINATION_NOTICE_LENGTH_TEXT"
                     ]
                 ),
 
-                # CONTRACTS_DETAIL_TERMINATED_TEXT
                 terminated=clean_value(
-                    row[
-                        "CONTRACTS_DETAIL_TERMINATED_TEXT"
-                    ]
+                    row["CONTRACTS_DETAIL_TERMINATED_TEXT"]
                 ),
 
-                # CONTRACTS_DETAIL_TERMINATION_REASON_CODE
                 termination_reason=clean_value(
+                    row["CONTRACTS_DETAIL_TERMINATION_REASON_CODE"]
+                ),
+
+                supplier_notice_period_days=clean_value(
                     row[
-                        "CONTRACTS_DETAIL_TERMINATION_REASON_CODE"
+                        "CONTRACTS_DETAIL_SUPPLIER_NOTICE_PERIOD_DAYS_NUM"
                     ]
                 ),
 
-                # CONTRACTS_DETAIL_SUPPLIER_NOTICE_PERIOD_DAYS_NUM
-                supplier_notice_period_days=(
-                    str(
-                        clean_value(
-                            row[
-                                "CONTRACTS_DETAIL_SUPPLIER_NOTICE_PERIOD_DAYS_NUM"
-                            ]
-                        )
-                    )
-                    if clean_value(
-                        row[
-                            "CONTRACTS_DETAIL_SUPPLIER_NOTICE_PERIOD_DAYS_NUM"
-                        ]
-                    )
-                    is not None
-                    else None
-                ),
-
-                # CONTRACTS_DETAIL_TERMINATION_CONVENIENCE_RIGHT_IND
                 termination_convenience_right=clean_value(
                     row[
                         "CONTRACTS_DETAIL_TERMINATION_CONVENIENCE_RIGHT_IND"
@@ -373,11 +180,17 @@ def load_contract_rows(df: pd.DataFrame) -> int:
                 ),
             )
 
+            # -------------------------------------------------
+            # Insert or update
+            # -------------------------------------------------
+
             session.merge(contract)
+
+            processed_count += 1
 
         session.commit()
 
-        return len(df)
+        return processed_count
 
     except Exception:
         session.rollback()
@@ -387,16 +200,25 @@ def load_contract_rows(df: pd.DataFrame) -> int:
         session.close()
 
 
+# ---------------------------------------------------------
+# Main
+# ---------------------------------------------------------
+
 def main() -> int:
-    """Execute Contract data load."""
+
+    print("Reading contract Excel data...")
 
     df = read_contract_excel()
 
-    row_count = load_contract_rows(df)
+    print(
+        f"Total rows in Excel sheet: {len(df)}"
+    )
+
+    processed_count = load_contract_rows(df)
 
     print(
         f"Contract data loaded successfully. "
-        f"Rows processed: {row_count}"
+        f"Rows processed: {processed_count}"
     )
 
     return 0
@@ -404,160 +226,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
-
-
-class Contract(Base):
-    """Contract records associated with an engagement and third party."""
-
-    __tablename__ = "CONTRACT"
-
-    __table_args__ = (
-        UniqueConstraint(
-            "contract_ref_num",
-            "contract_engagement_id",
-            "contract_third_party_id",
-            name="UQ_CONTRACT_REF_ENG_TP",
-        ),
-    )
-
-    # CONTRACTS_DETAIL_CONTRACT_NUMBER
-    contract_ref_num = Column(
-        String(100),
-        primary_key=True,
-    )
-
-    # ENGAGEMENT_DETAIL_ENGAGEMENT_ID
-    contract_engagement_id = Column(
-        String(100),
-        ForeignKey("ENGAGEMENT.engagement_id"),
-        nullable=False,
-    )
-
-    # SUPPLIER_KEY_TEXT
-    contract_third_party_id = Column(
-        String(100),
-        ForeignKey("THIRD_PARTY.third_party_id"),
-        nullable=False,
-    )
-
-    # CONTRACTS_DETAIL_CONTRACT_ID
-    contract_id = Column(String(100))
-
-    # CONTRACTS_DETAIL_CONTRACT_NAME
-    contract_name = Column(String(500))
-
-    # CONTRACTS_DETAIL_CONTRACT_DESC
-    contract_desc = Column(String(1000))
-
-    # CONTRACTS_DETAIL_REGIONAL_COVERAGE_TEXT
-    regional_coverage = Column(String(500))
-
-    # CONTRACTS_DETAIL_CONTRACT_STATUS_CODE
-    contract_status = Column(String(100))
-
-    # CONTRACTS_DETAIL_TERMINATION_NOTICE_TEXT
-    termination_notice = Column(String(500))
-
-    # CONTRACTS_DETAIL_TERMINATION_NOTICE_LENGTH_TEXT
-    termination_notice_length = Column(String(100))
-
-    # CONTRACTS_DETAIL_TERMINATED_TEXT
-    terminated = Column(String(20))
-
-    # CONTRACTS_DETAIL_TERMINATION_REASON_CODE
-    termination_reason = Column(String(200))
-
-    # CONTRACTS_DETAIL_SUPPLIER_NOTICE_PERIOD_DAYS_NUM
-    supplier_notice_period_days = Column(String(50))
-
-    # CONTRACTS_DETAIL_TERMINATION_CONVENIENCE_RIGHT_IND
-    termination_convenience_right = Column(String(20))
-
-    engagement = relationship(
-        "Engagement",
-        back_populates="contracts",
-        foreign_keys=[contract_engagement_id],
-    )
-
-    third_party = relationship(
-        "ThirdParty",
-        back_populates="contracts",
-        foreign_keys=[contract_third_party_id],
-    )
-
-    gtp_relations = relationship(
-        "GtpEngContractRelation",
-        back_populates="contract",
-        overlaps="gtp_relations,third_party,engagement",
-    )
-
-
-
-class GtpEngContractRelation(Base):
-    """Association table for third-party, engagement, and contract tuples."""
-
-    __tablename__ = "GTP_ENG_CONTR_REL"
-
-    __table_args__ = (
-        ForeignKeyConstraint(
-            ["contract_ref_num", "engagement_id", "third_party_id"],
-            [
-                "CONTRACT.contract_ref_num",
-                "CONTRACT.contract_engagement_id",
-                "CONTRACT.contract_third_party_id",
-            ],
-            name="FK_GTP_ENG_CONTR_REL_CONTRACT_TUPLE",
-        ),
-    )
-
-    third_party_id = Column(
-        String(100),
-        ForeignKey("THIRD_PARTY.third_party_id"),
-        primary_key=True,
-    )
-
-    engagement_id = Column(
-        String(100),
-        ForeignKey("ENGAGEMENT.engagement_id"),
-        primary_key=True,
-    )
-
-    contract_ref_num = Column(
-        String(100),
-        primary_key=True,
-    )
-
-    global_tp_id = Column(String(100))
-
-    relationship_type = Column(String(100))
-
-    remarks = Column(String(500))
-
-    third_party = relationship(
-        "ThirdParty",
-        back_populates="gtp_relations",
-        overlaps="gtp_relations",
-    )
-
-    engagement = relationship(
-        "Engagement",
-        back_populates="gtp_relations",
-        overlaps="gtp_relations",
-    )
-
-    contract = relationship(
-        "Contract",
-        back_populates="gtp_relations",
-        overlaps="gtp_relations,third_party,engagement",
-    )
-
-
-
-SELECT
-    COLUMN_NAME,
-    DATA_TYPE,
-    CHARACTER_MAXIMUM_LENGTH
-FROM INFORMATION_SCHEMA.COLUMNS
-WHERE TABLE_NAME = 'CONTRACT'
-ORDER BY ORDINAL_POSITION;
