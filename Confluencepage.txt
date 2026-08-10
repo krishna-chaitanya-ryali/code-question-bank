@@ -1,10 +1,40 @@
-SELECT
-    engagement_id,
-    supplier_key_text,
-    global_business_name
-FROM ENGAGEMENT
-WHERE engagement_id IN (
-    'EN-021445',
-    'ENG-1162865',
-    'ENG-362309'
-);
+from sqlalchemy.orm import Session
+
+from db import engine
+from models import ThirdParty
+
+
+def load_third_parties() -> int:
+    session = Session(engine)
+
+    try:
+        third_parties = [
+            ThirdParty(
+                third_party_id="tpp-319827",
+                name="Turaz Global Subco Limited",
+            ),
+            ThirdParty(
+                third_party_id="tpp-282191",
+                name="Turaz Global Subco Limited",
+            ),
+        ]
+
+        for third_party in third_parties:
+            session.merge(third_party)
+
+        session.commit()
+
+        return len(third_parties)
+
+    finally:
+        session.close()
+
+
+def main() -> int:
+    count = load_third_parties()
+    print(f"Third-party records loaded successfully. Rows processed: {count}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
