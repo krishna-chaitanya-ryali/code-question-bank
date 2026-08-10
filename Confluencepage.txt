@@ -1,6 +1,167 @@
-Progress Update:
-Created the ENGAGEMENT table in the Azure SQL target database using SQLAlchemy ORM.
-Established the required database connectivity and validated successful access to the target database.
-Loaded the agreed in-scope Engagement records into the ENGAGEMENT table.
-Currently validating the loaded data and table structure as part of the structured data ingestion POC.
-The remaining structured data tables and their relationships will be added incrementally as the source fields and mappings are finalized.
+from sqlalchemy import Column, String, ForeignKey
+from sqlalchemy.orm import declarative_base
+
+Base = declarative_base()
+
+
+class Engagement(Base):
+    __tablename__ = "ENGAGEMENT"
+
+    engagement_id = Column(String(100), primary_key=True)
+
+    supplier_key_text = Column(String(100))
+    engagement_name = Column(String(500))
+    engagement_desc = Column(String(1000))
+    engagement_status = Column(String(100))
+    category_name = Column(String(200))
+    important_third_party_service = Column(String(20))
+    important_business_service = Column(String(300))
+    materiality_assessment = Column(String(200))
+    inherent_rating = Column(String(100))
+    application_instance_id = Column(String(100))
+    global_business_name = Column(String(300))
+    type = Column(String(100))
+    tpem_employee_id = Column(String(100))
+    tpem_email = Column(String(200))
+    engagement_risk_owner_employee_id = Column(String(100))
+    engagement_risk_owner_email = Column(String(200))
+
+
+class Contract(Base):
+    __tablename__ = "CONTRACT"
+
+    # Primary key
+    contract_number = Column(String(100), primary_key=True)
+
+    # Foreign key to ENGAGEMENT
+    engagement_id = Column(
+        String(100),
+        ForeignKey("ENGAGEMENT.engagement_id"),
+        nullable=False
+    )
+
+    # Existing relationship to THIRD_PARTY
+    third_party_id = Column(String(100))
+
+    # Contract information
+    supplier_key_text = Column(String(100))
+    supplier_global_business_name = Column(String(300))
+
+    engagement_name = Column(String(500))
+
+    contract_id = Column(String(100))
+    contract_name = Column(String(500))
+    contract_desc = Column(String(1000))
+
+    regional_coverage = Column(String(500))
+    contract_status_code = Column(String(100))
+
+    termination_notice = Column(String(500))
+    termination_notice_length = Column(String(100))
+    terminated = Column(String(50))
+    termination_reason_code = Column(String(100))
+
+    supplier_notice_period_days = Column(String(50))
+    termination_convenience_right = Column(String(50))
+
+
+
+from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
+
+from db import engine
+
+
+NEW_COLUMNS = {
+    "supplier_key_text": "VARCHAR(100)",
+    "supplier_global_business_name": "VARCHAR(300)",
+    "engagement_name": "VARCHAR(500)",
+    "contract_id": "VARCHAR(100)",
+    "contract_name": "VARCHAR(500)",
+    "regional_coverage": "VARCHAR(500)",
+    "contract_status_code": "VARCHAR(100)",
+    "termination_notice": "VARCHAR(500)",
+    "termination_notice_length": "VARCHAR(100)",
+    "terminated": "VARCHAR(50)",
+    "termination_reason_code": "VARCHAR(100)",
+    "supplier_notice_period_days": "VARCHAR(50)",
+    "termination_convenience_right": "VARCHAR(50)",
+}
+
+
+def column_exists(conn, table_name: str, column_name: str) -> bool:
+    query = text(
+        """
+        SELECT COUNT(*)
+        FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE TABLE_NAME = :table_name
+          AND COLUMN_NAME = :column_name
+        """
+    )
+
+    result = conn.execute(
+        query,
+        {
+            "table_name": table_name,
+            "column_name": column_name,
+        },
+    )
+
+    return result.scalar() > 0
+
+
+def main() -> int:
+
+    try:
+        with engine.begin() as conn:
+
+            for column_name, data_type in NEW_COLUMNS.items():
+
+                if column_exists(conn, "CONTRACT", column_name):
+                    print(
+                        f"Column already exists: CONTRACT.{column_name}"
+                    )
+                    continue
+
+                sql = text(
+                    f"""
+                    ALTER TABLE CONTRACT
+                    ADD [{column_name}] {data_type}
+                    """
+                )
+
+                conn.execute(sql)
+
+                print(
+                    f"Added column: CONTRACT.{column_name}"
+                )
+
+        print("\nContract table alteration completed successfully.")
+        return 0
+
+    except SQLAlchemyError as exc:
+        print("\nFailed to alter CONTRACT table.")
+        print(f"Error: {exc}")
+        return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+
+
+
+SELECT
+    COLUMN_NAME,
+    DATA_TYPE,
+    CHARACTER_MAXIMUM_LENGTH
+FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_NAME = 'CONTRACT'
+ORDER BY ORDINAL_POSITION;
+
+
+
+SELECT
+    COLUMN_NAME,
+    CONSTRAINT_NAME
+FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+WHERE TABLE_NAME = 'CONTRACT';
