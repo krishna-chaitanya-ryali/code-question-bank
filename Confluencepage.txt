@@ -1,160 +1,183 @@
+"""Load selected engagement data from Excel into Azure SQL.
 
-models.py
+The script reads the 'Engagement Info' worksheet and loads only the
+specified engagement IDs into the ENGAGEMENT table.
+"""
 
-from sqlalchemy.orm import declarative_base, relationship
-from sqlalchemy import Column, String, ForeignKey
+import pandas as pd
 
-Base = declarative_base()
+from sqlalchemy.orm import Session
 
-# ---------------------------------------
-# Existing Engagement model
-# ---------------------------------------
+from db import engine
+from models import Engagement
 
-class Engagement(Base):
 
-    __tablename__ = "ENGAGEMENT"
+# Engagement IDs required for the current POC
+TARGET_ENGAGEMENT_IDS = {
+    "EN-021445",
+    "ENG-1162865",
+    "ENG-362309",
+}
 
-    engagement_id = Column(String(100), primary_key=True)
 
-    supplier_key_text = Column(String(100))
-    engagement_name = Column(String(500))
-    engagement_desc = Column(String(1000))
-    engagement_status = Column(String(100))
-    category_name = Column(String(200))
-    important_third_party_service = Column(String(20))
-    important_business_service = Column(String(300))
-    materiality_assessment = Column(String(200))
-    inherent_rating = Column(String(100))
-    application_instance_id = Column(String(100))
-    global_business_name = Column(String(300))
-    type = Column(String(100))
-    tpem_employee_id = Column(String(100))
-    tpem_email = Column(String(200))
-    engagement_risk_owner_employee_id = Column(String(100))
-    engagement_risk_owner_email = Column(String(200))
+def _read_engagement_excel(
+    file_path: str = "engagement_info.xlsx",
+) -> pd.DataFrame:
+    """Read engagement records from the source Excel workbook."""
 
-    contracts = relationship("Contract", back_populates="engagement")
-	
-
-class ThirdParty(Base):
-
-    __tablename__ = "THIRD_PARTY"
-
-    third_party_id = Column(String(100), primary_key=True)
-
-    global_tp_id = Column(String(100))
-
-    name = Column(String(300))
-
-    status = Column(String(100))
-
-    contracts = relationship("Contract", back_populates="third_party")
-	
-
-class Contract(Base):
-
-    __tablename__ = "CONTRACT"
-
-    contract_ref_num = Column(String(100), primary_key=True)
-
-    engagement_id = Column(
-        String(100),
-        ForeignKey("ENGAGEMENT.engagement_id"),
-        nullable=False
+    return pd.read_excel(
+        file_path,
+        sheet_name="Engagement Info",
     )
 
-    third_party_id = Column(
-        String(100),
-        ForeignKey("THIRD_PARTY.third_party_id"),
-        nullable=False
+
+def _filter_target_engagements(df: pd.DataFrame) -> pd.DataFrame:
+    """Return only the engagement records required for the current POC."""
+
+    id_column = "ENGAGEMENT_DETAIL_ENGAGEMENT_ID"
+
+    # Convert IDs to string and remove accidental leading/trailing spaces.
+    df[id_column] = df[id_column].astype(str).str.strip()
+
+    filtered_df = df[
+        df[id_column].isin(TARGET_ENGAGEMENT_IDS)
+    ].copy()
+
+    found_ids = set(filtered_df[id_column])
+
+    missing_ids = TARGET_ENGAGEMENT_IDS - found_ids
+
+    print(f"Requested engagement IDs : {len(TARGET_ENGAGEMENT_IDS)}")
+    print(f"Found engagement IDs     : {len(found_ids)}")
+
+    if found_ids:
+        print("Found IDs:")
+        for engagement_id in sorted(found_ids):
+            print(f"  - {engagement_id}")
+
+    if missing_ids:
+        print("WARNING: The following engagement IDs were not found:")
+        for engagement_id in sorted(missing_ids):
+            print(f"  - {engagement_id}")
+
+    return filtered_df
+
+
+def _upsert_engagement_rows(df: pd.DataFrame) -> int:
+    """Upsert selected engagement rows into ENGAGEMENT table."""
+
+    session = Session(engine)
+
+    try:
+        for _, row in df.iterrows():
+
+            engagement = Engagement(
+                engagement_id=row["ENGAGEMENT_DETAIL_ENGAGEMENT_ID"],
+
+                supplier_key_text=row["SUPPLIER_KEY_TEXT"],
+
+                engagement_name=row[
+                    "ENGAGEMENT_DETAIL_ENGAGEMENT_NAME"
+                ],
+
+                engagement_desc=row[
+                    "ENGAGEMENT_DETAIL_DESC"
+                ],
+
+                engagement_status=row[
+                    "ENGAGEMENT_DETAIL_ENGAGEMENT_STATUS_NAME"
+                ],
+
+                category_name=row[
+                    "ENGAGEMENT_DETAIL_CATEGORY_NAME"
+                ],
+
+                important_third_party_service=row[
+                    "IMPORTANT_THIRD_PARTY_SERVICE_IND"
+                ],
+
+                important_business_service=row[
+                    "ENGAGEMENT_DETAIL_IMPORTANT_BUSINESS_SERVICE_NAME"
+                ],
+
+                materiality_assessment=row[
+                    "ENGAGEMENT_DETAIL_MATERIALITY_ASSESSMENT_OUTCOME_TEXT"
+                ],
+
+                inherent_rating=row[
+                    "ENGAGEMENT_DETAIL_INHERENT_RATING_TEXT"
+                ],
+
+                application_instance_id=row[
+                    "ENGAGEMENT_DETAIL_APPLICATION_INSTANCE_ID"
+                ],
+
+                global_business_name=row[
+                    "SUPPLIER_DNB_GLOBAL_ULTIMATE_BUSINESS_NAME"
+                ],
+
+                type=row["type"],
+
+                tpem_employee_id=row[
+                    "TPEM_EMPLOYEE_ID"
+                ],
+
+                tpem_email=row[
+                    "TPEM_EMAIL_ID"
+                ],
+
+                engagement_risk_owner_employee_id=row[
+                    "ENGAGEMENT_RISK_OWNER_EMPLOYEE_ID"
+                ],
+
+                engagement_risk_owner_email=row[
+                    "ENGAGEMENT_RISK_OWNER_EMAIL_ID"
+                ],
+            )
+
+            # Insert if the ID doesn't exist.
+            # Update if the ID already exists.
+            session.merge(engagement)
+
+        session.commit()
+
+        return len(df)
+
+    except Exception:
+        session.rollback()
+        raise
+
+    finally:
+        session.close()
+
+
+def main() -> int:
+    """Execute the selected engagement data load."""
+
+    print("Reading engagement Excel file...")
+
+    df = _read_engagement_excel()
+
+    print(f"Total records in Excel: {len(df)}")
+
+    # Keep only the three requested engagement IDs.
+    df = _filter_target_engagements(df)
+
+    if df.empty:
+        print("No target engagement records found. Nothing to load.")
+        return 0
+
+    print(f"\nLoading {len(df)} engagement record(s)...")
+
+    row_count = _upsert_engagement_rows(df)
+
+    print(
+        f"\nData loaded successfully. "
+        f"Rows processed: {row_count}"
     )
 
-    contract_desc = Column(String(1000))
-
-    contract_status = Column(String(100))
-
-    contract_type = Column(String(200))
-
-    engagement = relationship("Engagement", back_populates="contracts")
-
-    third_party = relationship("ThirdParty", back_populates="contracts")
+    return 0
 
 
-class BusinessService(Base):
-
-    __tablename__ = "BUS_SERVICE"
-
-    unique_id = Column(String(100), primary_key=True)
-
-    service_name = Column(String(500))
-
-    service_description = Column(String(2000))
-
-    owner = Column(String(300))
-
-    status = Column(String(100))
-	
-
-class GtpEngContractRelation(Base):
-
-    __tablename__ = "GTP_ENG_CONTR_REL"
-
-    third_party_id = Column(
-        String(100),
-        ForeignKey("THIRD_PARTY.third_party_id"),
-        primary_key=True
-    )
-
-    engagement_id = Column(
-        String(100),
-        ForeignKey("ENGAGEMENT.engagement_id"),
-        primary_key=True
-    )
-
-    contract_ref_num = Column(
-        String(100),
-        ForeignKey("CONTRACT.contract_ref_num"),
-        primary_key=True
-    )
-
-    global_tp_id = Column(String(100))
-
-    relationship_type = Column(String(100))
-
-    remarks = Column(String(500))
-
-
-ENGAGEMENT
-------------
-engagement_id (PK)
-        |
-        |
-        | FK
-        |
-CONTRACT
-------------
-contract_ref_num (PK)
-engagement_id (FK)
-third_party_id (FK)
-
-        |
-        |
-        |
-THIRD_PARTY
-------------
-third_party_id (PK)
-
-BUS_SERVICE
-------------
-unique_id (PK)
-
-GTP_ENG_CONTR_REL
-------------------
-third_party_id (PK)(FK)
-engagement_id (PK)(FK)
-contract_ref_num (PK)(FK)
-
-
-
-python create_tables.py
-
+if __name__ == "__main__":
+    raise SystemExit(main())
