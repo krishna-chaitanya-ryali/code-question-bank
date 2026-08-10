@@ -491,3 +491,63 @@ class Contract(Base):
         back_populates="contract",
         overlaps="gtp_relations,third_party,engagement",
     )
+
+
+
+class GtpEngContractRelation(Base):
+    """Association table for third-party, engagement, and contract tuples."""
+
+    __tablename__ = "GTP_ENG_CONTR_REL"
+
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["contract_ref_num", "engagement_id", "third_party_id"],
+            [
+                "CONTRACT.contract_ref_num",
+                "CONTRACT.contract_engagement_id",
+                "CONTRACT.contract_third_party_id",
+            ],
+            name="FK_GTP_ENG_CONTR_REL_CONTRACT_TUPLE",
+        ),
+    )
+
+    third_party_id = Column(
+        String(100),
+        ForeignKey("THIRD_PARTY.third_party_id"),
+        primary_key=True,
+    )
+
+    engagement_id = Column(
+        String(100),
+        ForeignKey("ENGAGEMENT.engagement_id"),
+        primary_key=True,
+    )
+
+    contract_ref_num = Column(
+        String(100),
+        primary_key=True,
+    )
+
+    global_tp_id = Column(String(100))
+
+    relationship_type = Column(String(100))
+
+    remarks = Column(String(500))
+
+    third_party = relationship(
+        "ThirdParty",
+        back_populates="gtp_relations",
+        overlaps="gtp_relations",
+    )
+
+    engagement = relationship(
+        "Engagement",
+        back_populates="gtp_relations",
+        overlaps="gtp_relations",
+    )
+
+    contract = relationship(
+        "Contract",
+        back_populates="gtp_relations",
+        overlaps="gtp_relations,third_party,engagement",
+    )
