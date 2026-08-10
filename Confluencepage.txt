@@ -551,3 +551,13 @@ class GtpEngContractRelation(Base):
         back_populates="gtp_relations",
         overlaps="gtp_relations,third_party,engagement",
     )
+
+
+
+SELECT
+    COLUMN_NAME,
+    DATA_TYPE,
+    CHARACTER_MAXIMUM_LENGTH
+FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_NAME = 'CONTRACT'
+ORDER BY ORDINAL_POSITION;
