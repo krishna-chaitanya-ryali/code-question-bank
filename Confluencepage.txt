@@ -154,3 +154,23 @@ FROM sys.foreign_keys fk
 JOIN sys.foreign_key_columns fkc
     ON fk.object_id = fkc.constraint_object_id
 WHERE OBJECT_NAME(fk.parent_object_id) = 'CONTRACT';
+
+
+
+SELECT
+    engagement_id,
+    engagement_name,
+    supplier_key_text
+FROM ENGAGEMENT
+WHERE engagement_id IN (
+    'EN-021445',
+    'ENG-1162865',
+    'ENG-362309'
+);
+
+
+
+SELECT *
+FROM THIRD_PARTY;
+
+
