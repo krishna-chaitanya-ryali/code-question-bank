@@ -1,13 +1,55 @@
-Created and validated the structured-data database tables required for the POC, including ENGAGEMENT, CONTRACT, THIRD_PARTY, BUS_SERVICE and GTP_ENG_CONTR_REL.
-Loaded the initial in-scope Engagement records into the ENGAGEMENT table.
-Loaded the corresponding Contract and Third Party records.
-Established and validated the required primary key, foreign key and relationship mappings between Engagement, Contract and Third Party.
-Performed SQL validation to confirm that the Contract → Engagement and Contract → Third Party relationships are resolving correctly.
-Confirmed the loaded records and relationships against the agreed data scope.
+class BusinessService(Base):
+    """Business application / business service reference data."""
 
+    __tablename__ = "BUS_SERVICE"
 
+    # Confirmed by Ram as the primary key.
+    business_application_id = Column(
+        String(100),
+        primary_key=True,
+    )
 
-Load the additional Engagement and Contract records once the required IDs are provided by Ram.
-Validate the newly loaded records and confirm the Engagement → Contract → Third Party relationships.
-Continue validating the structured data for completeness and traceability to the source data.
-Document any data gaps, missing fields or source-data limitations identified during the loading and validation process.
+    business_application_name = Column(String(500))
+
+    business_application_active_ind = Column(String(20))
+
+    business_application_operational_status_code = Column(String(100))
+
+    business_application_built_type_name = Column(String(100))
+
+    business_application_install_type_name = Column(String(100))
+
+    business_application_start_date = Column(String(50))
+
+    business_application_demise_date = Column(String(50))
+
+    business_application_cloud_start_date = Column(String(50))
+
+    business_application_strategic_status_code = Column(String(100))
+
+    business_application_bia_rating_code = Column(String(100))
+
+    business_application_business_criticality_code = Column(String(100))
+
+    business_application_internal_users_quantity_text = Column(String(100))
+
+    business_application_external_users_quantity_text = Column(String(100))
+
+    # 5000 characters as confirmed with Ram.
+    business_application_desc = Column(String(5000))
+
+    business_application_data_classification_code = Column(String(100))
+
+    business_application_it_asset_categorisation_ind = Column(String(20))
+
+    business_application_critical_asset_ind = Column(String(20))
+
+    business_application_important_it_asset_ind = Column(String(20))
+
+    business_application_ibs_supporting_asset_ind = Column(String(20))
+
+    business_application_it_service_owner_id = Column(String(100))
+
+    business_application_it_service_owner_email_name = Column(String(300))
+
+    eim_application_instance_id = Column(String(100))
