@@ -53,3 +53,243 @@ class BusinessService(Base):
     business_application_it_service_owner_email_name = Column(String(300))
 
     eim_application_instance_id = Column(String(100))
+
+
+recreate_bus_service_table.py
+
+"""Recreate BUS_SERVICE table using the latest SQLAlchemy model."""
+
+from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
+
+from db import engine
+from models import Base, BusinessService
+
+
+def main() -> int:
+    """Drop the existing BUS_SERVICE table and recreate it from ORM metadata."""
+
+    try:
+        print("Checking BUS_SERVICE table...")
+
+        with engine.begin() as conn:
+            conn.execute(
+                text(
+                    """
+                    IF OBJECT_ID('BUS_SERVICE', 'U') IS NOT NULL
+                        DROP TABLE BUS_SERVICE;
+                    """
+                )
+            )
+
+        print("Existing BUS_SERVICE table dropped, if it existed.")
+
+        # Create only the BUS_SERVICE table from the ORM metadata.
+        BusinessService.__table__.create(
+            bind=engine,
+            checkfirst=True,
+        )
+
+        print("BUS_SERVICE table recreated successfully.")
+        return 0
+
+    except SQLAlchemyError as exc:
+        print("Failed to recreate BUS_SERVICE table.")
+        print(f"Error: {exc}")
+        return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+
+
+
+python recreate_bus_service_table.py
+
+
+load_bus_service.py
+
+"""Load business application data from Excel into BUS_SERVICE."""
+
+import pandas as pd
+from sqlalchemy.orm import Session
+
+from db import engine
+from models import BusinessService
+
+
+EXCEL_FILE = "engagement_info.xlsx"
+SHEET_NAME = "Bus App Info"
+
+
+def _read_bus_service_excel(
+    file_path: str = EXCEL_FILE,
+) -> pd.DataFrame:
+    """Read business application records from Excel."""
+
+    return pd.read_excel(
+        file_path,
+        sheet_name=SHEET_NAME,
+    )
+
+
+def _clean_value(value):
+    """Convert pandas empty values to None."""
+
+    if pd.isna(value):
+        return None
+
+    return value
+
+
+def _upsert_bus_service_rows(df: pd.DataFrame) -> int:
+    """Insert or update BUS_SERVICE rows using business_application_id."""
+
+    session = Session(engine)
+
+    try:
+        for _, row in df.iterrows():
+
+            business_service = BusinessService(
+                business_application_id=_clean_value(
+                    row["BUSINESS_APPLICATION_ID"]
+                ),
+
+                business_application_name=_clean_value(
+                    row["BUSINESS_APPLICATION_NAME"]
+                ),
+
+                business_application_active_ind=_clean_value(
+                    row["BUSINESS_APPLICATION_ACTIVE_IND"]
+                ),
+
+                business_application_operational_status_code=_clean_value(
+                    row["BUSINESS_APPLICATION_OPERATIONAL_STATUS_CODE"]
+                ),
+
+                business_application_built_type_name=_clean_value(
+                    row["BUSINESS_APPLICATION_BUILT_TYPE_NAME"]
+                ),
+
+                business_application_install_type_name=_clean_value(
+                    row["BUSINESS_APPLICATION_INSTALL_TYPE_NAME"]
+                ),
+
+                business_application_start_date=_clean_value(
+                    row["BUSINESS_APPLICATION_START_DATE"]
+                ),
+
+                business_application_demise_date=_clean_value(
+                    row["BUSINESS_APPLICATION_DEMISE_DATE"]
+                ),
+
+                business_application_cloud_start_date=_clean_value(
+                    row["BUSINESS_APPLICATION_CLOUD_START_DATE"]
+                ),
+
+                business_application_strategic_status_code=_clean_value(
+                    row["BUSINESS_APPLICATION_STRATEGIC_STATUS_CODE"]
+                ),
+
+                business_application_bia_rating_code=_clean_value(
+                    row["BUSINESS_APPLICATION_BIA_RATING_CODE"]
+                ),
+
+                business_application_business_criticality_code=_clean_value(
+                    row["BUSINESS_APPLICATION_BUSINESS_CRITICALITY_CODE"]
+                ),
+
+                business_application_internal_users_quantity_text=_clean_value(
+                    row["BUSINESS_APPLICATION_INTERNAL_USERS_QUANTITY_TEXT"]
+                ),
+
+                business_application_external_users_quantity_text=_clean_value(
+                    row["BUSINESS_APPLICATION_EXTERNAL_USERS_QUANTITY_TEXT"]
+                ),
+
+                business_application_desc=_clean_value(
+                    row["BUSINESS_APPLICATION_DESC"]
+                ),
+
+                business_application_data_classification_code=_clean_value(
+                    row["BUSINESS_APPLICATION_DATA_CLASSIFICATION_CODE"]
+                ),
+
+                business_application_it_asset_categorisation_ind=_clean_value(
+                    row["BUSINESS_APPLICATION_IT_ASSET_CATEGORISATION_IND"]
+                ),
+
+                business_application_critical_asset_ind=_clean_value(
+                    row["BUSINESS_APPLICATION_CRITICAL_ASSET_IND"]
+                ),
+
+                business_application_important_it_asset_ind=_clean_value(
+                    row["BUSINESS_APPLICATION_IMPORTANT_IT_ASSET_IND"]
+                ),
+
+                business_application_ibs_supporting_asset_ind=_clean_value(
+                    row["BUSINESS_APPLICATION_IBS_SUPPORTING_ASSET_IND"]
+                ),
+
+                business_application_it_service_owner_id=_clean_value(
+                    row["BUSINESS_APPLICATION_IT_SERVICE_OWNER_ID"]
+                ),
+
+                business_application_it_service_owner_email_name=_clean_value(
+                    row["BUSINESS_APPLICATION_IT_SERVICE_OWNER_EMAIL_NAME"]
+                ),
+
+                eim_application_instance_id=_clean_value(
+                    row["EIM_APPLICATION_INSTANCE_ID"]
+                ),
+            )
+
+            session.merge(business_service)
+
+        session.commit()
+
+        return len(df)
+
+    except Exception:
+        session.rollback()
+        raise
+
+    finally:
+        session.close()
+
+
+def main() -> int:
+    """Execute the complete Excel-to-database load."""
+
+    df = _read_bus_service_excel()
+
+    print(f"Rows read from Excel: {len(df)}")
+
+    row_count = _upsert_bus_service_rows(df)
+
+    print(
+        f"BUS_SERVICE data loaded successfully. "
+        f"Rows processed: {row_count}"
+    )
+
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+
+
+SELECT
+    business_application_id,
+    business_application_name,
+    business_application_active_ind,
+    business_application_operational_status_code,
+    business_application_desc,
+    business_application_it_service_owner_id,
+    business_application_it_service_owner_email_name,
+    eim_application_instance_id
+FROM BUS_SERVICE
+ORDER BY business_application_id;
+
+
+
