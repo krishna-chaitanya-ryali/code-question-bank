@@ -9,3 +9,16 @@ SELECT
     business_application_id,
     business_application_desc
 FROM BUS_SERVICE;
+
+
+
+
+Progress Update:
+Completed the database table design and implementation for the Engagement, Contract, Business Service/Business Application, and relationship data.
+Established the required primary key and foreign key relationships between the entities to support the linkage between Supplier → Engagement → Contract → Business Application.
+Loaded and validated the required Engagement, Contract, Third Party, and Business Application data provided for the current implementation.
+The relationship data provides the linkage between the supplier/third party, engagement, contract, and business application entities, which will be used by the application to retrieve the relevant combinations for a given engagement.
+Validated the relationships using SQL queries and confirmed that the Engagement, Contract, Third Party, and Business Application information can be retrieved through the defined relationships.
+The source data currently provided for this implementation is from OneTPM, Coupa, and ARIS.
+Added the necessary table/column details and relationship information for future application integration and data retrieval.
+Current Status: Database structure and initial data loading are completed and validated. Further enhancements will focus on consuming the relationship data dynamically from the application rather than relying on hardcoded values.
