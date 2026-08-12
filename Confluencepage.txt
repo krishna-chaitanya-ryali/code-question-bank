@@ -1,11 +1,5 @@
-Implementation/Design Update:
-The data model and table relationships have been finalized for Supplier, Engagement, Contract and Business Application.
-Four tables are involved:
-ENGAGEMENT – Engagement details with engagement_id as the primary key.
-CONTRACT – Contract details with contract_id as the primary key.
-BUS_SERVICE (to be renamed to Business Application) – Business Application details with business_application_id as the primary key.
-DIM_TP_ENG_CONTR_BUSAPP_REL – Relationship table providing the linkage between Supplier, Engagement, Contract and Business Application.
-The relationship table contains foreign-key references to the Engagement, Contract and Business Application tables, along with supplier information. A technical identity column id has been introduced as the primary key of the relationship table, as the business/application relationship columns can contain duplicate and/or NULL values.
-The relationship data has been successfully loaded into DIM_TP_ENG_CONTR_BUSAPP_REL and validated for insertion.
-The source information provided for the data model is based on the available data from OneTPM, Coupa and ARIS.
-The attached ER diagram illustrates the table structures and relationships between the four entities.
+"Are the engagement, contract and business application FK columns nullable? Our source data contains NULL business application IDs."
+"What is the uniqueness rule for the relationship table? Can the same engagement-contract-business application combination appear more than once?"
+"Which supplier field should be treated as the canonical supplier key — supplier_key_text, normalized supplier name, or D&B global ultimate business name?"
+"For a given engagement, should we return only the contract/business-application combinations present in the relationship table?"
+"Can one engagement have multiple contracts and multiple business applications through this relationship table?"
