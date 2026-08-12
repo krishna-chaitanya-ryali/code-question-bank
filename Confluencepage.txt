@@ -1,5 +1,1 @@
-"Are the engagement, contract and business application FK columns nullable? Our source data contains NULL business application IDs."
-"What is the uniqueness rule for the relationship table? Can the same engagement-contract-business application combination appear more than once?"
-"Which supplier field should be treated as the canonical supplier key — supplier_key_text, normalized supplier name, or D&B global ultimate business name?"
-"For a given engagement, should we return only the contract/business-application combinations present in the relationship table?"
-"Can one engagement have multiple contracts and multiple business applications through this relationship table?"
+"Ram, for the parameter/configuration file, do we have any existing standard in the project — YAML, JSON, or something else? If not, I'll use YAML because the file/sheet/target-table parameters will be easy to maintain."
