@@ -1,3 +1,12 @@
-Continued implementation of the backend data retrieval flow based on the agreed table relationships. The required source data and relationships are now available in the database, and the linkage between Engagement, Contract, Business Application and Third Party has been validated.
-We are now moving from the initial/manual data retrieval approach towards a generic and configuration-driven approach. A YAML-based configuration and generic loader are being implemented so that the source file/sheet, target table and applicable key/filter information can be provided through configuration.
-Next step: Complete and validate the generic extraction/loading flow and integrate the retrieved information with the application flow.
+SELECT
+    third_party_id,
+    global_tp_id,
+    name,
+    status
+FROM THIRD_PARTY
+WHERE UPPER(name) IN (
+    'SALESFORCE, INC.',
+    'SALESFORCE INC',
+    'AKAMAI TECHNOLOGIES, INC.',
+    'AKAMAI TECHNOLOGIES INC'
+);
