@@ -1,3 +1,97 @@
+
+class BusServiceLoader(Base):
+    """Temporary test table for validating the generic YAML-based loader."""
+
+    __tablename__ = "BUS_SERVICE_LOADER"
+
+    business_application_id = Column(
+        String(100),
+        primary_key=True,
+        nullable=False,
+    )
+
+    business_application_name = Column(String(500))
+
+    business_application_active_ind = Column(String(20))
+
+    business_application_operational_status_code = Column(String(100))
+
+    business_application_built_type_name = Column(String(100))
+
+    business_application_install_type_name = Column(String(100))
+
+    business_application_start_date = Column(String(50))
+
+    business_application_demise_date = Column(String(50))
+
+    business_application_strategic_status_code = Column(String(100))
+
+    business_application_bia_rating_code = Column(String(100))
+
+    business_application_business_criticality_code = Column(String(100))
+
+    business_application_internal_users_quantity_text = Column(String(100))
+
+    business_application_external_users_quantity_text = Column(String(100))
+
+    business_application_desc = Column(String(5000))
+
+    business_application_data_classification_code = Column(String(100))
+
+    business_application_it_asset_categorisation_ind = Column(String(20))
+
+    business_application_critical_asset_ind = Column(String(20))
+
+    business_application_important_it_asset_ind = Column(String(20))
+
+    business_application_ibs_supporting_asset_ind = Column(String(20))
+
+    business_application_it_service_owner_id = Column(String(100))
+
+    business_application_it_service_owner_email_name = Column(String(300))
+
+    eim_application_instance_id = Column(String(100))
+
+
+create_bus_service_loader.py
+
+
+from models import Base, BusServiceLoader
+from database import engine
+
+
+def create_table():
+    print("Creating BUS_SERVICE_LOADER table...")
+
+    BusServiceLoader.__table__.create(
+        bind=engine,
+        checkfirst=True,
+    )
+
+    print("BUS_SERVICE_LOADER table is ready.")
+
+
+if __name__ == "__main__":
+    create_table()
+
+
+python create_bus_service_loader.py
+
+bus_service_loader_test:
+  source:
+    file: "YOUR_EXCEL_FILE.xlsx"
+    sheet: "test_bus_app_info"
+
+  target:
+    table: "BUS_SERVICE_LOADER"
+
+  filter:
+    enabled: false
+
+
+
+
+
 ws5_poc/
 │
 ├── db.py
