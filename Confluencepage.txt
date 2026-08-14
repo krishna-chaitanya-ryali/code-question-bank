@@ -1,1 +1,37 @@
-"Ram, for the additional supplier data you shared, SUPPLIER_KEY_TEXT is not provided. Should we populate it by mapping the supplier to the THIRD_PARTY table, or should we leave it NULL when the value isn't available?"
+SELECT *
+FROM DIM_TP_ENG_CONTR_BUSAPP_REL
+WHERE engagement_detail_engagement_id IS NULL;
+
+SELECT COUNT(*) AS records_to_delete
+FROM DIM_TP_ENG_CONTR_BUSAPP_REL
+WHERE engagement_detail_engagement_id IS NULL;
+
+cleanup_relationship_table.py
+
+from sqlalchemy import text
+
+from database import engine   # use your existing DB connection module
+
+
+def cleanup_relationship_table():
+    delete_query = text("""
+        DELETE FROM DIM_TP_ENG_CONTR_BUSAPP_REL
+        WHERE engagement_detail_engagement_id IS NULL
+    """)
+
+    with engine.begin() as connection:
+        result = connection.execute(delete_query)
+
+        print(
+            f"Deleted {result.rowcount} records "
+            "where engagement_detail_engagement_id is NULL."
+        )
+
+
+if __name__ == "__main__":
+    cleanup_relationship_table()
+
+
+DELETE FROM DIM_TP_ENG_CONTR_BUSAPP_REL
+WHERE engagement_detail_engagement_id IS NULL;
+
