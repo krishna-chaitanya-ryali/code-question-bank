@@ -1,12 +1,1 @@
-SELECT
-    third_party_id,
-    global_tp_id,
-    name,
-    status
-FROM THIRD_PARTY
-WHERE UPPER(name) IN (
-    'SALESFORCE, INC.',
-    'SALESFORCE INC',
-    'AKAMAI TECHNOLOGIES, INC.',
-    'AKAMAI TECHNOLOGIES INC'
-);
+"Ram, for the additional supplier data you shared, SUPPLIER_KEY_TEXT is not provided. Should we populate it by mapping the supplier to the THIRD_PARTY table, or should we leave it NULL when the value isn't available?"
