@@ -1,147 +1,110 @@
-Ticket 1 — Service Instance relationship
-Use Case ID
-1.1.2
-Task
-Service Instance to Engagement, Supplier, Application
-Story Points
-2
-Suggested Jira Summary
-Create Service Instance to Engagement, Supplier and Application Relationship
-Description
-Implement the required data relationship to establish the mapping between Service Instance, Engagement, Supplier and Business Application.
-The data should provide the required relationship information for downstream resilience assessment and service identification.
-Acceptance Criteria
-Service Instance is correctly associated with the corresponding Engagement.
-Engagement is associated with the appropriate Supplier.
-Engagement/Service Instance relationship to Business Application is captured where applicable.
-The implemented mapping supports downstream consumption.
-Existing valid relationships should not be duplicated.
-Technical scope
-This is primarily your backend/data activity. Don't include UI/report generation in your ticket unless Ram specifically asks you to.
-Ticket 2 — Relationship table for ENG / TP / Service Instance / ALCP
-Use Case ID
-1.1.2
-Task
-Table creation to hold ENG, TP, Service Instance, ALCP doc
-Story Points
-2
-Suggested Jira Summary
-Create Relationship Table for Engagement, Third Party, Service Instance and ALCP Document
-Description
-Create a database table to maintain the relationship between Engagement, Third Party/Supplier, Service Instance and the corresponding ALCP document reference.
-The table will provide a centralized relationship that can be consumed by downstream processes for service continuity and recoverability assessment.
-Acceptance Criteria
-Table is created with the required columns and appropriate data types.
-Engagement, Third Party/Supplier and Service Instance relationships can be stored.
-ALCP document reference/path can be stored.
-Appropriate primary key/uniqueness constraints are defined.
-Table structure supports downstream retrieval of the related ALCP document.
-Sample data can be successfully inserted and queried.
-Important
-This ties directly to the discussion Ram had about:
-Supplier → Engagement → Service Instance → ALCP document/blob reference
-So I would keep this ticket separate from Ticket 1.
-Ticket 3 — Stakeholder information
-Use Case ID
-1.5.1
-Task
-Stakeholders info
-Story Points
-2
-User Story
-As a Resilience Case Resource, I want the system to retrieve and display the named contacts for required stakeholder roles for a given vendor and service from authoritative source systems, so that I can quickly identify who to engage without manually maintaining contact lists.
-Suggested Jira Summary
-Create Data Store for Stakeholder Information
-Description
-Identify and create the required data structure to store stakeholder information associated with the relevant supplier/vendor and service.
-The data should support retrieval of named contacts for the required stakeholder roles and allow downstream reporting/API components to consume the information.
-Acceptance Criteria
-Required stakeholder roles are identified.
-Required stakeholder attributes are captured.
-A database structure/table is created to store the stakeholder information.
-Supplier/vendor and service relationships are maintained.
-Data can be retrieved for a given supplier/service.
-Structure supports future integration with the report/API.
-Ticket 4 — Data store for metrics
-Task
-Data store the metrics
-Story Points
-2
-This one is visible in the screenshot, but the Use Case ID is not visible in the captured portion.
-So don't invent the Use Case ID.
-Suggested Jira Summary
-Create Data Store for Assessment Metrics
-Description
-Create the required data structure to store the metrics retrieved as part of the resilience assessment workflow.
-The data store should support persistence and downstream retrieval of the required metric information.
-Acceptance Criteria
-Required metric attributes are identified.
-Database structure is created with appropriate data types.
-Metric data can be inserted successfully.
-Metric data can be retrieved for downstream processing.
-The structure supports future integration with the assessment/reporting workflow.
-Before creating this ticket, I would quickly check the Excel row above/below to confirm its exact Use Case ID.
-Ticket 5 — BCM Now attributes
-Use Case ID
-2.1.2
-Task
-BCM Now attributes
-Story Points
-6
-User Story
-The screenshot shows the story beginning:
-As a Resilience Case Resource, I want Important Business Service and Critical Business Process attributes to be automatically retrieved from authoritative sources...
-The intent is to retrieve the required Important Business Service / Critical Business Process attributes from authoritative sources and make them available to the assessment.
-Suggested Jira Summary
-Retrieve BCM Now Attributes for Business Service and Critical Business Process
-Description
-Identify and retrieve the required BCM Now attributes needed for Important Business Service and Critical Business Process assessment.
-The implementation should obtain the required attributes from the authoritative source and make the data available for downstream assessment processing.
-Acceptance Criteria
-Required BCM Now attributes are identified.
-Source tables/endpoints and required fields are confirmed.
-Required data can be retrieved successfully.
-Data is mapped to the corresponding business service/business process.
-Retrieved data is available for downstream assessment processing.
-Data types and null handling are appropriately addressed.
-Sample records are validated against the source.
-Dependency
-This is where the discussion with the relevant SME/source owner becomes important. Ram mentioned the need to understand which attributes are actually required.
-So don't hard-code assumptions about all ECM/BCM Now columns in the ticket.
-Ticket 6 — ARIS service dependency data
-Use Case ID
-2.2.1
-Task
-ARIS data for the service dependencies
-Story Points
-4
-Suggested Jira Summary
-Retrieve ARIS Data for Service Dependencies
-Description
-Retrieve the required ARIS information related to service dependencies and make the data available for downstream resilience assessment and dependency analysis.
-The retrieved data should support identification and mapping of dependencies associated with the relevant services.
-Acceptance Criteria
-Required ARIS source and attributes are identified.
-Required service dependency data is retrieved successfully.
-Data is mapped to the relevant service/service instance where applicable.
-Retrieved data is available for downstream processing.
-Data retrieval is validated using representative records.
-Any source-data gaps or mapping issues are documented.
-Ticket 7 — ARIS/service dependency data storage
-Task
-Table for data storage
-Story Points
-2
-Again, the screenshot doesn't clearly show the Use Case ID immediately against this row, so I would verify the Excel row before entering it.
-Suggested Jira Summary
-Create Table for Service Dependency Data
-Description
-Create the required database table to persist the ARIS/service dependency information retrieved from the source system.
-The table should provide a structured data store that can be consumed by downstream service dependency analysis.
-Acceptance Criteria
-Table is created with required columns and appropriate data types.
-Service dependency records can be loaded successfully.
-Relevant service/service instance identifiers are captured.
-Appropriate keys/constraints are defined.
-Sample data is successfully inserted and queried.
-Table is available for downstream API/reporting consumption.
+create_service_tolerances_table.py
+
+
+from sqlalchemy import (
+    Column,
+    String,
+    Integer,
+    Date,
+    Boolean,
+    Numeric,
+    inspect,
+)
+from sqlalchemy.orm import declarative_base
+
+from db import engine
+
+
+Base = declarative_base()
+
+
+class ServiceTolerances(Base):
+    __tablename__ = "SERVICE_TOLERANCES"
+
+    ARIS_SERVICE_ID = Column(String(100), primary_key=True, nullable=False)
+
+    SERVICE_NAME = Column(String(500), nullable=True)
+    SERVICE_IMPORTANCE_CODE = Column(String(50), nullable=True)
+
+    ARIS_SERVICE_NAME = Column(String(500), nullable=True)
+    ARIS_SERVICE_OWNER_NAME = Column(String(500), nullable=True)
+    ARIS_SERVICE_OWNER_EMAIL_TEXT = Column(String(500), nullable=True)
+
+    ARIS_SERVICE_EXECUTION_LEGAL_ENTITY_ID = Column(String(100), nullable=True)
+    ARIS_SERVICE_EXECUTION_LEGAL_ENTITY_NAME = Column(String(500), nullable=True)
+    ARIS_SERVICE_EXECUTION_COUNTRY_NAME = Column(String(200), nullable=True)
+    ARIS_SERVICE_EXECUTION_COUNTRY_CODE = Column(String(20), nullable=True)
+
+    ARIS_SERVICE_TYPE_CODE = Column(String(100), nullable=True)
+    ARIS_SERVICE_IMPORTANCE_IND = Column(Boolean, nullable=True)
+
+    DOCUMENT_TYPE_NAME = Column(String(100), nullable=True)
+    DOCUMENT_APPROVAL_DATE = Column(Date, nullable=True)
+    DOCUMENT_VERSION_NUM = Column(Numeric(10, 2), nullable=True)
+
+    IMPACT_TOLERANCE_THRESHOLD_CUSTOMER_TEXT = Column(String(100), nullable=True)
+    IMPACT_TOLERANCE_THRESHOLD_CUSTOMER_CODE = Column(String(100), nullable=True)
+    IMPACT_TOLERANCE_THRESHOLD_CUSTOMER_DESC = Column(String(200), nullable=True)
+    IMPACT_TOLERANCE_THRESHOLD_CUSTOMER_HOURS_NUM = Column(Numeric(18, 2), nullable=True)
+    IMPACT_TOLERANCE_THRESHOLD_CUSTOMER_APPLICABLE_IND = Column(Boolean, nullable=True)
+
+    IMPACT_TOLERANCE_THRESHOLD_FIRM_TEXT = Column(String(100), nullable=True)
+    IMPACT_TOLERANCE_THRESHOLD_FIRM_CODE = Column(String(100), nullable=True)
+    IMPACT_TOLERANCE_THRESHOLD_FIRM_DESC = Column(String(200), nullable=True)
+    IMPACT_TOLERANCE_THRESHOLD_FIRM_HOURS_NUM = Column(Numeric(18, 2), nullable=True)
+    IMPACT_TOLERANCE_THRESHOLD_FIRM_APPLICABLE_IND = Column(Boolean, nullable=True)
+
+    IMPACT_TOLERANCE_THRESHOLD_MARKET_TEXT = Column(String(100), nullable=True)
+    IMPACT_TOLERANCE_THRESHOLD_MARKET_CODE = Column(String(100), nullable=True)
+    IMPACT_TOLERANCE_THRESHOLD_MARKET_DESC = Column(String(200), nullable=True)
+    IMPACT_TOLERANCE_THRESHOLD_MARKET_HOURS_NUM = Column(Numeric(18, 2), nullable=True)
+    IMPACT_TOLERANCE_THRESHOLD_MARKET_APPLICABLE_IND = Column(Boolean, nullable=True)
+
+    SERVICE_RECOVERY_TIME_OBJECTIVE_TEXT = Column(String(100), nullable=True)
+    SERVICE_RECOVERY_TIME_OBJECTIVE_CODE = Column(String(100), nullable=True)
+    SERVICE_RECOVERY_TIME_OBJECTIVE_DESC = Column(String(200), nullable=True)
+    SERVICE_RECOVERY_TIME_OBJECTIVE_NUM = Column(Numeric(18, 2), nullable=True)
+    SERVICE_RECOVERY_TIME_OBJECTIVE_APPLICABLE_IND = Column(Boolean, nullable=True)
+
+    CRITICAL_OPERATION_INSTANCE_NAME = Column(String(500), nullable=True)
+    ARIS_CRITICAL_OPERATION_INSTANCE_ID = Column(String(100), nullable=True)
+    ARIS_CRITICAL_OPERATION_INSTANCE_NAME = Column(String(500), nullable=True)
+
+    CRITICAL_OPERATION_DISRUPTION_TOLERANCE_TEXT = Column(String(100), nullable=True)
+    CRITICAL_OPERATION_DISRUPTION_TOLERANCE_CODE = Column(String(100), nullable=True)
+    CRITICAL_OPERATION_DISRUPTION_TOLERANCE_DESC = Column(String(200), nullable=True)
+    CRITICAL_OPERATION_DISRUPTION_TOLERANCE_NUM = Column(Numeric(18, 2), nullable=True)
+    CRITICAL_OPERATION_DISRUPTION_TOLERANCE_APPLICABLE_IND = Column(Boolean, nullable=True)
+
+    REPORT_DATE = Column(Date, nullable=True)
+
+
+def create_table():
+    inspector = inspect(engine)
+
+    if inspector.has_table("SERVICE_TOLERANCES"):
+        print("SERVICE_TOLERANCES table already exists. No changes made.")
+        return
+
+    Base.metadata.create_all(
+        engine,
+        tables=[ServiceTolerances.__table__]
+    )
+
+    print("SERVICE_TOLERANCES table created successfully.")
+
+
+if __name__ == "__main__":
+    create_table()
+
+
+python create_service_tolerances_table.py
+
+
+service_tolerances:
+  input_file: "YOUR_ARIS_EXCEL_FILE.xlsx"
+  sheet_name: "service level info"
+  target_table: "SERVICE_TOLERANCES"
+  key_column: "ARIS_SERVICE_ID"
+
+
