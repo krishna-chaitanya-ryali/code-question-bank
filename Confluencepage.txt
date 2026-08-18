@@ -1,110 +1,35 @@
-create_service_tolerances_table.py
+SELECT
+    ARIS_SERVICE_ID,
+    COUNT(*) AS RECORD_COUNT
+FROM SERVICE_TOLERANCES
+WHERE ARIS_SERVICE_ID IS NOT NULL
+GROUP BY ARIS_SERVICE_ID
+HAVING COUNT(*) > 1
+ORDER BY RECORD_COUNT DESC;
 
 
-from sqlalchemy import (
-    Column,
-    String,
-    Integer,
-    Date,
-    Boolean,
-    Numeric,
-    inspect,
+
+SELECT *
+FROM SERVICE_TOLERANCES
+WHERE ARIS_SERVICE_ID IN (
+    SELECT ARIS_SERVICE_ID
+    FROM SERVICE_TOLERANCES
+    WHERE ARIS_SERVICE_ID IS NOT NULL
+    GROUP BY ARIS_SERVICE_ID
+    HAVING COUNT(*) > 1
 )
-from sqlalchemy.orm import declarative_base
-
-from db import engine
+ORDER BY ARIS_SERVICE_ID;
 
 
-Base = declarative_base()
 
 
-class ServiceTolerances(Base):
-    __tablename__ = "SERVICE_TOLERANCES"
-
-    ARIS_SERVICE_ID = Column(String(100), primary_key=True, nullable=False)
-
-    SERVICE_NAME = Column(String(500), nullable=True)
-    SERVICE_IMPORTANCE_CODE = Column(String(50), nullable=True)
-
-    ARIS_SERVICE_NAME = Column(String(500), nullable=True)
-    ARIS_SERVICE_OWNER_NAME = Column(String(500), nullable=True)
-    ARIS_SERVICE_OWNER_EMAIL_TEXT = Column(String(500), nullable=True)
-
-    ARIS_SERVICE_EXECUTION_LEGAL_ENTITY_ID = Column(String(100), nullable=True)
-    ARIS_SERVICE_EXECUTION_LEGAL_ENTITY_NAME = Column(String(500), nullable=True)
-    ARIS_SERVICE_EXECUTION_COUNTRY_NAME = Column(String(200), nullable=True)
-    ARIS_SERVICE_EXECUTION_COUNTRY_CODE = Column(String(20), nullable=True)
-
-    ARIS_SERVICE_TYPE_CODE = Column(String(100), nullable=True)
-    ARIS_SERVICE_IMPORTANCE_IND = Column(Boolean, nullable=True)
-
-    DOCUMENT_TYPE_NAME = Column(String(100), nullable=True)
-    DOCUMENT_APPROVAL_DATE = Column(Date, nullable=True)
-    DOCUMENT_VERSION_NUM = Column(Numeric(10, 2), nullable=True)
-
-    IMPACT_TOLERANCE_THRESHOLD_CUSTOMER_TEXT = Column(String(100), nullable=True)
-    IMPACT_TOLERANCE_THRESHOLD_CUSTOMER_CODE = Column(String(100), nullable=True)
-    IMPACT_TOLERANCE_THRESHOLD_CUSTOMER_DESC = Column(String(200), nullable=True)
-    IMPACT_TOLERANCE_THRESHOLD_CUSTOMER_HOURS_NUM = Column(Numeric(18, 2), nullable=True)
-    IMPACT_TOLERANCE_THRESHOLD_CUSTOMER_APPLICABLE_IND = Column(Boolean, nullable=True)
-
-    IMPACT_TOLERANCE_THRESHOLD_FIRM_TEXT = Column(String(100), nullable=True)
-    IMPACT_TOLERANCE_THRESHOLD_FIRM_CODE = Column(String(100), nullable=True)
-    IMPACT_TOLERANCE_THRESHOLD_FIRM_DESC = Column(String(200), nullable=True)
-    IMPACT_TOLERANCE_THRESHOLD_FIRM_HOURS_NUM = Column(Numeric(18, 2), nullable=True)
-    IMPACT_TOLERANCE_THRESHOLD_FIRM_APPLICABLE_IND = Column(Boolean, nullable=True)
-
-    IMPACT_TOLERANCE_THRESHOLD_MARKET_TEXT = Column(String(100), nullable=True)
-    IMPACT_TOLERANCE_THRESHOLD_MARKET_CODE = Column(String(100), nullable=True)
-    IMPACT_TOLERANCE_THRESHOLD_MARKET_DESC = Column(String(200), nullable=True)
-    IMPACT_TOLERANCE_THRESHOLD_MARKET_HOURS_NUM = Column(Numeric(18, 2), nullable=True)
-    IMPACT_TOLERANCE_THRESHOLD_MARKET_APPLICABLE_IND = Column(Boolean, nullable=True)
-
-    SERVICE_RECOVERY_TIME_OBJECTIVE_TEXT = Column(String(100), nullable=True)
-    SERVICE_RECOVERY_TIME_OBJECTIVE_CODE = Column(String(100), nullable=True)
-    SERVICE_RECOVERY_TIME_OBJECTIVE_DESC = Column(String(200), nullable=True)
-    SERVICE_RECOVERY_TIME_OBJECTIVE_NUM = Column(Numeric(18, 2), nullable=True)
-    SERVICE_RECOVERY_TIME_OBJECTIVE_APPLICABLE_IND = Column(Boolean, nullable=True)
-
-    CRITICAL_OPERATION_INSTANCE_NAME = Column(String(500), nullable=True)
-    ARIS_CRITICAL_OPERATION_INSTANCE_ID = Column(String(100), nullable=True)
-    ARIS_CRITICAL_OPERATION_INSTANCE_NAME = Column(String(500), nullable=True)
-
-    CRITICAL_OPERATION_DISRUPTION_TOLERANCE_TEXT = Column(String(100), nullable=True)
-    CRITICAL_OPERATION_DISRUPTION_TOLERANCE_CODE = Column(String(100), nullable=True)
-    CRITICAL_OPERATION_DISRUPTION_TOLERANCE_DESC = Column(String(200), nullable=True)
-    CRITICAL_OPERATION_DISRUPTION_TOLERANCE_NUM = Column(Numeric(18, 2), nullable=True)
-    CRITICAL_OPERATION_DISRUPTION_TOLERANCE_APPLICABLE_IND = Column(Boolean, nullable=True)
-
-    REPORT_DATE = Column(Date, nullable=True)
-
-
-def create_table():
-    inspector = inspect(engine)
-
-    if inspector.has_table("SERVICE_TOLERANCES"):
-        print("SERVICE_TOLERANCES table already exists. No changes made.")
-        return
-
-    Base.metadata.create_all(
-        engine,
-        tables=[ServiceTolerances.__table__]
-    )
-
-    print("SERVICE_TOLERANCES table created successfully.")
-
-
-if __name__ == "__main__":
-    create_table()
-
-
-python create_service_tolerances_table.py
-
-
-service_tolerances:
-  input_file: "YOUR_ARIS_EXCEL_FILE.xlsx"
-  sheet_name: "service level info"
-  target_table: "SERVICE_TOLERANCES"
-  key_column: "ARIS_SERVICE_ID"
+SELECT COUNT(*) AS DUPLICATE_SERVICE_ID_COUNT
+FROM (
+    SELECT ARIS_SERVICE_ID
+    FROM SERVICE_TOLERANCES
+    WHERE ARIS_SERVICE_ID IS NOT NULL
+    GROUP BY ARIS_SERVICE_ID
+    HAVING COUNT(*) > 1
+) AS D;
 
 
