@@ -1,39 +1,7 @@
-Use Case ID: 3.1
-Task Name:
-Extract and Load ARIS Data for Dependency and Service Dependencies
-Description:
-Extract the required ARIS data for IBS and Critical Operations and load the relevant attributes into the Azure SQL database to support dependency, dataset dependency, and service dependency identification.
-The data should include the required ARIS service information and service tolerance attributes, with appropriate linkage to the service instance/service name where applicable.
-Scope:
-Extract required ARIS data from the provided source Excel.
-Focus on IBS and Critical Operations (COO) as discussed.
-Load the required data into the newly created Azure SQL table.
-Include relevant service information such as:
-SERVICE_NAME
-SERVICE_IMPORTANCE_CODE
-ARIS_SERVICE_ID
-ARIS_SERVICE_NAME
-Service owner information
-Service type/importancе information
-ITOL / Impact Tolerance values
-SRTO / Service Recovery Time Objective
-Critical Operation information where available
-Required document metadata
-Validate the data before loading.
-Ensure the table supports future linkage with service instance/dependency information.
-Acceptance Criteria
-Required ARIS data is extracted successfully from the provided source.
-IBS and Critical Operations records are included as required.
-Required ARIS/service tolerance attributes are loaded into the Azure SQL table.
-ARIS_SERVICE_ID is validated for uniqueness where populated.
-Records where ARIS_SERVICE_ID is NULL (e.g., Critical Operations) are retained and not incorrectly treated as duplicate records.
-Appropriate business-key/composite-key logic is established for identifying records uniquely.
-Data is validated after loading and record counts are reconciled with the source.
-The loaded data is available for downstream dependency and service-dependency processing.
-Technical Notes
-Data modification/DDL will be performed through the Python script, as direct INSERT/UPDATE/CREATE/DROP execution is not available in Azure SQL.
-SELECT queries can be used in Azure SQL for validation.
-Do not introduce an artificial primary-key column unless required by the final design.
-Since ARIS_SERVICE_ID is NULL for the 44 Critical Operations records, the final uniqueness strategy should use an appropriate composite/business key rather than relying solely on ARIS_SERVICE_ID.
-Effort
-0.5 day / 2 story points based on the discussion with Ram.
+You can add this safe update:
+Update: Working on Use Case 1.5.1 to make the required stakeholder information available for the final report. The backend activity includes creating the required table structure and loading the relevant data, with the required engagement-level linkage. Further validation will be done to ensure the data can be consumed by the downstream report.
+What to say in today's Scrum
+Keep it simple:
+“For 1.5.1, I’m working on the backend data preparation. I’m creating the required table structure and loading the stakeholder-related information, including the required engagement-level linkage. I’m currently validating the source data and table structure, and once that is completed, the data will be available for the report integration.”
+If they ask “Any blocker?”:
+“No blocker at the moment. I’m just validating the engagement-level data and the required mappings.”
