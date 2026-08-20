@@ -1,30 +1,5 @@
-remove_aclp_document_metadata_unique_constraint.py
-
-
-
-from sqlalchemy import text
-
-from db import engine
-
-
-CONSTRAINT_NAME = "UQ_ACLP_DOCUMENT_METADATA_BATCH_WORKBOOK"
-
-
-def remove_unique_constraint():
-    sql = text("""
-        ALTER TABLE ACLP_DOCUMENT_METADATA
-        DROP CONSTRAINT UQ_ACLP_DOCUMENT_METADATA_BATCH_WORKBOOK
-    """)
-
-    with engine.begin() as connection:
-        connection.execute(sql)
-
-    print(
-        "Unique constraint "
-        "UQ_ACLP_DOCUMENT_METADATA_BATCH_WORKBOOK "
-        "removed successfully."
-    )
-
-
-if __name__ == "__main__":
-    remove_unique_constraint()
+SELECT
+    tc.CONSTRAINT_NAME,
+    tc.CONSTRAINT_TYPE
+FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS tc
+WHERE tc.TABLE_NAME = 'ACLP_DOCUMENT_METADATA';
