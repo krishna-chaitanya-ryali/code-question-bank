@@ -1,5 +1,5 @@
-SELECT
-    tc.CONSTRAINT_NAME,
-    tc.CONSTRAINT_TYPE
-FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS tc
-WHERE tc.TABLE_NAME = 'ACLP_DOCUMENT_METADATA';
+Successfully created the relationship table to maintain the linkage between Engagement, Third Party/Supplier, Service Instance, and ALCP Document.
+The table structure has been finalized based on the discussions with Ram and Shiva, with the required relationship/key attributes included to support downstream retrieval and reporting.
+The ALCP document reference/path is also maintained as part of the relationship so that the relevant document can be identified for a given supplier/engagement/service instance.
+Data loading is being handled through the Python-based data load process, followed by validation against the source data.
+Status: Table creation completed; data load and validation are in progress/completed as applicable.
