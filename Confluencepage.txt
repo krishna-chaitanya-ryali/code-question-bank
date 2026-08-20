@@ -1,141 +1,22 @@
-from sqlalchemy import (
-    Column,
-    String,
-    Integer,
-    DateTime,
-    Text,
-    UniqueConstraint,
-    inspect,
-)
-
-from sqlalchemy.orm import declarative_base
-
-from db import engine
-
-
-Base = declarative_base()
-
-
-class ACLPDocumentMetadata(Base):
-    __tablename__ = "ACLP_DOCUMENT_METADATA"
-
-    # Technical primary key
-    DOCUMENT_ID = Column(
-        Integer,
-        primary_key=True,
-        autoincrement=True
-    )
-
-    # Document fields
-    WORKBOOK_NAME = Column(
-        String(1000),
-        nullable=False
-    )
-
-    DOCUMENT_STATUS = Column(
-        String(50),
-        nullable=False
-    )
-
-    DOCUMENT_ERROR = Column(
-        Text,
-        nullable=True
-    )
-
-    SHEET_NAME = Column(
-        String(500),
-        nullable=True
-    )
-
-    HEADER_ROW = Column(
-        Integer,
-        nullable=True
-    )
-
-    # JSON stored as text in Azure SQL
-    MATCHING_COLUMNS = Column(
-        Text,
-        nullable=True
-    )
-
-    MATCHING_ROWS = Column(
-        Text,
-        nullable=True
-    )
-
-    # Extracted relationship information
-    ENGAGEMENT_ID = Column(
-        String(100),
-        nullable=True
-    )
-
-    SUPPLIER_NAME = Column(
-        String(1000),
-        nullable=True
-    )
-
-    THIRD_PARTY_ID = Column(
-        String(100),
-        nullable=True
-    )
-
-    THIRD_PARTY_NAME = Column(
-        String(1000),
-        nullable=True
-    )
-
-    # Batch / source metadata
-    RUN_BATCH_ID = Column(
-        String(36),
-        nullable=False
-    )
-
-    GENERATED_AT = Column(
-        DateTime,
-        nullable=False
-    )
-
-    TARGET_SHEET = Column(
-        String(500),
-        nullable=False
-    )
-
-    CREATED_AT = Column(
-        DateTime,
-        nullable=False,
-        server_default="GETDATE()"
-    )
-
-    # Prevent processing the same workbook twice
-    # within the same batch.
-    __table_args__ = (
-        UniqueConstraint(
-            "RUN_BATCH_ID",
-            "WORKBOOK_NAME",
-            name="UQ_ACLP_DOCUMENT_METADATA_BATCH_WORKBOOK"
-        ),
-    )
-
-
-def create_table():
-    inspector = inspect(engine)
-
-    if inspector.has_table("ACLP_DOCUMENT_METADATA"):
-        print(
-            "ACLP_DOCUMENT_METADATA table already exists. "
-            "No changes made."
-        )
-        return
-
-    Base.metadata.create_all(
-        engine,
-        tables=[ACLPDocumentMetadata.__table__]
-    )
-
-    print(
-        "ACLP_DOCUMENT_METADATA table created successfully."
-    )
-
-
-if __name__ == "__main__":
-    create_table()
+Hi Shiva, the ACLP_DOCUMENT_METADATA table has been created based on the discussed schema.
+A few points to consider while preparing the JSON-to-DB insertion script:
+WORKBOOK_NAME should be treated as the source document/workbook identifier.
+DOCUMENT_STATUS should capture the processing result, such as available, missing_sheet, missing_column, or unreadable. If the Engagement ID validation fails, please use the agreed status/error handling accordingly.
+ENGAGEMENT_ID should be populated whenever it is available in the source JSON.
+SUPPLIER_NAME / Third-party information should be populated from the JSON where available. Where only Engagement ID is available, the supplier/third-party details can be resolved using the existing Engagement/Third Party/Contract relationships as discussed.
+Please retain the SHEET_NAME, HEADER_ROW, and MATCHING_COLUMNS information from the JSON because this is important for traceability and future reprocessing/debugging.
+RUN_BATCH_ID should be the same UUID for all workbooks processed in a single execution/batch.
+GENERATED_AT should come from the JSON generation timestamp, while CREATED_AT will be maintained by the database.
+The table has a uniqueness rule on (RUN_BATCH_ID, WORKBOOK_NAME), so the same workbook should not be inserted twice within the same batch.
+The detailed validation/business logic can remain in the existing Python processing flow; the DB script should mainly persist the final JSON output in the agreed structured format.
+One thing I would clarify with Shiva
+There is one important point I would confirm before he finalizes the insertion script:
+What exactly should happen when the same Engagement ID appears multiple times in the JSON?
+Your sample already has this situation:
+ENG-2461151 → appears in multiple rows
+ENG-449583 → appears in multiple rows
+I would not tell him to deduplicate those records automatically. Those may represent different source rows and are useful for traceability.
+So I would add one final question:
+One clarification: if the same Engagement ID appears multiple times for the same workbook because it occurs in multiple source rows, should we retain each source-row-level record rather than deduplicating it? I assume we should retain them for traceability unless you prefer otherwise.
+That is the main point I'd get confirmation on before Shiva writes the final loader.
+Also, don't ask Shiva to worry about creating the table or SQLAlchemy model—that's already our side. His responsibility is essentially JSON → validation/business rules → ACLP_DOCUMENT_METADATA insertion.
