@@ -1,7 +1,15 @@
-You can add this safe update:
-Update: Working on Use Case 1.5.1 to make the required stakeholder information available for the final report. The backend activity includes creating the required table structure and loading the relevant data, with the required engagement-level linkage. Further validation will be done to ensure the data can be consumed by the downstream report.
-What to say in today's Scrum
-Keep it simple:
-“For 1.5.1, I’m working on the backend data preparation. I’m creating the required table structure and loading the stakeholder-related information, including the required engagement-level linkage. I’m currently validating the source data and table structure, and once that is completed, the data will be available for the report integration.”
-If they ask “Any blocker?”:
-“No blocker at the moment. I’m just validating the engagement-level data and the required mappings.”
+Jira comment
+Update: Started working on the relationship table required to establish the linkage between Engagement, Third Party/Supplier, Service Instance and ALCP Document.
+The table will capture the required relationship/key attributes, including the relevant supplier/engagement/service-instance information and the ALCP document reference/path where applicable. I am currently validating the source data and mapping the required columns before implementing the table load through the Python script.
+Scrum call
+“Today I’m working on the relationship table between Engagement, Third Party, Service Instance and the ALCP document. I’m validating the source data and required mappings first, and then I’ll create and load the relationship data through the Python script. I’ll also validate the loaded records against the source.”
+2. Ticket: Create Service Instance → Engagement → Supplier → Application relationship
+Jira comment
+Update: Started working on the relationship mapping between Service Instance, Engagement, Supplier/Third Party and Business Application.
+The objective is to establish the required linkage so that, for a given service instance, we can identify the associated engagement, supplier and application. I am currently reviewing the available source attributes and validating the mappings before implementing the data load.
+Scrum call
+“I’m also working on the Service Instance, Engagement, Supplier and Application relationship mapping. I’m reviewing the available source attributes and establishing the required relationships so that we can trace a service instance back to its engagement, supplier and application. Once the mapping is finalized, I’ll implement and validate the data load.”
+If they ask for a combined update
+You can say this naturally:
+“Today I’m focusing on two backend data activities. First, I’m creating the relationship between Engagement, Third Party, Service Instance and the ALCP document. Second, I’m working on the Service Instance, Engagement, Supplier and Application relationship. I’m currently validating the source data and mappings, and then I’ll implement the table/data load through the Python script and validate the results.”
+If Ram asks about blockers:
