@@ -1,5 +1,286 @@
-Successfully created the relationship table to maintain the linkage between Engagement, Third Party/Supplier, Service Instance, and ALCP Document.
-The table structure has been finalized based on the discussions with Ram and Shiva, with the required relationship/key attributes included to support downstream retrieval and reporting.
-The ALCP document reference/path is also maintained as part of the relationship so that the relevant document can be identified for a given supplier/engagement/service instance.
-Data loading is being handled through the Python-based data load process, followed by validation against the source data.
-Status: Table creation completed; data load and validation are in progress/completed as applicable.
+create_bus_serv_aware_engagement_table.py
+load_bus_serv_aware_engagement.py
+
+from sqlalchemy import (
+    Column,
+    String,
+    Integer,
+    Boolean,
+    inspect,
+)
+from sqlalchemy.orm import declarative_base
+
+from db import engine
+
+
+Base = declarative_base()
+
+
+class BusServAwareEngagement(Base):
+    __tablename__ = "BUS_SERV_AWARE_ENGAGEMENT"
+
+    # Technical primary key
+    ID = Column(
+        Integer,
+        primary_key=True,
+        autoincrement=True,
+        nullable=False,
+    )
+
+    BUS_ARCH_OBJECT_TYPE_CODE = Column(
+        String(100),
+        nullable=True,
+    )
+
+    BUS_ARCH_OBJECT_NAME = Column(
+        String(500),
+        nullable=True,
+    )
+
+    SERVICE_IMPORTANCE_IND = Column(
+        Boolean,
+        nullable=True,
+    )
+
+    BUS_ARCH_OBJECT_STATUS_NAME = Column(
+        String(100),
+        nullable=True,
+    )
+
+    ENGAGEMENT_ID = Column(
+        String(100),
+        nullable=True,
+    )
+
+    ENGAGEMENT_NAME = Column(
+        String(500),
+        nullable=True,
+    )
+
+    ENGAGEMENT_STATUS_NAME = Column(
+        String(100),
+        nullable=True,
+    )
+
+    BUSINESS_APPLICATION_ID = Column(
+        String(100),
+        nullable=True,
+    )
+
+
+def create_table():
+    inspector = inspect(engine)
+
+    if inspector.has_table("BUS_SERV_AWARE_ENGAGEMENT"):
+        print(
+            "BUS_SERV_AWARE_ENGAGEMENT table already exists. "
+            "No changes made."
+        )
+        return
+
+    Base.metadata.create_all(
+        engine,
+        tables=[BusServAwareEngagement.__table__]
+    )
+
+    print(
+        "BUS_SERV_AWARE_ENGAGEMENT table created successfully."
+    )
+
+
+if __name__ == "__main__":
+    create_table()
+
+
+
+import pandas as pd
+from sqlalchemy import text
+
+from db import engine
+
+
+# ---------------------------------------------------------
+# Configuration
+# ---------------------------------------------------------
+
+EXCEL_FILE = "Data workbook.xlsx"
+
+# Change this only if the actual Excel sheet name is different
+SHEET_NAME = "Bus Service Engagement"
+
+TABLE_NAME = "BUS_SERV_AWARE_ENGAGEMENT"
+
+
+# ---------------------------------------------------------
+# Column mapping
+# ---------------------------------------------------------
+
+EXPECTED_COLUMNS = [
+    "BUS_ARCH_OBJECT_TYPE_CODE",
+    "BUS_ARCH_OBJECT_NAME",
+    "SERVICE_IMPORTANCE_IND",
+    "BUS_ARCH_OBJECT_STATUS_NAME",
+    "ENGAGEMENT_ID",
+    "ENGAGEMENT_NAME",
+    "ENGAGEMENT_STATUS_NAME",
+    "BUSINESS_APPLICATION_ID",
+]
+
+
+# ---------------------------------------------------------
+# Helper functions
+# ---------------------------------------------------------
+
+def convert_to_boolean(value):
+    """
+    Convert Excel TRUE/FALSE values into Python booleans.
+    Blank/NaN values remain None.
+    """
+
+    if pd.isna(value):
+        return None
+
+    if isinstance(value, bool):
+        return value
+
+    value = str(value).strip().upper()
+
+    if value == "TRUE":
+        return True
+
+    if value == "FALSE":
+        return False
+
+    return None
+
+
+def clean_value(value):
+    """
+    Convert NaN/blank values to None.
+    """
+
+    if pd.isna(value):
+        return None
+
+    if isinstance(value, str):
+        value = value.strip()
+
+        if value == "":
+            return None
+
+    return value
+
+
+# ---------------------------------------------------------
+# Load Excel data
+# ---------------------------------------------------------
+
+def load_data():
+
+    print(f"Reading Excel file: {EXCEL_FILE}")
+    print(f"Reading sheet: {SHEET_NAME}")
+
+    df = pd.read_excel(
+        EXCEL_FILE,
+        sheet_name=SHEET_NAME,
+    )
+
+    print(f"Rows read from Excel: {len(df)}")
+
+    # -----------------------------------------------------
+    # Validate columns
+    # -----------------------------------------------------
+
+    missing_columns = [
+        column
+        for column in EXPECTED_COLUMNS
+        if column not in df.columns
+    ]
+
+    if missing_columns:
+        raise ValueError(
+            f"Missing columns in Excel: {missing_columns}"
+        )
+
+    # Keep only required columns
+    df = df[EXPECTED_COLUMNS].copy()
+
+    # -----------------------------------------------------
+    # Clean data
+    # -----------------------------------------------------
+
+    for column in EXPECTED_COLUMNS:
+        if column != "SERVICE_IMPORTANCE_IND":
+            df[column] = df[column].apply(clean_value)
+
+    df["SERVICE_IMPORTANCE_IND"] = (
+        df["SERVICE_IMPORTANCE_IND"]
+        .apply(convert_to_boolean)
+    )
+
+    # -----------------------------------------------------
+    # Display basic information
+    # -----------------------------------------------------
+
+    print("\nData preview:")
+    print(df.head())
+
+    print("\nData types:")
+    print(df.dtypes)
+
+    # -----------------------------------------------------
+    # Insert data
+    # -----------------------------------------------------
+
+    records = df.to_dict(orient="records")
+
+    if not records:
+        print("No records found in Excel.")
+        return
+
+    insert_sql = text("""
+        INSERT INTO BUS_SERV_AWARE_ENGAGEMENT (
+            BUS_ARCH_OBJECT_TYPE_CODE,
+            BUS_ARCH_OBJECT_NAME,
+            SERVICE_IMPORTANCE_IND,
+            BUS_ARCH_OBJECT_STATUS_NAME,
+            ENGAGEMENT_ID,
+            ENGAGEMENT_NAME,
+            ENGAGEMENT_STATUS_NAME,
+            BUSINESS_APPLICATION_ID
+        )
+        VALUES (
+            :BUS_ARCH_OBJECT_TYPE_CODE,
+            :BUS_ARCH_OBJECT_NAME,
+            :SERVICE_IMPORTANCE_IND,
+            :BUS_ARCH_OBJECT_STATUS_NAME,
+            :ENGAGEMENT_ID,
+            :ENGAGEMENT_NAME,
+            :ENGAGEMENT_STATUS_NAME,
+            :BUSINESS_APPLICATION_ID
+        )
+    """)
+
+    with engine.begin() as connection:
+
+        connection.execute(
+            insert_sql,
+            records
+        )
+
+    print(
+        f"\nSuccessfully inserted "
+        f"{len(records)} records into "
+        f"{TABLE_NAME}."
+    )
+
+
+# ---------------------------------------------------------
+# Main
+# ---------------------------------------------------------
+
+if __name__ == "__main__":
+    load_data()
+
+
+
