@@ -292,3 +292,166 @@ def load_data():
 if __name__ == "__main__":
     load_data()
 
+
+
+import pandas as pd
+from sqlalchemy import text
+
+from db import engine
+
+
+# ---------------------------------------------------------
+# Configuration
+# ---------------------------------------------------------
+
+EXCEL_FILE = "Data Workbook.xlsx"
+SHEET_NAME = "DBO_Service_Thresholds"
+
+TABLE_NAME = "SERVICE_THRESHOLD_DETAILS"
+
+
+# ---------------------------------------------------------
+# Excel column -> Database column mapping
+# ---------------------------------------------------------
+
+COLUMN_MAPPING = {
+    "Service Instances": "SERVICE_INSTANCES",
+    "Legal Entity": "LEGAL_ENTITY",
+    "Owner": "OWNER",
+    "Customer": "CUSTOMER",
+    "Market": "MARKET",
+    "Firm": "FIRM",
+    "TFD": "TFD",
+    "SRTO": "SRTO",
+    "Incidents (last 12m)": "INCIDENTS_LAST_12M",
+    "Outages (Last 12m)": "OUTAGES_LAST_12M",
+}
+
+
+# ---------------------------------------------------------
+# Helper function
+# ---------------------------------------------------------
+
+def convert_integer(value):
+    """
+    Convert Excel numeric-style values to integers.
+
+    Numeric value -> integer
+    '-' / blank    -> None
+    """
+
+    if pd.isna(value):
+        return None
+
+    value = str(value).strip()
+
+    if value in ("", "-"):
+        return None
+
+    try:
+        return int(float(value))
+    except (ValueError, TypeError):
+        return None
+
+
+# ---------------------------------------------------------
+# Load data
+# ---------------------------------------------------------
+
+def load_data():
+
+    print(f"Reading Excel sheet: {SHEET_NAME}")
+
+    df = pd.read_excel(
+        EXCEL_FILE,
+        sheet_name=SHEET_NAME
+    )
+
+    print(f"Rows read from Excel: {len(df)}")
+
+    # Remove completely empty rows
+    df = df.dropna(how="all")
+
+    # Rename Excel columns to database columns
+    df = df.rename(columns=COLUMN_MAPPING)
+
+    # Numeric columns
+    integer_columns = [
+        "MARKET",
+        "FIRM",
+        "TFD",
+        "SRTO",
+        "INCIDENTS_LAST_12M",
+        "OUTAGES_LAST_12M",
+    ]
+
+    for column in integer_columns:
+        if column in df.columns:
+            df[column] = df[column].apply(convert_integer)
+
+    # Convert NaN to None
+    df = df.where(pd.notnull(df), None)
+
+    # Keep only columns expected by the database
+    database_columns = list(COLUMN_MAPPING.values())
+
+    df = df[
+        [
+            column
+            for column in database_columns
+            if column in df.columns
+        ]
+    ]
+
+    # Convert to records
+    records = df.to_dict(orient="records")
+
+    if not records:
+        print("No records found in the Excel sheet.")
+        return
+
+    # -----------------------------------------------------
+    # Insert data
+    # -----------------------------------------------------
+
+    insert_sql = text("""
+        INSERT INTO SERVICE_THRESHOLD_DETAILS (
+            SERVICE_INSTANCES,
+            LEGAL_ENTITY,
+            OWNER,
+            CUSTOMER,
+            MARKET,
+            FIRM,
+            TFD,
+            SRTO,
+            INCIDENTS_LAST_12M,
+            OUTAGES_LAST_12M
+        )
+        VALUES (
+            :SERVICE_INSTANCES,
+            :LEGAL_ENTITY,
+            :OWNER,
+            :CUSTOMER,
+            :MARKET,
+            :FIRM,
+            :TFD,
+            :SRTO,
+            :INCIDENTS_LAST_12M,
+            :OUTAGES_LAST_12M
+        )
+    """)
+
+    with engine.begin() as connection:
+        connection.execute(
+            insert_sql,
+            records
+        )
+
+    print(
+        f"{len(records)} records inserted successfully into "
+        f"{TABLE_NAME}."
+    )
+
+
+if __name__ == "__main__":
+    load_data()
