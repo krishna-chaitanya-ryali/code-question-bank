@@ -1,148 +1,27 @@
-Yes, Krishna. I have the discussion with Naidu/Siddharth in the current context, and I agree with your approach: let's update only what we actually know from the discussion and leave the remaining items as “TBC / Confirm with Ram/Siddharth/Mannie.” We should not invent answers because the DSS template itself says misleading answers can delay approval.
-Below is what I recommend putting into the Excel.
-Discovery Questionnaire — recommended responses
-No.
-Question
-What to enter in Response
-1
-Rationale for using production data
-Production data is required to validate the solution using representative real-world data in a controlled non-production environment and to ensure the solution performs as expected against the intended business data.
-2
-Testing type that production data will be used for
-Development/testing, Pilot and UAT validation in non-production. Production data will be used only as required for controlled testing and validation.
-3
-Number of UAT, TEST & DEV systems
-TBC – confirm the exact number of DEV, TEST and UAT environments with Ram/Siddharth.
-4a
-Source system technology – Version
-TBC – confirm source system/version.
-4b
-Source system technology – Size
-TBC – confirm source data/system size.
-4c
-Any flat files
-Yes – unstructured/flat-file data samples are expected to be included. Exact file types/counts to be confirmed.
-5
-Technology used to store data in non-production
-TBC – confirm the exact Azure/storage technology and configuration with the technical team.
-6
-Size of test data samples
-TBC – confirm approximate size of the representative test samples.
-7
-Approximate number of records
-TBC – confirm approximate number of records.
-8a–d
-Personal data questions
-TBC – confirm whether personal data is present in the data set. If personal data is confirmed, complete 8a–8d based on the Data Dictionary.
-9
-How is production-to-test data movement performed?
-TBC – confirm the production-to-non-production data movement process with Ram/Siddharth.
-10
-Where will data be held?
-TBC – confirm the non-production storage location/technology.
-11
-Age of data used in test environment
-Approximately six months of data is expected to be sufficient for the testing requirement.
-12
-How often data refresh performed?
-TBC – confirm refresh frequency with Ram/Siddharth.
-13
-Is service externally facing?
-No. The service is not intended to be externally facing/customer accessible.
-14
-Is service externally hosted?
-TBC – confirm hosting arrangement.
-15
-How is data removed from non-production?
-TBC – confirm data deletion/cleanup process.
-Masking
-This is one area where I would NOT make up an answer yet.
-16 — Is masking implemented?
-Put:
-TBC – confirm the applicable masking controls and process with DSS/Ram/Siddharth.
-Then the subquestions 16a–16g should also remain TBC until we establish:
-how the data is masked,
-where masking happens,
-whether unmasked data can be accessed in test,
-whether masking is reversible,
-who performs masking,
-how the masking logic is protected,
-whether masking activity is audited.
-The Data Dictionary has classification/masking fields, but classification alone does not tell us the actual masking implementation. So don't use the Data Dictionary to invent these answers.
-Access Control — this is where Siddharth gave us strong answers
-17. How many users have access to the same data in their daily duties?
-Enter:
-8 business users for the current testing/pilot/UAT phase. The production user population is expected to be broader following successful pilot/UAT completion.
-This is important because we don't want DSS thinking 8 is the final production population.
-18. User authentication mechanism
-Enter:
-Single Sign-On (SSO) with Active Directory (AD) Group-based access.
-19. Will IT users have elevated privileges in Non-Prod than Production?
-I would use:
-Yes. IT/development users may have elevated privileges in non-production environments to perform development and testing activities. Production access is more restricted and controlled through the approved access/deployment process.
-This reflects Siddharth's explanation without unnecessarily exposing internal implementation details.
-20. Recertification cycle
-Enter:
-TBC – confirm the applicable access/service recertification frequency.
-Don't put six months here unless Siddharth confirms that six months is actually the recertification cycle. In the discussion, six months appeared to relate to the testing/data timeframe, not definitively the access recertification cycle.
-21. Is account assigned to a single account owner?
-Enter:
-TBC – confirm the account ownership model with the technical/IT owner.
-22. Is access controlled via Password Auto Repository (PAR)?
-Enter:
-No, not currently. PAR onboarding is in progress. At present, the relevant SPN/service-account credential management is handled through the existing manual process while the team works with the Central team on PAR onboarding.
-This is one of the clearer answers from the discussion.
-23. Are developers provided access to the test environment?
-Here I would be very careful with the wording because Siddharth specifically differentiated development from test.
-Enter:
-No direct developer access to the test/front-end business environment. Developers have access to the development environment as required for development activities. Testing/UAT outcomes are validated by the designated business users.
-That is much safer than simply saying “Yes, developers have test access.”
-24. Will non-HSBC staff have access to data in test?
-Enter:
-No. Access to the test data is restricted to HSBC users/business users involved in the testing and UAT activities.
-Privileged Accounts
-25. Are privileged user accounts created for non-production systems?
-Based on the discussion, I would put:
-Yes, where required for non-production administration/development activities. Privileged/service/MSA accounts are subject to the applicable access approval and control process. PAR onboarding is currently in progress.
-For the subquestions:
-25a – PAR
-Currently not via PAR; PAR onboarding is in progress.
-25b – Account functions
-Used for approved privileged/service-level activities required to administer and support the non-production environment.
-25c – Shared privileged account traceability
-This one was not sufficiently confirmed in the discussion, so:
-TBC – confirm whether privileged/shared service accounts can be traced to an individual user for each privileged access session.
-User Activity Log Reviews
-26. Are log reviews in place?
-We didn't get a definitive answer from Siddharth/Naidu.
-So put:
-TBC – confirm logging and log-review controls, including reviewer and review frequency.
-And for:
-26a standard logging requirements → TBC
-26b who performs review → TBC
-26c frequency → TBC
-Don't guess this one.
-Data Leakage Prevention
-27. USB/CD/DVD extraction
-Enter:
-No. The ability to extract the data via USB/CD/DVD or similar removable media is not permitted.
-28. Export/print/email/screenshots
-From the discussion, the agreed answer was No.
-Enter:
-No. Export/print capability is restricted to help prevent data from being removed from the test environment.
-If the actual technical control is different, validate it before final submission.
-Other
-29. Production configuration copied to test?
-Enter:
-No. Production configuration details are not copied from production into the test environment.
-30. Any other controls?
-This is a good place to capture the controls Siddharth discussed:
-Access is restricted to approved HSBC users. Development activities are performed in the development environment, with business users validating the resulting outputs during pilot/UAT. Production deployment is controlled through the applicable approval and deployment process.
-So, Krishna, your Excel is now roughly in this state
-✅ We can fill confidently now
-2, 4c, 11, 13, 17, 18, 19, 22, 23, 24, 25 (partially), 27, 28, 29, 30
-🟡 We can put a reasonable working answer but should validate
-1, 2, 11, 19, 23, 25, 28, 30
-🔴 Don't guess — leave TBC
-3, 4a, 4b, 5, 6, 7, 8, 9, 10, 12, 14, 15, 16, 20, 21, 25c, 26
-And six months should not automatically be copied into every question involving time. We know six months was the agreed working timeframe for the test/data requirement, but we don't have confirmation that it is the access recertification frequency or data-refresh frequency.
+from sqlalchemy import text
+
+from db import engine
+
+
+def alter_table():
+    alter_sql = text("""
+        ALTER TABLE SERVICE_THRESHOLD_DETAILS
+        ADD
+            RPO NUMERIC(18, 2) NULL,
+            AVAILABILITY_TARGET NUMERIC(5, 2) NULL;
+    """)
+
+    with engine.begin() as connection:
+        connection.execute(alter_sql)
+
+    print(
+        "RPO and AVAILABILITY_TARGET columns added successfully "
+        "to SERVICE_THRESHOLD_DETAILS."
+    )
+
+
+if __name__ == "__main__":
+    alter_table()
+
+
+alter_service_thresholds_add_rpo_availability.py
