@@ -1,12 +1,11 @@
-create_important_business_service_details.py
-load_important_business_service_details.py
+create_service_thresholds.py → only creates the Azure SQL table.
+load_service_thresholds.py → reads
 
 
 from sqlalchemy import (
     Column,
     String,
     Integer,
-    Boolean,
     inspect,
     Identity,
 )
@@ -17,8 +16,8 @@ from db import engine
 Base = declarative_base()
 
 
-class ImportantBusinessServiceDetails(Base):
-    __tablename__ = "IMPORTANT_BUSINESS_SERVICE_DETAILS"
+class ServiceThresholdDetails(Base):
+    __tablename__ = "SERVICE_THRESHOLD_DETAILS"
 
     ID = Column(
         Integer,
@@ -27,270 +26,42 @@ class ImportantBusinessServiceDetails(Base):
         nullable=False
     )
 
-    IMPORTANT_BUSINESS_SERVICE = Column(String(500), nullable=True)
-    BUSINESS_SERVICE_TYPE = Column(String(100), nullable=True)
-    LEGAL_ENTITY = Column(String(100), nullable=True)
-    DIRECT_INDIRECT_MAPPING = Column(String(100), nullable=True)
-    SOURCE = Column(String(200), nullable=True)
-    PROCESS_HANDOFF = Column(String(100), nullable=True)
+    SERVICE_INSTANCES = Column(String(500), nullable=True)
+    LEGAL_ENTITY = Column(String(500), nullable=True)
+    OWNER = Column(String(300), nullable=True)
 
-    ARIS_IMPORTANCE_MARKER = Column(Boolean, nullable=True)
-    APPLICATION_IMPORTANCE_MARKER = Column(Boolean, nullable=True)
-    OVERALL_IMPORTANCE_STATUS = Column(String(100), nullable=True)
-    IMPORTANT_ASSET_JUSTIFICATION = Column(String(500), nullable=True)
+    CUSTOMER = Column(String(100), nullable=True)
+    MARKET = Column(Integer, nullable=True)
+    FIRM = Column(Integer, nullable=True)
+    TFD = Column(Integer, nullable=True)
+    SRTO = Column(Integer, nullable=True)
 
-    ENGAGEMENT_ID = Column(String(100), nullable=True)
-    ENGAGEMENT_NAME = Column(String(500), nullable=True)
-
-    ENGAGEMENT_STATUS = Column(String(100), nullable=True)
-    ENGAGEMENT_MANAGER = Column(String(300), nullable=True)
-    SUPPLIER_NAME = Column(String(500), nullable=True)
-    MATERIAL_ENGAGEMENT = Column(Boolean, nullable=True)
-    INFORMATION_COMMUNICATION_TECHNOLOGY = Column(Boolean, nullable=True)
-    INFORMATION_COMMUNICATION_TECHNOLOGY_SERVICE_PROVIDER = Column(
-        String(500),
-        nullable=True
-    )
-
-    ESTABLISHED_RTO = Column(String(50), nullable=True)
-    RESPONSE_OPTION = Column(String(100), nullable=True)
-    BUSINESS_CONTINUITY = Column(String(100), nullable=True)
-    CYBER_SECURITY = Column(String(100), nullable=True)
-
-    APP_ID = Column(String(100), nullable=True)
-    APP_NAME = Column(String(500), nullable=True)
+    INCIDENTS_LAST_12M = Column(Integer, nullable=True)
+    OUTAGES_LAST_12M = Column(Integer, nullable=True)
 
 
 def create_table():
     inspector = inspect(engine)
 
-    if inspector.has_table("IMPORTANT_BUSINESS_SERVICE_DETAILS"):
+    if inspector.has_table("SERVICE_THRESHOLD_DETAILS"):
         print(
-            "IMPORTANT_BUSINESS_SERVICE_DETAILS table already exists. "
+            "SERVICE_THRESHOLD_DETAILS table already exists. "
             "No changes made."
         )
         return
 
     Base.metadata.create_all(
         engine,
-        tables=[ImportantBusinessServiceDetails.__table__]
+        tables=[ServiceThresholdDetails.__table__]
     )
 
     print(
-        "IMPORTANT_BUSINESS_SERVICE_DETAILS table created successfully."
+        "SERVICE_THRESHOLD_DETAILS table created successfully."
     )
 
 
 if __name__ == "__main__":
     create_table()
-
-
-import pandas as pd
-from sqlalchemy import text
-
-from db import engine
-
-
-# ---------------------------------------------------------
-# Configuration
-# ---------------------------------------------------------
-
-EXCEL_FILE = "Data.xlsx"
-SHEET_NAME = "IBS_DETAILS"
-
-TABLE_NAME = "IMPORTANT_BUSINESS_SERVICE_DETAILS"
-
-
-# ---------------------------------------------------------
-# Excel column -> Database column mapping
-# ---------------------------------------------------------
-
-COLUMN_MAPPING = {
-    "Important Business Service": "IMPORTANT_BUSINESS_SERVICE",
-    "Business Service Type": "BUSINESS_SERVICE_TYPE",
-    "Legal Entity": "LEGAL_ENTITY",
-    "Direct/Indirect mapping": "DIRECT_INDIRECT_MAPPING",
-    "Source": "SOURCE",
-    "Process Handoff": "PROCESS_HANDOFF",
-
-    "Aris Importance Marker": "ARIS_IMPORTANCE_MARKER",
-    "Application Importance Marker": "APPLICATION_IMPORTANCE_MARKER",
-    "Overall Importance Status": "OVERALL_IMPORTANCE_STATUS",
-    "Important Asset Justification": "IMPORTANT_ASSET_JUSTIFICATION",
-    "ENGAGEMENT ID": "ENGAGEMENT_ID",
-    "Engagement Name": "ENGAGEMENT_NAME",
-
-    "Engagement Status": "ENGAGEMENT_STATUS",
-    "Engagement Manager": "ENGAGEMENT_MANAGER",
-    "Supplier Name": "SUPPLIER_NAME",
-    "Material Engagement": "MATERIAL_ENGAGEMENT",
-    "Information Communication Technology":
-        "INFORMATION_COMMUNICATION_TECHNOLOGY",
-    "Information Communication Technology Service Provider":
-        "INFORMATION_COMMUNICATION_TECHNOLOGY_SERVICE_PROVIDER",
-
-    "Established RTO?": "ESTABLISHED_RTO",
-    "Response Option": "RESPONSE_OPTION",
-    "Business Continuity": "BUSINESS_CONTINUITY",
-    "Cyber Security": "CYBER_SECURITY",
-    "App ID": "APP_ID",
-    "App Name": "APP_NAME",
-}
-
-
-# ---------------------------------------------------------
-# Helper function
-# ---------------------------------------------------------
-
-def convert_boolean(value):
-    """
-    Convert Excel boolean-style values to Python booleans.
-
-    TRUE / Yes  -> True
-    FALSE / No  -> False
-    '-' / Unassigned / blank -> None
-    """
-
-    if pd.isna(value):
-        return None
-
-    value = str(value).strip().lower()
-
-    if value in ("true", "yes", "y", "1"):
-        return True
-
-    if value in ("false", "no", "n", "0"):
-        return False
-
-    return None
-
-
-# ---------------------------------------------------------
-# Load data
-# ---------------------------------------------------------
-
-def load_data():
-
-    print(f"Reading Excel sheet: {SHEET_NAME}")
-
-    df = pd.read_excel(
-        EXCEL_FILE,
-        sheet_name=SHEET_NAME
-    )
-
-    print(f"Rows read from Excel: {len(df)}")
-
-    # Remove completely empty rows
-    df = df.dropna(how="all")
-
-    # Rename Excel columns to database columns
-    df = df.rename(columns=COLUMN_MAPPING)
-
-    # Convert boolean columns
-    boolean_columns = [
-        "ARIS_IMPORTANCE_MARKER",
-        "APPLICATION_IMPORTANCE_MARKER",
-        "MATERIAL_ENGAGEMENT",
-        "INFORMATION_COMMUNICATION_TECHNOLOGY",
-    ]
-
-    for column in boolean_columns:
-        if column in df.columns:
-            df[column] = df[column].apply(convert_boolean)
-
-    # Convert NaN to None
-    df = df.where(pd.notnull(df), None)
-
-    # Keep only the columns expected by the table
-    database_columns = list(COLUMN_MAPPING.values())
-
-    df = df[
-        [
-            column
-            for column in database_columns
-            if column in df.columns
-        ]
-    ]
-
-    # -----------------------------------------------------
-    # Insert data
-    # -----------------------------------------------------
-
-    records = df.to_dict(orient="records")
-
-    if not records:
-        print("No records found in the Excel sheet.")
-        return
-
-    insert_sql = text("""
-        INSERT INTO IMPORTANT_BUSINESS_SERVICE_DETAILS (
-            IMPORTANT_BUSINESS_SERVICE,
-            BUSINESS_SERVICE_TYPE,
-            LEGAL_ENTITY,
-            DIRECT_INDIRECT_MAPPING,
-            SOURCE,
-            PROCESS_HANDOFF,
-            ARIS_IMPORTANCE_MARKER,
-            APPLICATION_IMPORTANCE_MARKER,
-            OVERALL_IMPORTANCE_STATUS,
-            IMPORTANT_ASSET_JUSTIFICATION,
-            ENGAGEMENT_ID,
-            ENGAGEMENT_NAME,
-            ENGAGEMENT_STATUS,
-            ENGAGEMENT_MANAGER,
-            SUPPLIER_NAME,
-            MATERIAL_ENGAGEMENT,
-            INFORMATION_COMMUNICATION_TECHNOLOGY,
-            INFORMATION_COMMUNICATION_TECHNOLOGY_SERVICE_PROVIDER,
-            ESTABLISHED_RTO,
-            RESPONSE_OPTION,
-            BUSINESS_CONTINUITY,
-            CYBER_SECURITY,
-            APP_ID,
-            APP_NAME
-        )
-        VALUES (
-            :IMPORTANT_BUSINESS_SERVICE,
-            :BUSINESS_SERVICE_TYPE,
-            :LEGAL_ENTITY,
-            :DIRECT_INDIRECT_MAPPING,
-            :SOURCE,
-            :PROCESS_HANDOFF,
-            :ARIS_IMPORTANCE_MARKER,
-            :APPLICATION_IMPORTANCE_MARKER,
-            :OVERALL_IMPORTANCE_STATUS,
-            :IMPORTANT_ASSET_JUSTIFICATION,
-            :ENGAGEMENT_ID,
-            :ENGAGEMENT_NAME,
-            :ENGAGEMENT_STATUS,
-            :ENGAGEMENT_MANAGER,
-            :SUPPLIER_NAME,
-            :MATERIAL_ENGAGEMENT,
-            :INFORMATION_COMMUNICATION_TECHNOLOGY,
-            :INFORMATION_COMMUNICATION_TECHNOLOGY_SERVICE_PROVIDER,
-            :ESTABLISHED_RTO,
-            :RESPONSE_OPTION,
-            :BUSINESS_CONTINUITY,
-            :CYBER_SECURITY,
-            :APP_ID,
-            :APP_NAME
-        )
-    """)
-
-    with engine.begin() as connection:
-        connection.execute(
-            insert_sql,
-            records
-        )
-
-    print(
-        f"{len(records)} records inserted successfully into "
-        f"{TABLE_NAME}."
-    )
-
-
-if __name__ == "__main__":
-    load_data()
 
 
 
@@ -455,3 +226,5 @@ def load_data():
 
 if __name__ == "__main__":
     load_data()
+
+
