@@ -1,27 +1,261 @@
+1. create_bcpu_bcm_details_table.py
+2. load_bcpu_bcm_details.py
+
+
+
+from sqlalchemy import (
+    Column,
+    String,
+    Integer,
+    Text,
+    inspect,
+    Identity,
+)
+from sqlalchemy.orm import declarative_base
+
+from db import engine
+
+Base = declarative_base()
+
+
+class BCPUBCMDetails(Base):
+    __tablename__ = "BCPU_BCM_DETAILS"
+
+    # Technical primary key
+    ID = Column(
+        Integer,
+        Identity(start=1, increment=1),
+        primary_key=True,
+        nullable=False
+    )
+
+    # BCPU details
+    BCPU_ID = Column(String(100), nullable=True)
+    BCPU_NAME = Column(String(500), nullable=True)
+    BCPU_DESCRIPTION_TEXT = Column(Text, nullable=True)
+
+    BCPU_MAXIMUM_DISRUPTION_TIME_DESC = Column(
+        String(200),
+        nullable=True
+    )
+
+    BCPU_CRITICALITY_STATUS_NAME = Column(
+        String(100),
+        nullable=True
+    )
+
+    # BIA details
+    BCPU_BIA_ID = Column(String(100), nullable=True)
+    BCPU_BIA_NAME = Column(String(500), nullable=True)
+    BCPU_BIA_DESC = Column(Text, nullable=True)
+
+    # BCM strategy details
+    BCM_STRATEGY_ID = Column(String(100), nullable=True)
+    BCM_STRATEGY_NAME = Column(String(500), nullable=True)
+    BCM_STRATEGY_DESC = Column(Text, nullable=True)
+
+    BCM_COMMENT_TEXT = Column(Text, nullable=True)
+    BCM_OPERATING_PROCEDURE_DESC = Column(Text, nullable=True)
+
+    # Business application details
+    BCM_BUSINESS_APPLICATION_ID = Column(
+        String(100),
+        nullable=True
+    )
+
+    BCM_BUSINESS_APPLICATION_NAME = Column(
+        String(500),
+        nullable=True
+    )
+
+    BCM_ALTERNATE_BUSINESS_APPLICATION_ID = Column(
+        String(100),
+        nullable=True
+    )
+
+    BCM_ALTERNATE_BUSINESS_APPLICATION_NAME = Column(
+        String(500),
+        nullable=True
+    )
+
+    # BCM lead
+    BCM_LEAD_NAME = Column(String(300), nullable=True)
+
+
+def create_table():
+    inspector = inspect(engine)
+
+    if inspector.has_table("BCPU_BCM_DETAILS"):
+        print(
+            "BCPU_BCM_DETAILS table already exists. "
+            "No changes made."
+        )
+        return
+
+    Base.metadata.create_all(
+        engine,
+        tables=[BCPUBCMDetails.__table__]
+    )
+
+    print(
+        "BCPU_BCM_DETAILS table created successfully."
+    )
+
+
+if __name__ == "__main__":
+    create_table()
+
+
+
+import pandas as pd
 from sqlalchemy import text
 
 from db import engine
 
 
-def alter_table():
-    alter_sql = text("""
-        ALTER TABLE SERVICE_THRESHOLD_DETAILS
-        ADD
-            RPO NUMERIC(18, 2) NULL,
-            AVAILABILITY_TARGET NUMERIC(5, 2) NULL;
+# ---------------------------------------------------------
+# Configuration
+# ---------------------------------------------------------
+
+EXCEL_FILE = "Data Workbook.xlsx"
+SHEET_NAME = "BCIM_BCPU_DETAILS"
+
+TABLE_NAME = "BCPU_BCM_DETAILS"
+
+
+# ---------------------------------------------------------
+# Excel column -> Database column mapping
+# ---------------------------------------------------------
+
+COLUMN_MAPPING = {
+    "BCPU_ID": "BCPU_ID",
+    "BCPU_NAME": "BCPU_NAME",
+    "BCPU_DESCRIPTION_TEXT": "BCPU_DESCRIPTION_TEXT",
+    "BCPU_MAXIMUM_DISRUPTION_TIME_DESC":
+        "BCPU_MAXIMUM_DISRUPTION_TIME_DESC",
+    "BCPU_CRITICALITY_STATUS_NAME":
+        "BCPU_CRITICALITY_STATUS_NAME",
+    "BCPU_BIA_ID": "BCPU_BIA_ID",
+    "BCPU_BIA_NAME": "BCPU_BIA_NAME",
+    "BCPU_BIA_DESC": "BCPU_BIA_DESC",
+    "BCM_STRATEGY_ID": "BCM_STRATEGY_ID",
+    "BCM_STRATEGY_NAME": "BCM_STRATEGY_NAME",
+    "BCM_STRATEGY_DESC": "BCM_STRATEGY_DESC",
+    "BCM_COMMENT_TEXT": "BCM_COMMENT_TEXT",
+    "BCM_OPERATING_PROCEDURE_DESC":
+        "BCM_OPERATING_PROCEDURE_DESC",
+    "BCM_BUSINESS_APPLICATION_ID":
+        "BCM_BUSINESS_APPLICATION_ID",
+    "BCM_BUSINESS_APPLICATION_NAME":
+        "BCM_BUSINESS_APPLICATION_NAME",
+    "BCM_ALTERNATE_BUSINESS_APPLICATION_ID":
+        "BCM_ALTERNATE_BUSINESS_APPLICATION_ID",
+    "BCM_ALTERNATE_BUSINESS_APPLICATION_NAME":
+        "BCM_ALTERNATE_BUSINESS_APPLICATION_NAME",
+    "BCM_LEAD_NAME": "BCM_LEAD_NAME",
+}
+
+
+# ---------------------------------------------------------
+# Load data
+# ---------------------------------------------------------
+
+def load_data():
+
+    print(f"Reading Excel sheet: {SHEET_NAME}")
+
+    df = pd.read_excel(
+        EXCEL_FILE,
+        sheet_name=SHEET_NAME
+    )
+
+    print(f"Rows read from Excel: {len(df)}")
+
+    # Remove completely empty rows
+    df = df.dropna(how="all")
+
+    # Rename Excel columns to database columns
+    df = df.rename(columns=COLUMN_MAPPING)
+
+    # Convert NaN to None
+    df = df.where(pd.notnull(df), None)
+
+    # Keep only columns expected by the database
+    database_columns = list(COLUMN_MAPPING.values())
+
+    df = df[
+        [
+            column
+            for column in database_columns
+            if column in df.columns
+        ]
+    ]
+
+    # Convert dataframe to records
+    records = df.to_dict(orient="records")
+
+    if not records:
+        print("No records found in the Excel sheet.")
+        return
+
+    # -----------------------------------------------------
+    # Insert data
+    # -----------------------------------------------------
+
+    insert_sql = text("""
+        INSERT INTO BCPU_BCM_DETAILS (
+            BCPU_ID,
+            BCPU_NAME,
+            BCPU_DESCRIPTION_TEXT,
+            BCPU_MAXIMUM_DISRUPTION_TIME_DESC,
+            BCPU_CRITICALITY_STATUS_NAME,
+            BCPU_BIA_ID,
+            BCPU_BIA_NAME,
+            BCPU_BIA_DESC,
+            BCM_STRATEGY_ID,
+            BCM_STRATEGY_NAME,
+            BCM_STRATEGY_DESC,
+            BCM_COMMENT_TEXT,
+            BCM_OPERATING_PROCEDURE_DESC,
+            BCM_BUSINESS_APPLICATION_ID,
+            BCM_BUSINESS_APPLICATION_NAME,
+            BCM_ALTERNATE_BUSINESS_APPLICATION_ID,
+            BCM_ALTERNATE_BUSINESS_APPLICATION_NAME,
+            BCM_LEAD_NAME
+        )
+        VALUES (
+            :BCPU_ID,
+            :BCPU_NAME,
+            :BCPU_DESCRIPTION_TEXT,
+            :BCPU_MAXIMUM_DISRUPTION_TIME_DESC,
+            :BCPU_CRITICALITY_STATUS_NAME,
+            :BCPU_BIA_ID,
+            :BCPU_BIA_NAME,
+            :BCPU_BIA_DESC,
+            :BCM_STRATEGY_ID,
+            :BCM_STRATEGY_NAME,
+            :BCM_STRATEGY_DESC,
+            :BCM_COMMENT_TEXT,
+            :BCM_OPERATING_PROCEDURE_DESC,
+            :BCM_BUSINESS_APPLICATION_ID,
+            :BCM_BUSINESS_APPLICATION_NAME,
+            :BCM_ALTERNATE_BUSINESS_APPLICATION_ID,
+            :BCM_ALTERNATE_BUSINESS_APPLICATION_NAME,
+            :BCM_LEAD_NAME
+        )
     """)
 
     with engine.begin() as connection:
-        connection.execute(alter_sql)
+        connection.execute(
+            insert_sql,
+            records
+        )
 
     print(
-        "RPO and AVAILABILITY_TARGET columns added successfully "
-        "to SERVICE_THRESHOLD_DETAILS."
+        f"{len(records)} records inserted successfully into "
+        f"{TABLE_NAME}."
     )
 
 
 if __name__ == "__main__":
-    alter_table()
-
-
-alter_service_thresholds_add_rpo_availability.py
+    load_data()
