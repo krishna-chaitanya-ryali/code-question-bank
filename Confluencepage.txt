@@ -1,1 +1,24 @@
-Completed: Identified and retrieved the required BCM Now attributes, mapped them to the relevant Business Service/BCP context, and structured the source data into the required tables with appropriate data types and null handling. Sample records were validated against the source, and the data is ready for downstream assessment processing.
+alter_contract_details_add_tpro.py
+
+
+from sqlalchemy import text
+
+from db import engine
+
+
+def add_tpro_column():
+    alter_sql = text("""
+        ALTER TABLE CONTRACT_DETAILS
+        ADD TPRO VARCHAR(100) NULL;
+    """)
+
+    with engine.begin() as connection:
+        connection.execute(alter_sql)
+
+    print(
+        "TPRO column added successfully to CONTRACT_DETAILS."
+    )
+
+
+if __name__ == "__main__":
+    add_tpro_column()
