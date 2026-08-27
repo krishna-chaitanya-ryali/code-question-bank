@@ -1,175 +1,46 @@
-recreate_bs4_technology_thresholds.py
+rename_bs4_to_bso_technology_thresholds.py
+
+
 
 from sqlalchemy import text
 
 from db import engine
 
 
-TABLE_NAME = "BS4_TECHNOLOGY_THRESHOLDS"
+OLD_TABLE_NAME = "BSO_TECHNOLOGY_THRESHOLDS"
+NEW_TABLE_NAME = "BS4_TECHNOLOGY_THRESHOLDS"
 
 
-def recreate_table():
+def rename_table():
 
     with engine.begin() as connection:
 
-        # Drop the existing table if it exists
+        # Drop the existing BSO table
         connection.execute(
             text(f"""
-                IF OBJECT_ID('{TABLE_NAME}', 'U') IS NOT NULL
+                IF OBJECT_ID('dbo.{OLD_TABLE_NAME}', 'U') IS NOT NULL
                 BEGIN
-                    DROP TABLE {TABLE_NAME};
+                    DROP TABLE dbo.{OLD_TABLE_NAME};
                 END
             """)
         )
 
-        # Create the new table with all A-T columns
+        # Rename the newly created BS4 table to BSO
         connection.execute(
             text(f"""
-                CREATE TABLE {TABLE_NAME} (
-                    [App ID] VARCHAR(50) NULL,
-                    [App Name] VARCHAR(500) NULL,
-                    [App Status] VARCHAR(100) NULL,
-                    [Direct/Indirect Mapping] VARCHAR(100) NULL,
-                    [Source] VARCHAR(200) NULL,
-                    [Importance Justification] VARCHAR(500) NULL,
-                    [Demise Date] VARCHAR(50) NULL,
-                    [BIA Overall Score] VARCHAR(100) NULL,
-                    [Owner] VARCHAR(255) NULL,
-                    [Tier] VARCHAR(50) NULL,
-                    [Compliance] VARCHAR(100) NULL,
-                    [Status] VARCHAR(100) NULL,
-                    [RTO (hours)] DECIMAL(10,2) NULL,
-                    [RTA] VARCHAR(100) NULL,
-                    [Last Completion] VARCHAR(50) NULL,
-                    [IT DR Testing Due] VARCHAR(50) NULL,
-                    [Scheduled DR Test] VARCHAR(50) NULL,
-                    [Incidents] INT NULL,
-                    [Outages] INT NULL,
-                    [Service Instance] INT NULL
-                );
+                IF OBJECT_ID('dbo.{NEW_TABLE_NAME}', 'U') IS NOT NULL
+                BEGIN
+                    EXEC sp_rename
+                        'dbo.{NEW_TABLE_NAME}',
+                        '{OLD_TABLE_NAME}';
+                END
             """)
         )
 
     print(
-        f"Table '{TABLE_NAME}' dropped and recreated successfully."
+        f"Table '{NEW_TABLE_NAME}' renamed to '{OLD_TABLE_NAME}' successfully."
     )
 
 
 if __name__ == "__main__":
-    recreate_table()
-
-
-load_bs4_technology_thresholds.py
-
-
-import pandas as pd
-
-from db import engine
-
-
-EXCEL_FILE = "Data Workbook.xlsx"
-SHEET_NAME = "YOUR_SHEET_NAME"
-TABLE_NAME = "BS4_TECHNOLOGY_THRESHOLDS"
-
-
-def load_data():
-
-    # Read the complete A-T range
-    df = pd.read_excel(
-        EXCEL_FILE,
-        sheet_name=SHEET_NAME,
-        usecols="A:T"
-    )
-
-    # Rename Excel columns to match SQL table columns
-    df = df.rename(
-        columns={
-            "App ID": "App ID",
-            "App Name": "App Name",
-            "App Status": "App Status",
-            "Direct/Indirect Mapping": "Direct/Indirect Mapping",
-            "Source": "Source",
-            "Importance Justification": "Importance Justification",
-            "Demise Date": "Demise Date",
-            "BIA Overall Score": "BIA Overall Score",
-            "Owner": "Owner",
-            "Tier": "Tier",
-            "Compliance": "Compliance",
-            "Status": "Status",
-            "RTO (hours)": "RTO (hours)",
-            "RTA": "RTA",
-            "Last Completion": "Last Completion",
-            "IT DR Testing Due": "IT DR Testing Due",
-            "Scheduled DR Test": "Scheduled DR Test",
-            "Incidents": "Incidents",
-            "Outages": "Outages",
-            "Service Instance": "Service Instance"
-        }
-    )
-
-    # Convert integer columns
-    for column in [
-        "Incidents",
-        "Outages",
-        "Service Instance"
-    ]:
-        df[column] = pd.to_numeric(
-            df[column],
-            errors="coerce"
-        )
-
-    # Convert RTO to numeric hours.
-    # Excel may provide RTO as a timedelta/time value.
-    def convert_rto(value):
-
-        if pd.isna(value):
-            return None
-
-        if isinstance(value, pd.Timedelta):
-            return value.total_seconds() / 3600
-
-        if hasattr(value, "total_seconds"):
-            return value.total_seconds() / 3600
-
-        try:
-            return float(value)
-        except (ValueError, TypeError):
-            return None
-
-    df["RTO (hours)"] = df["RTO (hours)"].apply(convert_rto)
-
-    # Convert date/time fields to strings so that source values
-    # such as '-' and dates can both be loaded safely.
-    for column in [
-        "Demise Date",
-        "RTA",
-        "Last Completion",
-        "IT DR Testing Due",
-        "Scheduled DR Test"
-    ]:
-        df[column] = df[column].apply(
-            lambda value: None
-            if pd.isna(value)
-            else str(value)
-        )
-
-    # Replace pandas NaN with None
-    df = df.where(pd.notna(df), None)
-
-    # Load into Azure SQL
-    df.to_sql(
-        TABLE_NAME,
-        con=engine,
-        if_exists="append",
-        index=False
-    )
-
-    print(
-        f"{len(df)} records loaded successfully "
-        f"into '{TABLE_NAME}'."
-    )
-
-
-if __name__ == "__main__":
-    load_data()
-
+    rename_table()
