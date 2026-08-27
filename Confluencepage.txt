@@ -1,4 +1,4 @@
-rename_service_threshold_table.py
+create_bs4_technology_thresholds.py
 
 
 from sqlalchemy import text
@@ -6,58 +6,95 @@ from sqlalchemy import text
 from db import engine
 
 
-OLD_TABLE_NAME = "SERVICE_THRESHOLD_DETAILS"
-NEW_TABLE_NAME = "BSO_SERVICE_THRESHOLDS"
+TABLE_NAME = "BS4_TECHNOLOGY_THRESHOLDS"
 
 
-def rename_table():
+def create_table():
+    create_sql = text(f"""
+        IF NOT EXISTS (
+            SELECT 1
+            FROM INFORMATION_SCHEMA.TABLES
+            WHERE TABLE_NAME = '{TABLE_NAME}'
+        )
+        BEGIN
+            CREATE TABLE {TABLE_NAME} (
+                Incidents INT NULL,
+                Outages INT NULL,
+                [Service Instances] INT NULL,
+                RPO INT NULL,
+                Target_availability DECIMAL(5,2) NULL
+            );
+        END
+    """)
+
     with engine.begin() as connection:
+        connection.execute(create_sql)
 
-        # Check whether the old table exists
-        old_table_exists = connection.execute(
-            text("""
-                SELECT 1
-                FROM INFORMATION_SCHEMA.TABLES
-                WHERE TABLE_NAME = :table_name
-            """),
-            {"table_name": OLD_TABLE_NAME},
-        ).first()
-
-        if not old_table_exists:
-            print(f"Table '{OLD_TABLE_NAME}' does not exist.")
-            return
-
-        # Check whether the new table already exists
-        new_table_exists = connection.execute(
-            text("""
-                SELECT 1
-                FROM INFORMATION_SCHEMA.TABLES
-                WHERE TABLE_NAME = :table_name
-            """),
-            {"table_name": NEW_TABLE_NAME},
-        ).first()
-
-        if new_table_exists:
-            print(
-                f"Table '{NEW_TABLE_NAME}' already exists. "
-                "No changes made."
-            )
-            return
-
-        # Rename the existing table
-        connection.execute(
-            text(
-                f"EXEC sp_rename "
-                f"'{OLD_TABLE_NAME}', "
-                f"'{NEW_TABLE_NAME}'"
-            )
-        )
-
-        print(
-            f"Table renamed successfully: "
-            f"{OLD_TABLE_NAME} -> {NEW_TABLE_NAME}"
-        )
+    print(f"Table '{TABLE_NAME}' created successfully or already exists.")
 
 
 if __name__ == "__main__":
-    rename_table()
+    create_table()
+
+
+
+load_bs4_technology_thresholds.py
+
+import pandas as pd
+
+from db import engine
+
+
+EXCEL_FILE = "Data Workbook.xlsx"
+SHEET_NAME = "DBO_Service_Thresholds"
+TABLE_NAME = "BS4_TECHNOLOGY_THRESHOLDS"
+
+
+def load_data():
+
+    required_columns = [
+        "Incidents",
+        "Outages",
+        "Service Instances",
+        "RPO",
+        "Target_availability"
+    ]
+
+    # Read the required columns from Excel
+    df = pd.read_excel(
+        EXCEL_FILE,
+        sheet_name=SHEET_NAME,
+        usecols=required_columns
+    )
+
+    # Convert numeric columns
+    numeric_columns = [
+        "Incidents",
+        "Outages",
+        "Service Instances",
+        "RPO",
+        "Target_availability"
+    ]
+
+    for column in numeric_columns:
+        df[column] = pd.to_numeric(
+            df[column],
+            errors="coerce"
+        )
+
+    # Load data into Azure SQL
+    df.to_sql(
+        TABLE_NAME,
+        con=engine,
+        if_exists="append",
+        index=False
+    )
+
+    print(
+        f"{len(df)} records loaded successfully "
+        f"into '{TABLE_NAME}'."
+    )
+
+
+if __name__ == "__main__":
+    load_data()
