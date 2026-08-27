@@ -1,4 +1,4 @@
-alter_contract_details_add_tpro.py
+rename_service_threshold_table.py
 
 
 from sqlalchemy import text
@@ -6,19 +6,58 @@ from sqlalchemy import text
 from db import engine
 
 
-def add_tpro_column():
-    alter_sql = text("""
-        ALTER TABLE CONTRACT_DETAILS
-        ADD TPRO VARCHAR(100) NULL;
-    """)
+OLD_TABLE_NAME = "SERVICE_THRESHOLD_DETAILS"
+NEW_TABLE_NAME = "BSO_SERVICE_THRESHOLDS"
 
+
+def rename_table():
     with engine.begin() as connection:
-        connection.execute(alter_sql)
 
-    print(
-        "TPRO column added successfully to CONTRACT_DETAILS."
-    )
+        # Check whether the old table exists
+        old_table_exists = connection.execute(
+            text("""
+                SELECT 1
+                FROM INFORMATION_SCHEMA.TABLES
+                WHERE TABLE_NAME = :table_name
+            """),
+            {"table_name": OLD_TABLE_NAME},
+        ).first()
+
+        if not old_table_exists:
+            print(f"Table '{OLD_TABLE_NAME}' does not exist.")
+            return
+
+        # Check whether the new table already exists
+        new_table_exists = connection.execute(
+            text("""
+                SELECT 1
+                FROM INFORMATION_SCHEMA.TABLES
+                WHERE TABLE_NAME = :table_name
+            """),
+            {"table_name": NEW_TABLE_NAME},
+        ).first()
+
+        if new_table_exists:
+            print(
+                f"Table '{NEW_TABLE_NAME}' already exists. "
+                "No changes made."
+            )
+            return
+
+        # Rename the existing table
+        connection.execute(
+            text(
+                f"EXEC sp_rename "
+                f"'{OLD_TABLE_NAME}', "
+                f"'{NEW_TABLE_NAME}'"
+            )
+        )
+
+        print(
+            f"Table renamed successfully: "
+            f"{OLD_TABLE_NAME} -> {NEW_TABLE_NAME}"
+        )
 
 
 if __name__ == "__main__":
-    add_tpro_column()
+    rename_table()
