@@ -1,1 +1,4 @@
 (Create Table for Service Dependency Data) is now completed and the table has been successfully created/validated,
+
+
+Hi Ram, just wanted to give you a heads-up that I’m tentatively planning to take leave for 2 days during the next sprint. I’ll confirm the exact dates once finalized and make sure there’s no impact on the planned activities.
