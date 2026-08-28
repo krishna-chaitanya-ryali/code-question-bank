@@ -1,3 +1,1 @@
-Hi Mannie,
-As requested, we have uploaded the required documents to the SNOW request RITM45592595 for your review, including the Discovery Questionnaire, Controls Attestation, consolidated Data Dictionary, and IT Users Tracker.
-Please let us know if any further clarification or updates are required.
+(Create Table for Service Dependency Data) is now completed and the table has been successfully created/validated,
