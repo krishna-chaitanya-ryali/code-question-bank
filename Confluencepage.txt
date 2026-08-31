@@ -1,14 +1,1 @@
-Currently, creating and standardizing service descriptions requires manual effort and may involve reviewing multiple sources of information. This can result in inconsistent descriptions, repeated effort, and longer turnaround times. The proposed solution will use Generative AI to generate standardized service descriptions from relevant service and application information, helping improve consistency and reduce manual effort.
-5. Purpose
-To explore and validate the use of Generative AI for automatically generating clear, consistent, and standardized service descriptions from provided service or application information. The objective is to reduce manual effort, improve consistency, and evaluate the feasibility of using Group AI Platform models for this use case.
-6. Target End Users
-Technology and application teams involved in creating, maintaining, reviewing, and documenting service or application descriptions.
-7. Does your use case intend to leverage Generative AI?
-Yes
-This is consistent with the use case we're registering.
-8. Clarity ID
-We don't have a Clarity ID from the information you've given me.
-So, following the demo's instruction:
-Select: Not Applicable
-And if a reason/comment is requested:
-No Clarity ID is currently available for this ideation-stage use case.
+Hands-on exploration of the Group AI Platform to understand the end-to-end AI use case journey, including project and use case onboarding, model subscription, model experimentation through the Playground, and API integration. The project will be used for learning, experimentation, and validating the platform capabilities in the ideation environment.
