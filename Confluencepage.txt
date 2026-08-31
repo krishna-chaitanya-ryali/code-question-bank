@@ -1,4 +1,101 @@
-(Create Table for Service Dependency Data) is now completed and the table has been successfully created/validated,
+backup_aclp_document_metadata.py
 
 
-Hi Ram, just wanted to give you a heads-up that I’m tentatively planning to take leave for 2 days during the next sprint. I’ll confirm the exact dates once finalized and make sure there’s no impact on the planned activities.
+from sqlalchemy import text
+
+from db import engine
+
+
+SOURCE_TABLE = "dbo.ACLP_DOCUMENT_METADATA"
+BACKUP_TABLE = "dbo.ACLP_DOCUMENT_METADATA_BACKUP"
+
+
+def backup_table():
+
+    with engine.begin() as connection:
+
+        # Drop backup table if it already exists
+        connection.execute(
+            text(f"""
+                IF OBJECT_ID('{BACKUP_TABLE}', 'U') IS NOT NULL
+                BEGIN
+                    DROP TABLE {BACKUP_TABLE};
+                END
+            """)
+        )
+
+        # Create backup table with existing data
+        connection.execute(
+            text(f"""
+                SELECT *
+                INTO {BACKUP_TABLE}
+                FROM {SOURCE_TABLE};
+            """)
+        )
+
+    print(
+        f"Backup table '{BACKUP_TABLE}' created successfully "
+        f"from '{SOURCE_TABLE}'."
+    )
+
+
+if __name__ == "__main__":
+    backup_table()
+
+
+
+
+update_aclp_document_metadata.py
+
+
+from sqlalchemy import text
+
+from db import engine
+
+
+TABLE_NAME = "dbo.ACLP_DOCUMENT_METADATA"
+
+
+def update_table():
+
+    with engine.begin() as connection:
+
+        # 1. Remove existing records
+        connection.execute(
+            text(f"""
+                TRUNCATE TABLE {TABLE_NAME};
+            """)
+        )
+
+        # 2. Add EXTRACTED_PAYLOAD_JSON column
+        connection.execute(
+            text(f"""
+                ALTER TABLE {TABLE_NAME}
+                ADD EXTRACTED_PAYLOAD_JSON NVARCHAR(MAX) NULL;
+            """)
+        )
+
+        # 3. Add JSON validation constraint
+        connection.execute(
+            text(f"""
+                ALTER TABLE {TABLE_NAME}
+                ADD CONSTRAINT
+                CK_ACLP_DOCUMENT_METADATA_EXTRACTED_PAYLOAD_JSON_ISJSON
+                CHECK (
+                    EXTRACTED_PAYLOAD_JSON IS NULL
+                    OR ISJSON(EXTRACTED_PAYLOAD_JSON) = 1
+                );
+            """)
+        )
+
+    print(
+        f"Table '{TABLE_NAME}' updated successfully. "
+        f"Existing records were truncated and "
+        f"EXTRACTED_PAYLOAD_JSON column was added."
+    )
+
+
+if __name__ == "__main__":
+    update_table()
+
+
