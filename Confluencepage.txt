@@ -1,1 +1,6 @@
-You are a financial operations analyst reviewing a TPCAR Assessment Report. Identify the key gaps, categorize each gap by process area, explain the potential business impact, and recommend a remediation action. Present the output in a clear table with columns: Gap, Process Area, Business Impact, Priority, and Recommended Remediation.
+Hi Mannie,
+We have uploaded the requested documents to the SNOW request RITM45592595, including the Discovery Questionnaire, Controls Attestation, consolidated Data Dictionary and IT Users Tracker.
+We would like to have a short discussion with you to walk through the submitted information and clarify any questions or additional details required from our side.
+Could you please let us know your availability for a short call? We can schedule the meeting accordingly.
+Thanks & Regards,
+Krishna Chaitanya RYALI
