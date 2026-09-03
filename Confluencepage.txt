@@ -1,1 +1,1 @@
-Explain what a TPCAR Assessment Report is in simple business terms. What are the typical sections it contains, and what type of information would an analyst normally review?
+You are a financial operations analyst reviewing a TPCAR Assessment Report. Identify the key gaps, categorize each gap by process area, explain the potential business impact, and recommend a remediation action. Present the output in a clear table with columns: Gap, Process Area, Business Impact, Priority, and Recommended Remediation.
