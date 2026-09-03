@@ -1,3 +1,1 @@
-Group AI Platform – AI Use Case Testing Workshop
-Short content / agenda:
-Hands-on workshop to test AI use cases on the Group AI Platform, including model subscription, playground testing, and next steps for experimentation.
+Explain what a TPCAR Assessment Report is in simple business terms. What are the typical sections it contains, and what type of information would an analyst normally review?
