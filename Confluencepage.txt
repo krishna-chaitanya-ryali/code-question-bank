@@ -1,10 +1,9 @@
-create_scott_details_table.py
-
+create_bso_it_sheets_table.py
 
 from sqlalchemy import text
 from db import engine
 
-TABLE_NAME = "SCOTT_DETAILS"
+TABLE_NAME = "BSO_IT_SHEETS"
 
 
 def create_table():
@@ -12,20 +11,33 @@ def create_table():
     IF OBJECT_ID('{TABLE_NAME}', 'U') IS NULL
     BEGIN
         CREATE TABLE {TABLE_NAME} (
+            IMPORTANT_PROCESS VARCHAR(100) NULL,
+            PROCESS_HANDOFF VARCHAR(100) NULL,
             BUSINESS_APPLICATION_ID VARCHAR(100) NULL,
             BUSINESS_APPLICATION_NAME VARCHAR(500) NULL,
-            BUSINESS_APPLICATION_RESILIENCE_RAG_NAME VARCHAR(100) NULL,
-            BUSINESS_APPLICATION_RESILIENCE_STATUS_NAME VARCHAR(200) NULL,
-            BUSINESS_APPLICATION_DISASTER_RECOVERY_REQUIREMENT_NAME VARCHAR(200) NULL,
-            DISASTER_RECOVERY_TEST_LAST_COMPLETION_DATE DATE NULL,
-            BUSINESS_APPLICATION_RESILIENCE_RAG_NAME_1 VARCHAR(100) NULL,
-            BUSINESS_APPLICATION_RESILIENCE_STATUS_NAME_1 VARCHAR(200) NULL,
-            BUSINESS_APPLICATION_LAST_DR_TEST_REVIEW_DATE DATE NULL,
-            DISASTER_RECOVERY_TEST_LAST_COMPLETION_DATE_1 DATE NULL,
-            DISASTER_RECOVERY_TEST_SCHEDULED_TEST_DATE DATE NULL,
-            DISASTER_RECOVERY_TEST_DUE_DATE DATE NULL,
-            BUSINESS_APPLICATION_RECOVERY_POINT_OBJECTIVE_NAME VARCHAR(200) NULL,
-            BUSINESS_APPLICATION_RECOVERY_TIME_OBJECTIVE_NAME VARCHAR(200) NULL
+            EUC BIT NULL,
+            DOMINO BIT NULL,
+            HAS_HAD_AN_INCIDENT VARCHAR(20) NULL,
+            APP_STATUS VARCHAR(100) NULL,
+            BIA_OVERALL_SCORE VARCHAR(100) NULL,
+            TRMF_RTO DECIMAL(10,4) NULL,
+            TRMF_RPO DECIMAL(10,4) NULL,
+            TRMF_AVAILABILITY_CORE DECIMAL(10,4) NULL,
+            TRMF_AVAILABILITY_ENHANCED DECIMAL(10,4) NULL,
+            TRMF_ADDITIONAL_CAPACITY DECIMAL(10,4) NULL,
+            OWNER VARCHAR(300) NULL,
+            DISASTER_RECOVERY_STATUS VARCHAR(100) NULL,
+            STATUS VARCHAR(100) NULL,
+            RTO INT NULL,
+            RPO VARCHAR(100) NULL,
+            RTA VARCHAR(50) NULL,
+            DC_RTO_MINS INT NULL,
+            DC_RPO_MINS INT NULL,
+            LAST_COMPLETION DATE NULL,
+            TESTING_DUE DATE NULL,
+            SCHEDULED_TEST DATE NULL,
+            ASSOCIATED_IBS INT NULL,
+            LAST_12_MONTH_OUTAGE_COUNT INT NULL
         );
     END
     """
@@ -40,32 +52,45 @@ if __name__ == "__main__":
     create_table()
 
 
-load_scott_details.py
+load_bso_it_sheets.py
 
 import pandas as pd
 from sqlalchemy import text
 from db import engine
 
-TABLE_NAME = "SCOTT_DETAILS"
+TABLE_NAME = "BSO_IT_SHEETS"
 EXCEL_FILE = "Data workbook.xlsx"
-SHEET_NAME = "SCOTT_DETAILS"
+SHEET_NAME = "BSO_IT_SHEETS"
 
 
 SOURCE_TO_TARGET = {
-    "BUSINESS_APPLICATION_ID": "BUSINESS_APPLICATION_ID",
-    "BUSINESS_APPLICATION_NAME": "BUSINESS_APPLICATION_NAME",
-    "BUSINESS_APPLICATION_RESILIENCE_RAG_NAME": "BUSINESS_APPLICATION_RESILIENCE_RAG_NAME",
-    "BUSINESS_APPLICATION_RESILIENCE_STATUS_NAME": "BUSINESS_APPLICATION_RESILIENCE_STATUS_NAME",
-    "BUSINESS_APPLICATION_DISASTER_RECOVERY_REQUIREMENT_NAME": "BUSINESS_APPLICATION_DISASTER_RECOVERY_REQUIREMENT_NAME",
-    "DISASTER_RECOVERY_TEST_LAST_COMPLETION_DATE": "DISASTER_RECOVERY_TEST_LAST_COMPLETION_DATE",
-    "BUSINESS_APPLICATION_RESILIENCE_RAG_NAME_1": "BUSINESS_APPLICATION_RESILIENCE_RAG_NAME_1",
-    "BUSINESS_APPLICATION_RESILIENCE_STATUS_NAME_1": "BUSINESS_APPLICATION_RESILIENCE_STATUS_NAME_1",
-    "BUSINESS_APPLICATION_LAST_DR_TEST_REVIEW_DATE": "BUSINESS_APPLICATION_LAST_DR_TEST_REVIEW_DATE",
-    "DISASTER_RECOVERY_TEST_LAST_COMPLETION_DATE_1": "DISASTER_RECOVERY_TEST_LAST_COMPLETION_DATE_1",
-    "DISASTER_RECOVERY_TEST_SCHEDULED_TEST_DATE": "DISASTER_RECOVERY_TEST_SCHEDULED_TEST_DATE",
-    "DISASTER_RECOVERY_TEST_DUE_DATE": "DISASTER_RECOVERY_TEST_DUE_DATE",
-    "BUSINESS_APPLICATION_RECOVERY_POINT_OBJECTIVE_NAME": "BUSINESS_APPLICATION_RECOVERY_POINT_OBJECTIVE_NAME",
-    "BUSINESS_APPLICATION_RECOVERY_TIME_OBJECTIVE_NAME": "BUSINESS_APPLICATION_RECOVERY_TIME_OBJECTIVE_NAME",
+    "Important Process": "IMPORTANT_PROCESS",
+    "Process Handoff": "PROCESS_HANDOFF",
+    "Business App ID": "BUSINESS_APPLICATION_ID",
+    "Business App Name": "BUSINESS_APPLICATION_NAME",
+    "EUC": "EUC",
+    "Domino": "DOMINO",
+    "Has had an incident?": "HAS_HAD_AN_INCIDENT",
+    "App Status": "APP_STATUS",
+    "BIA Overall Score": "BIA_OVERALL_SCORE",
+    "TRMF RTO": "TRMF_RTO",
+    "TRMF RPO": "TRMF_RPO",
+    "TRMF Availability Core": "TRMF_AVAILABILITY_CORE",
+    "TRMF Availability Enhanced": "TRMF_AVAILABILITY_ENHANCED",
+    "TRMF Additional Capacity": "TRMF_ADDITIONAL_CAPACITY",
+    "Owner": "OWNER",
+    "Disaster Recovery Status": "DISASTER_RECOVERY_STATUS",
+    "Status": "STATUS",
+    "RTO": "RTO",
+    "RPO": "RPO",
+    "RTA": "RTA",
+    "DC RTO (Mins)": "DC_RTO_MINS",
+    "DC RPO (Mins)": "DC_RPO_MINS",
+    "Last Completion": "LAST_COMPLETION",
+    "Testing Due": "TESTING_DUE",
+    "Scheduled Test": "SCHEDULED_TEST",
+    "Associated IBS": "ASSOCIATED_IBS",
+    "Last 12 month outage count": "LAST_12_MONTH_OUTAGE_COUNT",
 }
 
 
@@ -106,19 +131,68 @@ def load_data():
     # Convert blank/whitespace values to NULL
     df = df.replace(r"^\s*$", pd.NA, regex=True)
 
+    # Convert BIT columns
+    bit_columns = [
+        "EUC",
+        "DOMINO",
+    ]
+
+    for column in bit_columns:
+        df[column] = (
+            df[column]
+            .astype("string")
+            .str.strip()
+            .str.upper()
+            .map({
+                "TRUE": 1,
+                "FALSE": 0,
+                "1": 1,
+                "0": 0,
+            })
+        )
+
+    # Convert decimal/numeric columns
+    decimal_columns = [
+        "TRMF_RTO",
+        "TRMF_RPO",
+        "TRMF_AVAILABILITY_CORE",
+        "TRMF_AVAILABILITY_ENHANCED",
+        "TRMF_ADDITIONAL_CAPACITY",
+    ]
+
+    for column in decimal_columns:
+        df[column] = pd.to_numeric(
+            df[column],
+            errors="coerce"
+        )
+
+    # Convert integer columns
+    integer_columns = [
+        "RTO",
+        "DC_RTO_MINS",
+        "DC_RPO_MINS",
+        "ASSOCIATED_IBS",
+        "LAST_12_MONTH_OUTAGE_COUNT",
+    ]
+
+    for column in integer_columns:
+        df[column] = pd.to_numeric(
+            df[column],
+            errors="coerce"
+        )
+
     # Convert date columns
     date_columns = [
-        "DISASTER_RECOVERY_TEST_LAST_COMPLETION_DATE",
-        "BUSINESS_APPLICATION_LAST_DR_TEST_REVIEW_DATE",
-        "DISASTER_RECOVERY_TEST_LAST_COMPLETION_DATE_1",
-        "DISASTER_RECOVERY_TEST_SCHEDULED_TEST_DATE",
-        "DISASTER_RECOVERY_TEST_DUE_DATE",
+        "LAST_COMPLETION",
+        "TESTING_DUE",
+        "SCHEDULED_TEST",
     ]
 
     for column in date_columns:
         df[column] = pd.to_datetime(
             df[column],
-            errors="coerce"
+            errors="coerce",
+            dayfirst=True
         ).dt.date
 
     print(f"Rows read from Excel: {len(df):,}")
@@ -147,3 +221,4 @@ def load_data():
 
 if __name__ == "__main__":
     load_data()
+
