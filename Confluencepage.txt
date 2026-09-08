@@ -1,10 +1,10 @@
-create_cmdb_bus_appl_table.py
+create_scott_details_table.py
+
 
 from sqlalchemy import text
 from db import engine
 
-
-TABLE_NAME = "CMDB_BUS_APPL"
+TABLE_NAME = "SCOTT_DETAILS"
 
 
 def create_table():
@@ -12,12 +12,20 @@ def create_table():
     IF OBJECT_ID('{TABLE_NAME}', 'U') IS NULL
     BEGIN
         CREATE TABLE {TABLE_NAME} (
-            U_APP_INSTANCE_ID VARCHAR(100) NULL,
-            U_EIM_APP_INSTANCE_NAME VARCHAR(500) NULL,
-            INSTALL_TYPE VARCHAR(100) NULL,
-            U_PRIMARY_SERVICE_TYPE VARCHAR(100) NULL,
-            U_SECONDARY_SERVICE_TYPE VARCHAR(100) NULL,
-            BUSINESS_CRITICALITY VARCHAR(100) NULL
+            BUSINESS_APPLICATION_ID VARCHAR(100) NULL,
+            BUSINESS_APPLICATION_NAME VARCHAR(500) NULL,
+            BUSINESS_APPLICATION_RESILIENCE_RAG_NAME VARCHAR(100) NULL,
+            BUSINESS_APPLICATION_RESILIENCE_STATUS_NAME VARCHAR(200) NULL,
+            BUSINESS_APPLICATION_DISASTER_RECOVERY_REQUIREMENT_NAME VARCHAR(200) NULL,
+            DISASTER_RECOVERY_TEST_LAST_COMPLETION_DATE DATE NULL,
+            BUSINESS_APPLICATION_RESILIENCE_RAG_NAME_1 VARCHAR(100) NULL,
+            BUSINESS_APPLICATION_RESILIENCE_STATUS_NAME_1 VARCHAR(200) NULL,
+            BUSINESS_APPLICATION_LAST_DR_TEST_REVIEW_DATE DATE NULL,
+            DISASTER_RECOVERY_TEST_LAST_COMPLETION_DATE_1 DATE NULL,
+            DISASTER_RECOVERY_TEST_SCHEDULED_TEST_DATE DATE NULL,
+            DISASTER_RECOVERY_TEST_DUE_DATE DATE NULL,
+            BUSINESS_APPLICATION_RECOVERY_POINT_OBJECTIVE_NAME VARCHAR(200) NULL,
+            BUSINESS_APPLICATION_RECOVERY_TIME_OBJECTIVE_NAME VARCHAR(200) NULL
         );
     END
     """
@@ -32,31 +40,37 @@ if __name__ == "__main__":
     create_table()
 
 
-
-python create_cmdb_bus_appl_table.py
-
+load_scott_details.py
 
 import pandas as pd
 from sqlalchemy import text
 from db import engine
 
-
-TABLE_NAME = "CMDB_BUS_APPL"
+TABLE_NAME = "SCOTT_DETAILS"
 EXCEL_FILE = "Data workbook.xlsx"
-SHEET_NAME = "CMDB-BUS-APPL"
+SHEET_NAME = "SCOTT_DETAILS"
 
 
 SOURCE_TO_TARGET = {
-    "U_APP_INSTANCE_ID": "U_APP_INSTANCE_ID",
-    "U_EIM_APP_INSTANCE_NAME": "U_EIM_APP_INSTANCE_NAME",
-    "Install_Type": "INSTALL_TYPE",
-    "u_Primary_Service_Type": "U_PRIMARY_SERVICE_TYPE",
-    "u_Secondary_Service_Type": "U_SECONDARY_SERVICE_TYPE",
-    "BUSINESS_CRITICALITY": "BUSINESS_CRITICALITY",
+    "BUSINESS_APPLICATION_ID": "BUSINESS_APPLICATION_ID",
+    "BUSINESS_APPLICATION_NAME": "BUSINESS_APPLICATION_NAME",
+    "BUSINESS_APPLICATION_RESILIENCE_RAG_NAME": "BUSINESS_APPLICATION_RESILIENCE_RAG_NAME",
+    "BUSINESS_APPLICATION_RESILIENCE_STATUS_NAME": "BUSINESS_APPLICATION_RESILIENCE_STATUS_NAME",
+    "BUSINESS_APPLICATION_DISASTER_RECOVERY_REQUIREMENT_NAME": "BUSINESS_APPLICATION_DISASTER_RECOVERY_REQUIREMENT_NAME",
+    "DISASTER_RECOVERY_TEST_LAST_COMPLETION_DATE": "DISASTER_RECOVERY_TEST_LAST_COMPLETION_DATE",
+    "BUSINESS_APPLICATION_RESILIENCE_RAG_NAME_1": "BUSINESS_APPLICATION_RESILIENCE_RAG_NAME_1",
+    "BUSINESS_APPLICATION_RESILIENCE_STATUS_NAME_1": "BUSINESS_APPLICATION_RESILIENCE_STATUS_NAME_1",
+    "BUSINESS_APPLICATION_LAST_DR_TEST_REVIEW_DATE": "BUSINESS_APPLICATION_LAST_DR_TEST_REVIEW_DATE",
+    "DISASTER_RECOVERY_TEST_LAST_COMPLETION_DATE_1": "DISASTER_RECOVERY_TEST_LAST_COMPLETION_DATE_1",
+    "DISASTER_RECOVERY_TEST_SCHEDULED_TEST_DATE": "DISASTER_RECOVERY_TEST_SCHEDULED_TEST_DATE",
+    "DISASTER_RECOVERY_TEST_DUE_DATE": "DISASTER_RECOVERY_TEST_DUE_DATE",
+    "BUSINESS_APPLICATION_RECOVERY_POINT_OBJECTIVE_NAME": "BUSINESS_APPLICATION_RECOVERY_POINT_OBJECTIVE_NAME",
+    "BUSINESS_APPLICATION_RECOVERY_TIME_OBJECTIVE_NAME": "BUSINESS_APPLICATION_RECOVERY_TIME_OBJECTIVE_NAME",
 }
 
 
 def load_data():
+
     print(f"Reading sheet '{SHEET_NAME}' from '{EXCEL_FILE}'...")
 
     df = pd.read_excel(
@@ -72,7 +86,8 @@ def load_data():
     expected_columns = list(SOURCE_TO_TARGET.keys())
 
     missing_columns = [
-        column for column in expected_columns
+        column
+        for column in expected_columns
         if column not in df.columns
     ]
 
@@ -82,7 +97,7 @@ def load_data():
             f"{missing_columns}"
         )
 
-    # Keep only the required columns
+    # Keep only required columns
     df = df[expected_columns]
 
     # Rename source columns to target database columns
@@ -90,6 +105,21 @@ def load_data():
 
     # Convert blank/whitespace values to NULL
     df = df.replace(r"^\s*$", pd.NA, regex=True)
+
+    # Convert date columns
+    date_columns = [
+        "DISASTER_RECOVERY_TEST_LAST_COMPLETION_DATE",
+        "BUSINESS_APPLICATION_LAST_DR_TEST_REVIEW_DATE",
+        "DISASTER_RECOVERY_TEST_LAST_COMPLETION_DATE_1",
+        "DISASTER_RECOVERY_TEST_SCHEDULED_TEST_DATE",
+        "DISASTER_RECOVERY_TEST_DUE_DATE",
+    ]
+
+    for column in date_columns:
+        df[column] = pd.to_datetime(
+            df[column],
+            errors="coerce"
+        ).dt.date
 
     print(f"Rows read from Excel: {len(df):,}")
 
@@ -117,6 +147,3 @@ def load_data():
 
 if __name__ == "__main__":
     load_data()
-
-
-python load_cmdb_bus_appl.py
