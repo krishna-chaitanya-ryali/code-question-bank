@@ -1,1 +1,120 @@
-Hi Piyush, quick update from today’s Naidu call. He wants us to work with Harsh on the WS4/WS5 Group AI use cases and prepare for the POC governance stage. We need to understand the prerequisites/access for the development environment and prepare the use-case business value/savings and ROI, potentially as 1–2 slides for the governance review. Let’s connect with Harsh and take this forward.
+create_cmdb_bus_appl_table.py
+
+from sqlalchemy import text
+from db import engine
+
+
+TABLE_NAME = "CMDB_BUS_APPL"
+
+
+def create_table():
+    ddl = f"""
+    IF OBJECT_ID('{TABLE_NAME}', 'U') IS NULL
+    BEGIN
+        CREATE TABLE {TABLE_NAME} (
+            U_APP_INSTANCE_ID VARCHAR(100) NULL,
+            U_EIM_APP_INSTANCE_NAME VARCHAR(500) NULL,
+            INSTALL_TYPE VARCHAR(100) NULL,
+            U_PRIMARY_SERVICE_TYPE VARCHAR(100) NULL,
+            U_SECONDARY_SERVICE_TYPE VARCHAR(100) NULL,
+            BUSINESS_CRITICALITY VARCHAR(100) NULL
+        );
+    END
+    """
+
+    with engine.begin() as conn:
+        conn.execute(text(ddl))
+
+    print(f"Table {TABLE_NAME} created successfully (or already exists).")
+
+
+if __name__ == "__main__":
+    create_table()
+
+
+
+python create_cmdb_bus_appl_table.py
+
+
+import pandas as pd
+from sqlalchemy import text
+from db import engine
+
+
+TABLE_NAME = "CMDB_BUS_APPL"
+EXCEL_FILE = "Data workbook.xlsx"
+SHEET_NAME = "CMDB-BUS-APPL"
+
+
+SOURCE_TO_TARGET = {
+    "U_APP_INSTANCE_ID": "U_APP_INSTANCE_ID",
+    "U_EIM_APP_INSTANCE_NAME": "U_EIM_APP_INSTANCE_NAME",
+    "Install_Type": "INSTALL_TYPE",
+    "u_Primary_Service_Type": "U_PRIMARY_SERVICE_TYPE",
+    "u_Secondary_Service_Type": "U_SECONDARY_SERVICE_TYPE",
+    "BUSINESS_CRITICALITY": "BUSINESS_CRITICALITY",
+}
+
+
+def load_data():
+    print(f"Reading sheet '{SHEET_NAME}' from '{EXCEL_FILE}'...")
+
+    df = pd.read_excel(
+        EXCEL_FILE,
+        sheet_name=SHEET_NAME,
+        dtype=str
+    )
+
+    # Remove accidental spaces from column headers
+    df.columns = df.columns.str.strip()
+
+    # Validate expected source columns
+    expected_columns = list(SOURCE_TO_TARGET.keys())
+
+    missing_columns = [
+        column for column in expected_columns
+        if column not in df.columns
+    ]
+
+    if missing_columns:
+        raise ValueError(
+            f"Missing expected columns in sheet '{SHEET_NAME}': "
+            f"{missing_columns}"
+        )
+
+    # Keep only the required columns
+    df = df[expected_columns]
+
+    # Rename source columns to target database columns
+    df = df.rename(columns=SOURCE_TO_TARGET)
+
+    # Convert blank/whitespace values to NULL
+    df = df.replace(r"^\s*$", pd.NA, regex=True)
+
+    print(f"Rows read from Excel: {len(df):,}")
+
+    # Clear existing data before reload
+    with engine.begin() as conn:
+        conn.execute(text(f"DELETE FROM {TABLE_NAME}"))
+
+    print(f"Existing data cleared from {TABLE_NAME}.")
+
+    # Load data into Azure SQL
+    df.to_sql(
+        TABLE_NAME,
+        con=engine,
+        if_exists="append",
+        index=False,
+        chunksize=500,
+        method=None
+    )
+
+    print(
+        f"Successfully loaded {len(df):,} rows "
+        f"into {TABLE_NAME}."
+    )
+
+
+if __name__ == "__main__":
+    load_data()
+
