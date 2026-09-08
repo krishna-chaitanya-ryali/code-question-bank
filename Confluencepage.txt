@@ -118,3 +118,5 @@ def load_data():
 if __name__ == "__main__":
     load_data()
 
+
+python load_cmdb_bus_appl.py
