@@ -1,3 +1,1 @@
-I’m currently coordinating the DSS submission from our side. However, I may not be able to view any comments/messages you add in ServiceNow due to limited permissions. If you have any questions or need any changes, could you please ping me here on Teams? I’ll coordinate with the respective team members and get the required details updated.
-
-I’ll also work on getting the necessary ServiceNow permissions from my side. Thanks!:::
+The DSSR-12627268 file contains the required data, while the DSSR-TPRM-GCOO AI SERVICE file appears to be empty. Please feel free to ignore the empty file. If you prefer, I can upload a fresh copy with a clearer/different file name for easy reference.:::
