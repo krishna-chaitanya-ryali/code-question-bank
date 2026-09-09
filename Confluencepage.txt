@@ -1,1 +1,6 @@
-The DSSR-12627268 file contains the required data, while the DSSR-TPRM-GCOO AI SERVICE file appears to be empty. Please feel free to ignore the empty file. If you prefer, I can upload a fresh copy with a clearer/different file name for easy reference.:::
+WS5BCPAI-175 — Data Load from Sources
+Jira comment:
+Completed the data loading activities for the required source datasets. Source data was mapped to the target database tables and loaded using Python-based loaders with the existing SQLAlchemy database setup. Data validation and basic quality checks were performed, including row counts, null/duplicate checks, and validation of key fields where applicable. The current implementation provides the required reference data for downstream use, with future ingestion to be aligned to the actual source systems.
+WS5BCPAI-176 — Table Structure Creations
+Jira comment:
+Completed the creation of the required database table structures based on the agreed source data and target requirements. Table columns, data types, primary key candidates, and relationships were reviewed as part of the database/ERD validation. Where a reliable business key was not available, the key remains under investigation rather than introducing an artificial identifier. The table structures are in place for the current data load and further source-level validation.
