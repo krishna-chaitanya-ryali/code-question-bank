@@ -1,6 +1,141 @@
-WS5BCPAI-175 — Data Load from Sources
-Jira comment:
-Completed the data loading activities for the required source datasets. Source data was mapped to the target database tables and loaded using Python-based loaders with the existing SQLAlchemy database setup. Data validation and basic quality checks were performed, including row counts, null/duplicate checks, and validation of key fields where applicable. The current implementation provides the required reference data for downstream use, with future ingestion to be aligned to the actual source systems.
-WS5BCPAI-176 — Table Structure Creations
-Jira comment:
-Completed the creation of the required database table structures based on the agreed source data and target requirements. Table columns, data types, primary key candidates, and relationships were reviewed as part of the database/ERD validation. Where a reliable business key was not available, the key remains under investigation rather than introducing an artificial identifier. The table structures are in place for the current data load and further source-level validation.
+create_eng_tasks_table.py
+
+from sqlalchemy import text
+from db import engine
+
+TABLE_NAME = "ENG_TASKS"
+
+
+def create_table():
+    ddl = f"""
+    IF OBJECT_ID('{TABLE_NAME}', 'U') IS NULL
+    BEGIN
+        CREATE TABLE {TABLE_NAME} (
+            TASK_ID VARCHAR(100) NULL,
+            ENGAGEMENT_ID VARCHAR(100) NULL,
+            TASK_APPLICABLE_TYPE_NAME VARCHAR(200) NULL,
+            ASSESSMENT_ID VARCHAR(100) NULL,
+            ISSUE_ID VARCHAR(100) NULL,
+            TASK_STATUS_NAME VARCHAR(200) NULL,
+            TASK_SUBSTATUS_NAME VARCHAR(200) NULL,
+            TASK_TYPE_NAME VARCHAR(200) NULL,
+            TASK_SUBTYPE_NAME VARCHAR(200) NULL,
+            TASK_SHORT_DESC VARCHAR(MAX) NULL,
+            TASK_DESC VARCHAR(MAX) NULL,
+            TASK_FREQUENCY_TYPE_NAME VARCHAR(200) NULL,
+            TASK_OUTCOME_NAME VARCHAR(200) NULL,
+            TASK_CLOSURE_CODE_NAME VARCHAR(200) NULL,
+            TASK_NEXT_REVIEW_DT DATETIME2 NULL,
+            TPSR_REPORT_EXPIRY_DT DATETIME2 NULL
+        );
+    END
+    """
+
+    with engine.begin() as conn:
+        conn.execute(text(ddl))
+
+    print(f"Table {TABLE_NAME} created successfully (or already exists).")
+
+
+if __name__ == "__main__":
+    create_table()
+
+
+load_eng_tasks.py
+
+import pandas as pd
+from sqlalchemy import text
+from db import engine
+
+TABLE_NAME = "ENG_TASKS"
+SHEET_NAME = "ENG_TASKS"
+
+EXPECTED_COLUMNS = [
+    "TASK_ID",
+    "ENGAGEMENT_ID",
+    "TASK_APPLICABLE_TYPE_NAME",
+    "ASSESSMENT_ID",
+    "ISSUE_ID",
+    "TASK_STATUS_NAME",
+    "TASK_SUBSTATUS_NAME",
+    "TASK_TYPE_NAME",
+    "TASK_SUBTYPE_NAME",
+    "TASK_SHORT_DESC",
+    "TASK_DESC",
+    "TASK_FREQUENCY_TYPE_NAME",
+    "TASK_OUTCOME_NAME",
+    "TASK_CLOSURE_CODE_NAME",
+    "TASK_NEXT_REVIEW_DT",
+    "TPSR_REPORT_EXPIRY_DT",
+]
+
+
+def load_data():
+    file_path = "Data workbook.xlsx"
+
+    df = pd.read_excel(
+        file_path,
+        sheet_name=SHEET_NAME,
+        dtype=str
+    )
+
+    # Clean source headers
+    df.columns = df.columns.astype(str).str.strip()
+
+    # Validate columns
+    missing_columns = [
+        col for col in EXPECTED_COLUMNS
+        if col not in df.columns
+    ]
+
+    if missing_columns:
+        raise ValueError(
+            f"Missing expected columns in {SHEET_NAME}: "
+            f"{missing_columns}"
+        )
+
+    # Keep only the target columns in the expected order
+    df = df[EXPECTED_COLUMNS].copy()
+
+    # Convert blank strings to NULL
+    df = df.replace(r"^\s*$", None, regex=True)
+
+    # Convert date/time columns
+    date_columns = [
+        "TASK_NEXT_REVIEW_DT",
+        "TPSR_REPORT_EXPIRY_DT",
+    ]
+
+    for col in date_columns:
+        df[col] = pd.to_datetime(
+            df[col],
+            errors="coerce"
+        )
+
+    # Replace pandas NaT/NaN with None
+    df = df.where(pd.notnull(df), None)
+
+    # Clear existing data
+    with engine.begin() as conn:
+        conn.execute(
+            text(f"DELETE FROM {TABLE_NAME}")
+        )
+
+    # Load data
+    df.to_sql(
+        TABLE_NAME,
+        con=engine,
+        if_exists="append",
+        index=False,
+        chunksize=500,
+        method="multi",
+    )
+
+    print(
+        f"Loaded {len(df)} rows into {TABLE_NAME} successfully."
+    )
+
+
+if __name__ == "__main__":
+    load_data()
+
