@@ -1,2 +1,1 @@
-“On the AI governance side, we’re coordinating with Izan on the POC governance submission for WS4 and WS5. We’re working through the required business-value details and following up on the pending inputs needed to progress the submission.
-For the PCA use case, we have created the project in the POC environment, and the individual members can now proceed with their respective model subscription requests. Once the subscriptions and required access are in place, we can continue with the model/API testing.”
+Thanks, Mannie. Nothing specific at the moment. We had an internal discussion and I’ve informed the team that we may share any additional information with you early this week. If you need anything from our side, please let me know and I’ll coordinate accordingly.
