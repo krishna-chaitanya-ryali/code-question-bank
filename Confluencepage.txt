@@ -1,9 +1,1 @@
-I work on data, technology and Generative AI initiatives, with a focus on designing and supporting AI-enabled solutions, data integration and analytics workflows. My responsibilities include understanding business requirements, translating them into technical solutions, working with structured and unstructured data, developing data flows and integrations, and supporting the design, testing, evaluation and deployment of GenAI solutions. I also contribute to solution documentation, governance, monitoring and continuous improvement of AI and data platforms.
-
-
-
-Experience across data engineering, SQL, Python and Generative AI solution development. Skills include Azure services, Azure SQL, Azure OpenAI, Azure AI Search, Retrieval-Augmented Generation (RAG), embeddings, semantic and hybrid search, data ingestion and integration, APIs and microservices, structured and unstructured data processing, data modelling, evaluation and monitoring. Familiar with designing end-to-end AI workflows and integrating data, applications and AI capabilities to solve business problems.
-
-
-
-Interested in Generative AI, data engineering, AI platforms, automation and applying emerging technologies to improve business processes and decision-making. Particularly interested in RAG, AI agents, enterprise AI solutions, data integration, responsible AI and practical adoption of GenAI within large-scale organisations. Keen to collaborate with colleagues across technology and business teams to explore and deliver innovative AI use cases.
+“On the AI governance side, we are progressing. For WS4 and WS5, the main pending item is the POC governance submission and the required business-value details. We are coordinating with Farhan and the respective teams for the inputs. At the moment, I don’t see any major blocker from our side; we just need to follow up on the pending inputs and get the governance submission progressed.”
