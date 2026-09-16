@@ -1,11 +1,6 @@
-Progress Update:
-• Initiated the DSS approval process for using production data in the non-production environment for WS5.
-• Completed the required DSS documentation, including the Discovery Questionnaire, Data Dictionary, IT Users Tracker and Controls Attestation.
-• Consolidated/reviewed the Data Dictionary based on the source tables and source columns feeding WS5, as requested, rather than the target tables created as part of the WS5 implementation.
-• Reviewed the DSS comments/queries and provided the required details and supporting information in SNOW.
-• Updated/uploaded the relevant documents and trackers for DSS review.
-• Source data, non-production environment, access controls, authentication, data retention and data transfer/process details have been documented based on the current WS5 setup.
-• Service account/SPN details and relevant individual team-member access details are being captured in the service-account tracker; PAR/PAM onboarding is currently in progress.
-• Current testing/UAT access is limited to the identified business users, with access controlled through HSBC authentication/AD groups.
-• The requested information is now available in SNOW for DSS review and approval.
-Current Status: Awaiting DSS review/confirmation and any further comments or additional information required to progress the approval.
+Hi All,
+Scheduling a short call to review and clarify the comments received from Mannie on the DSS request RITM45592595.
+We will go through the relevant points in the Data Dictionary, IT Users Tracker and Discovery Questionnaire, particularly those requiring confirmation on environments, user access/approval, masking, data transfer, source system details, and shared account accountability.
+Once confirmed, we will update the documents and submit the revised versions to SNOW.
+Thanks,
+Krishna
