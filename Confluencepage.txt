@@ -1,8 +1,8 @@
-25C
-The service account is used for automated/semi-automated data retrieval from the source systems, with activity logging available for traceability. Once the data is landed in the application, individual users access the data using their own SSO-based authentication, allowing user activities within the application to be traced to the respective individual.
-26A
-User and service-account activities are logged for traceability. Compliance with the standard log file requirements is to be confirmed.
-26B
-A designated team member will perform the user activity log review.
-26C
-At least monthly.
+Hi Mannie,
+Thanks for your comments and clarifications.
+We have updated the Data Dictionary, IT Users Tracker and Discovery Questionnaire based on the comments and the clarifications discussed with the team.
+The revised documents have been uploaded to SNOW for your review.
+Please let us know if any further clarification or updates are required.
+Thanks for your support.
+Regards,
+Krishna
