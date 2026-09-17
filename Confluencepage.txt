@@ -1,6 +1,8 @@
-Hi All,
-Scheduling a short call to review and clarify the comments received from Mannie on the DSS request RITM45592595.
-We will go through the relevant points in the Data Dictionary, IT Users Tracker and Discovery Questionnaire, particularly those requiring confirmation on environments, user access/approval, masking, data transfer, source system details, and shared account accountability.
-Once confirmed, we will update the documents and submit the revised versions to SNOW.
-Thanks,
-Krishna
+25C
+The service account is used for automated/semi-automated data retrieval from the source systems, with activity logging available for traceability. Once the data is landed in the application, individual users access the data using their own SSO-based authentication, allowing user activities within the application to be traced to the respective individual.
+26A
+User and service-account activities are logged for traceability. Compliance with the standard log file requirements is to be confirmed.
+26B
+A designated team member will perform the user activity log review.
+26C
+At least monthly.
