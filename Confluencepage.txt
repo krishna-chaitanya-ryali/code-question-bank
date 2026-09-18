@@ -1,8 +1,2 @@
-Hi Mannie,
-Thanks for your comments and clarifications.
-We have updated the Data Dictionary, IT Users Tracker and Discovery Questionnaire based on the comments and the clarifications discussed with the team.
-The revised documents have been uploaded to SNOW for your review.
-Please let us know if any further clarification or updates are required.
-Thanks for your support.
-Regards,
-Krishna
+“On the Group AI side, we had a detailed discussion with Izan and Siddharth on progressing the WS5 use case from Ideation to POC. We started working through the POC governance request in ServiceNow and provided the required technical and implementation inputs.
+We have also clarified the models, serving platform, implementation approach and the data-related information. A few items, particularly the Data Visa details and some technical/model information, still need confirmation from the respective teams. Izan is coordinating on the remaining inputs and we are also looking at expediting the governance process with Alex.
