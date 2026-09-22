@@ -1,2 +1,7 @@
-“On the Group AI side, we had a detailed discussion with Izan and Siddharth on progressing the WS5 use case from Ideation to POC. We started working through the POC governance request in ServiceNow and provided the required technical and implementation inputs.
-We have also clarified the models, serving platform, implementation approach and the data-related information. A few items, particularly the Data Visa details and some technical/model information, still need confirmation from the respective teams. Izan is coordinating on the remaining inputs and we are also looking at expediting the governance process with Alex.
+Backend application development, troubleshooting and testing activities in the non-production environment.
+
+Application testing, validation and UAT activities in the non-production environment.
+
+Data validation and business testing activities for the application.
+
+Service account used to extract relevant data from source systems for approved non-production testing activities.
