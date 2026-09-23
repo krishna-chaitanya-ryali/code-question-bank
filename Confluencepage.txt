@@ -1,7 +1,1 @@
-Backend application development, troubleshooting and testing activities in the non-production environment.
-
-Application testing, validation and UAT activities in the non-production environment.
-
-Data validation and business testing activities for the application.
-
-Service account used to extract relevant data from source systems for approved non-production testing activities.
+For Column N, should we mention the actual person who approves/grants the non-prod access for the shared account, rather than the account owner?
