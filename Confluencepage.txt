@@ -16,3 +16,8 @@ We understand that the POC governance request for WS5 / use case 8395 has alread
 We would like to have a short discussion to understand what has been submitted so far, the current status of the ServiceNow request, and whether any additional information or actions are required from our side to progress the POC approval.
 We can also align on the next steps for moving the use case into the Group AI POC environment.
 
+
+
+Progress Update:
+Coordinated with Izan and Piyush on the WS5 / UC00008395 POC governance submission. Reviewed the required business, technical, AI model, implementation, and data-related information for the governance request. The POC governance request has been submitted/initiated in ServiceNow, and we are currently validating the submitted details and tracking the status.
+Next steps: Follow up with Izan to confirm the current request status, identify any pending information/clarifications, and progress the POC governance approval. Once approved, we will proceed with the required Group AI POC environment and model testing activities.
