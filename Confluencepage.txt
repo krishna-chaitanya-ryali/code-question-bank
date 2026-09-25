@@ -5,3 +5,15 @@ The remaining point is related to privileged access/TPAM for the lower (non-prod
 Once the required control is implemented/confirmed, we will update the Controls Attestation and request the final DSS approval.
 Manny will be on leave until 6 October and advised us to coordinate with her colleague Torres for any further clarification/review and approval during her absence.
 Current status: Supporting documents completed; Controls Attestation/privileged-access control is the remaining item pending closure before DSS approval.
+
+
+
+
+Meeting title
+Group AI Platform – POC Governance & Use Case Discussion
+Meeting invite description
+Hi Izan,
+As discussed, scheduling a short call to walk through the current Group AI Platform use case status and align on the next steps for the POC governance submission.
+We can cover the use case context, information already completed, pending business/value details, and any inputs required from your side to progress the submission.
+Thanks,
+Krishna
