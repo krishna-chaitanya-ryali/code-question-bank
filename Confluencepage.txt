@@ -7,13 +7,12 @@ Manny will be on leave until 6 October and advised us to coordinate with her col
 Current status: Supporting documents completed; Controls Attestation/privileged-access control is the remaining item pending closure before DSS approval.
 
 
-
-
-Meeting title
-Group AI Platform – POC Governance & Use Case Discussion
-Meeting invite description
+Suggested call context
+Meeting title:
+WS5 – Group AI POC Governance Status & Next Steps
+Message to Izan:
 Hi Izan,
-As discussed, scheduling a short call to walk through the current Group AI Platform use case status and align on the next steps for the POC governance submission.
-We can cover the use case context, information already completed, pending business/value details, and any inputs required from your side to progress the submission.
-Thanks,
-Krishna
+We understand that the POC governance request for WS5 / use case 8395 has already been submitted.
+We would like to have a short discussion to understand what has been submitted so far, the current status of the ServiceNow request, and whether any additional information or actions are required from our side to progress the POC approval.
+We can also align on the next steps for moving the use case into the Group AI POC environment.
+
