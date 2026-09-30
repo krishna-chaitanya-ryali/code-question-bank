@@ -1,23 +1,16 @@
-DSS Request – Progress Update
-The required DSS documents have been completed and updated, including the Data Dictionary, IT Users Tracker, and other supporting documents. The updated documents have been uploaded to the DSS request for review.
-We also reviewed the Controls Attestation with Manny, Ram, DBA/ITSO team and other relevant stakeholders. Most of the control questions have been completed and clarified.
-The remaining point is related to privileged access/TPAM for the lower (non-production) environment, as production data is being used in the lower environment. Manny advised that the appropriate privileged-access control (TPAM or an equivalent control) needs to be implemented/confirmed before the DSS request can be approved. The respective team is currently working on this.
-Once the required control is implemented/confirmed, we will update the Controls Attestation and request the final DSS approval.
-Manny will be on leave until 6 October and advised us to coordinate with her colleague Torres for any further clarification/review and approval during her absence.
-Current status: Supporting documents completed; Controls Attestation/privileged-access control is the remaining item pending closure before DSS approval.
-
-
-Suggested call context
-Meeting title:
-WS5 – Group AI POC Governance Status & Next Steps
-Message to Izan:
-Hi Izan,
-We understand that the POC governance request for WS5 / use case 8395 has already been submitted.
-We would like to have a short discussion to understand what has been submitted so far, the current status of the ServiceNow request, and whether any additional information or actions are required from our side to progress the POC approval.
-We can also align on the next steps for moving the use case into the Group AI POC environment.
-
-
-
-Progress Update:
-Coordinated with Izan and Piyush on the WS5 / UC00008395 POC governance submission. Reviewed the required business, technical, AI model, implementation, and data-related information for the governance request. The POC governance request has been submitted/initiated in ServiceNow, and we are currently validating the submitted details and tracking the status.
-Next steps: Follow up with Izan to confirm the current request status, identify any pending information/clarifications, and progress the POC governance approval. Once approved, we will proceed with the required Group AI POC environment and model testing activities.
+Email draft
+Subject: DSS Request – Documents Completed and Request for Approval
+Hi Torres,
+As discussed in our previous call with Manny, we have now completed the remaining activities for the DSS request.
+The following documents have been updated and uploaded to the ServiceNow request:
+Controls Attestation – updated based on the agreed controls, including the privileged-access/TPAM control and relevant comments.
+IT Users Tracker
+Data Dictionary
+Other required supporting documents
+Additionally, the TPAM/PAR request for the non-production environment has now been created/completed, addressing the privileged-access requirement discussed during the previous review.
+From our side, all the required updates and document submissions have now been completed. Could you please review the DSS request and proceed with the approval when you get a chance?
+Manny had advised us to coordinate with you during her absence for the remaining review and approval.
+We are targeting closure of the DSS request by tomorrow EOD, subject to your review and approval. If any further information or changes are required from our side, please let us know and we will address them immediately.
+Adding Jitesh and the relevant team members for visibility on the current status.
+Thanks,
+Krishna
