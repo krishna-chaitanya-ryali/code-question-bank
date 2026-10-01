@@ -1,16 +1,7 @@
-Email draft
-Subject: DSS Request – Documents Completed and Request for Approval
-Hi Torres,
-As discussed in our previous call with Manny, we have now completed the remaining activities for the DSS request.
-The following documents have been updated and uploaded to the ServiceNow request:
-Controls Attestation – updated based on the agreed controls, including the privileged-access/TPAM control and relevant comments.
-IT Users Tracker
-Data Dictionary
-Other required supporting documents
-Additionally, the TPAM/PAR request for the non-production environment has now been created/completed, addressing the privileged-access requirement discussed during the previous review.
-From our side, all the required updates and document submissions have now been completed. Could you please review the DSS request and proceed with the approval when you get a chance?
-Manny had advised us to coordinate with you during her absence for the remaining review and approval.
-We are targeting closure of the DSS request by tomorrow EOD, subject to your review and approval. If any further information or changes are required from our side, please let us know and we will address them immediately.
-Adding Jitesh and the relevant team members for visibility on the current status.
+Hi Maja / Alexandra,
+Just a quick follow-up on the DSS request below.
+As Manny and Doris are currently on leave, could you please help us with the review and approval of the DSS request in their absence?
+All required documents have been uploaded to ServiceNow, and the TPAM/PAR requirement for the non-production environment has also been completed.
+Please let us know if anything further is required from our side.
 Thanks,
 Krishna
