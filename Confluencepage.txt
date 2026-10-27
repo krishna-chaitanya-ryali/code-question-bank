@@ -1,7 +1,388 @@
-Hi Maja / Alexandra,
-Just a quick follow-up on the DSS request below.
-As Manny and Doris are currently on leave, could you please help us with the review and approval of the DSS request in their absence?
-All required documents have been uploaded to ServiceNow, and the TPAM/PAR requirement for the non-production environment has also been completed.
-Please let us know if anything further is required from our side.
-Thanks,
-Krishna
+# UC0008395 – Group AI Platform Onboarding, POC and Pilot Governance
+
+| Page attribute                     | Details                                                                                                    |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Use Case ID                        | UC0008395                                                                                                  |
+| Use Case name                      | To manage and remediate gaps in TCP&R Assessment Report                                                    |
+| Workstream                         | WS5 – Third-Party Risk Management (TPRM)                                                                   |
+| Business domain                    | Banking and Financial Services – Operational Resilience / Third-Party Risk Management                      |
+| Business owner shown in ServiceNow | Izhan Ahsan                                                                                                |
+| Business sponsor                   | Milly Webb                                                                                                 |
+| Owning business                    | GCIO – Group Functions Technology                                                                          |
+| Serving application                | GCOO AI SERVICE                                                                                            |
+| Information classification         | Restricted                                                                                                 |
+| Current lifecycle position         | POC completed; Pilot governance request submitted and awaiting closure/approval                            |
+| ServiceNow POC request             | RITM46513319                                                                                               |
+| ServiceNow Pilot request           | RITM47013792                                                                                               |
+| Supporting benefits request        | RITM45347997                                                                                               |
+| ServiceNow use case breakdown      | https://hsbcitid.service-now.com/ai_cloud?id=ai_use_case_breakdown&sys_id=3710692493e243586ceef9a52603d6af |
+
+> **Current status:** The POC request is marked *Closed Complete*. The Pilot request is currently marked *Open* in the screenshots reviewed. The newly introduced Pilot feeder form has been completed and the Pilot governance request has been submitted. Pilot approval is still pending confirmation.
+
+---
+
+## 1. Executive Summary
+
+UC0008395 is an AI-enabled use case under WS5 of the Third-Party Risk Management (TPRM) programme. Its objective is to improve the quality, consistency and efficiency of third-party continuity and recoverability assessments by using Generative AI to consolidate information from structured inputs and unstructured artefacts.
+
+The proposed solution is embedded within the existing third-party resilience assessment workflow. It generates a standardized first-draft assessment report and highlights potential gaps for analyst review. Human reviewers remain responsible for validating the AI-generated output, refining risk ratings and completing the final report.
+
+The use case has progressed through Ideation experimentation and POC. The POC governance request has been completed, and the team has submitted the Pilot governance request, including the newly introduced feeder form. The next milestone is to obtain the required Pilot governance approvals, resolve any outstanding review conditions, and confirm that the Pilot request reaches the required approved/closed-complete state.
+
+Production governance will be treated as a separate lifecycle stage and must be completed before Production deployment is considered approved.
+
+## 2. Business Context and Problem Statement
+
+### 2.1 Business problem
+
+Third-party continuity and recoverability assessments require information to be collected and reviewed across multiple systems, documents and reporting sources.
+
+The current process faces the following challenges:
+
+* Information is distributed across different systems and may be disconnected, inconsistent or misaligned.
+* Third-party continuity and recoverability plans may not always be up to date or reliable.
+* Assessment preparation is manual and user-intensive.
+* Inconsistent application of the assessment process can affect the completeness and consistency of reports.
+* Analysts spend time gathering and consolidating information that could be prepared more efficiently.
+
+### 2.2 Proposed AI solution
+
+The proposed solution uses Generative AI to:
+
+1. Consolidate structured inputs and unstructured supporting artefacts.
+2. Process relevant information for third-party resilience assessments.
+3. Generate a standardized first-draft assessment report.
+4. Highlight potential gaps and provide prompts for analyst review.
+5. Support analysts in validating information, refining risk ratings and preparing the final report.
+
+The solution is intended to assist the existing business process rather than remove the need for analyst review and accountability.
+
+### 2.3 Business success criteria
+
+The intended outcomes include:
+
+* Faster and more accurate third-party resilience assessments.
+* Improved consistency and completeness of assessment outputs.
+* Better-informed risk management and decision-making.
+* Greater confidence in the bank's ability to limit disruption to key services and recover following incidents.
+* Reduced manual effort and resources required to support the assessment process.
+
+**Benefits measurement:** The ServiceNow supporting-benefits record indicates that the design work is ongoing and the benefit metrics are to be updated. Quantified productivity gains, time savings and realized financial benefits should not be reported until they have been validated.
+
+## 3. Programme Alignment
+
+The use case supports the TPRM programme, which aims to address the bank's out-of-risk-tolerance position by March 2027.
+
+WS5 is one of the programme's core workstreams and focuses on improving the active risk management of third-party continuity planning and recoverability confidence.
+
+| Attribute                  | Recorded information                               |
+| -------------------------- | -------------------------------------------------- |
+| Programme                  | Third-Party Risk Management (TPRM)                 |
+| Workstream                 | WS5                                                |
+| Business value category    | Non-Financial – Operational Resilience             |
+| L1 purpose                 | Operations Optimization                            |
+| L2 purpose                 | Process Automation                                 |
+| AI methodology             | Generative AI – Generative Pretrained Transformers |
+| Human oversight            | Yes; major oversight is recorded                   |
+| Serving application        | GCOO AI SERVICE                                    |
+| Business application ID    | 12627268                                           |
+| Service tier               | Tier 2                                             |
+| Information classification | Restricted                                         |
+| BIA rating                 | Moderate                                           |
+
+## 4. Lifecycle Overview
+
+The Group AI Platform lifecycle is managed through separate stages with stage-specific governance requirements.
+
+| Stage             | Purpose                                                                                                | UC0008395 status                                     |
+| ----------------- | ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------- |
+| Ideation          | Explore feasibility, experiment with available models and understand the potential solution            | Initial platform experimentation completed           |
+| POC / Development | Develop and test the solution, validate responses and complete POC governance                          | POC request closed and completed                     |
+| Pilot             | Progress the use case through the required Pilot governance and controls before Pilot-stage activities | Request submitted; approval/closure pending          |
+| Production        | Complete the separate Production governance and operational requirements                               | Not confirmed as submitted or approved for UC0008395 |
+
+A successful POC does not automatically approve Pilot, and Pilot approval does not automatically approve Production.
+
+---
+
+## 5. Ideation Environment – Activities Completed
+
+### 5.1 Platform access and project setup
+
+The team used the Group AI Platform Ideation capability to become familiar with the platform and explore model suitability for the use case.
+
+The hands-on activities included:
+
+* Creating the platform project named **Group AI Platform Hands-On POC**.
+* Adding use case UC0008395 to the project.
+* Selecting Basic Access for initial experimentation.
+* Exploring the available model subscription and Playground functionality.
+* Submitting a subscription request for **QWEN3 LLM version 1 (Chat)** in the CNI location.
+* Receiving approval for that model subscription.
+* Performing an initial Playground test using a TCPAR-related question.
+
+### 5.2 Purpose of the Ideation work
+
+The Ideation work helped the team understand:
+
+* How projects and use cases are associated in the platform.
+* How model subscriptions are requested and approved.
+* How to experiment with an available model using the Playground.
+* How to assess whether the model's responses are relevant to the business problem.
+* The difference between Basic Access/Playground experimentation and API access required for application integration.
+
+### 5.3 Observations and limitations
+
+The initial Playground test demonstrated that the model could produce a response, but the response was not independently validated against the actual assessment report or an authoritative business source.
+
+Therefore, the Playground experiment should be treated as an initial feasibility exercise, not evidence of business accuracy or production readiness.
+
+Basic Access supports Playground experimentation but does not, by itself, provide API invocation capability. API integration requires the appropriate environment, authentication and access arrangements.
+
+**Environment-specific note:** The Ideation experiment used QWEN3 LLM version 1 (Chat), while the POC/Pilot governance records list Azure-hosted models. These refer to different recorded platform activities. The final target model configuration should be confirmed against the actual implementation and the latest governance submission.
+
+## 6. POC / Development – Implementation and Testing
+
+### 6.1 ServiceNow request details
+
+| Attribute                   | Value                                                                |
+| --------------------------- | -------------------------------------------------------------------- |
+| Use Case ID                 | UC0008395                                                            |
+| Environment                 | Proof of Concept                                                     |
+| Request number              | RITM46513319                                                         |
+| Request status              | Closed Complete                                                      |
+| Use case title              | To manage and remediate gaps in TCP&R Assessment Report              |
+| Implementation description  | Extending the PCA to meet the use case                               |
+| Development/design approach | Embed – using an API for AI/ML capability in the production solution |
+| Serving application         | GCOO AI SERVICE                                                      |
+
+### 6.2 Technical approach
+
+The recorded implementation approach is to embed AI/ML capabilities through an API within the existing solution.
+
+The broader technical activities for this use case have included:
+
+* Establishing familiarity with the Group AI Platform and its model access workflow.
+* Exploring model responses and their suitability for the business problem.
+* Working towards backend integration using model invocation APIs.
+* Testing model responses for the relevant use case.
+* Evaluating the integration and environment-specific requirements before moving into Pilot.
+
+The team has reported that the backend code and response testing are working successfully for the tested flow.
+
+The exact POC test evidence, test cases, code repository references, API endpoint details and formal test sign-off should be linked here if available.
+
+### 6.3 POC governance details
+
+The POC request records the following details:
+
+| Attribute                         | Recorded value                                                                     |
+| --------------------------------- | ---------------------------------------------------------------------------------- |
+| Platform                          | HSBC Managed Platform – Azure                                                      |
+| FOSS answer                       | Yes in the POC form                                                                |
+| Models listed                     | Azure GPT-5.1; Azure text-embedding-3-small; Azure text-embedding-ada-002-version2 |
+| Data type                         | Contract Data                                                                      |
+| Data categories                   | Personal Identifiable Data, Non-Customer Third Party Data, HSBC Proprietary Data   |
+| Information classification        | Restricted                                                                         |
+| Human in the loop                 | Yes                                                                                |
+| Oversight level                   | Major                                                                              |
+| Cyber Security ID                 | RITM46706401                                                                       |
+| DataVisa ID                       | DVC042192                                                                          |
+| QMO ID                            | QM-003091                                                                          |
+| FOSS ID                           | Not applicable, according to the submitted details                                 |
+| Recorded GBGF AIRCO approval date | 7 October 2026                                                                     |
+
+The POC request is marked Closed Complete. The team should retain the request record and associated approval evidence as the reference for POC governance.
+
+### 6.4 POC outcome
+
+The POC stage is recorded as completed in ServiceNow.
+
+The reported technical outcome is that the tested backend flow and model responses are working as expected. This confirms progress in technical feasibility and integration, but it should not be represented as proof of completed Pilot or Production approval.
+
+---
+
+## 7. Pilot – Governance Submission and Current Status
+
+### 7.1 ServiceNow request details
+
+| Attribute                                   | Value                         |
+| ------------------------------------------- | ----------------------------- |
+| Use Case ID                                 | UC0008395                     |
+| Environment                                 | Pilot                         |
+| Request number                              | RITM47013792                  |
+| Current status in the reviewed screenshot   | Open                          |
+| Supporting benefits request                 | RITM45347997                  |
+| Target go-live date recorded in the request | 1 November 2026               |
+| Serving application                         | GCOO AI SERVICE               |
+| Platform                                    | HSBC Managed Platform – Azure |
+
+### 7.2 Pilot governance submission
+
+The Pilot governance request has been submitted. The team also completed the newly introduced Pilot feeder form as part of the updated governance process.
+
+The submitted request includes details covering:
+
+* Business problem, proposed AI solution and success criteria.
+* Implementation approach and intended use of AI/ML capability.
+* Business application and serving application.
+* Platform and model details.
+* Data sources, data types, data categories and information classification.
+* Countries using or receiving the service, data-originating countries and hosting jurisdictions.
+* Human-in-the-loop approach and level of oversight.
+* Additional governance references, including Cyber Security, DataVisa and QMO IDs.
+
+### 7.3 Pilot governance details
+
+The Pilot form shows the following information:
+
+| Attribute                  | Recorded value                                                                                                 |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| FOSS answer                | No                                                                                                             |
+| Platform                   | HSBC Managed Platform – Azure                                                                                  |
+| Models listed              | Azure GPT-5.1; Azure text-embedding-3-small; Azure text-embedding-ada-002-version2                             |
+| Data sources               | Risk Management (excluding Financial Crime-related Risk Management); Back Office Operations Support            |
+| Data type                  | Contract Data                                                                                                  |
+| Data category              | HSBC Proprietary Data                                                                                          |
+| Information classification | Restricted                                                                                                     |
+| Development countries      | India and United Kingdom                                                                                       |
+| Human in the loop          | Yes                                                                                                            |
+| Oversight approach         | AI collates information faster, but the reviewer must still consolidate it into the final report and submit it |
+| Cyber Security ID          | RITM46706401                                                                                                   |
+| DataVisa ID                | DVC042192                                                                                                      |
+| QMO ID                     | QM-003091                                                                                                      |
+| FOSS ID                    | Not applicable in the recorded governance details                                                              |
+| Target go-live date        | 1 November 2026                                                                                                |
+
+### 7.4 Current approval position
+
+The Pilot request remains Open in the latest screenshot shared. Although the feeder form has been completed and the request submitted, this does not establish that all required governance tasks have been approved.
+
+The team expects the Pilot approval to be received around the first or second week of November 2026, subject to the governance review. This is an expected timeline, not a confirmed approval date.
+
+Before treating the Pilot stage as approved, the team must confirm:
+
+1. The current status of each core governance task.
+2. Whether each review has an approved, conditional, or not-required outcome.
+3. Whether any conditional decisions have outstanding actions.
+4. Whether the Cyber Security reference is accepted and any warning has been resolved or explained.
+5. Whether the request has reached the required Closed Complete status.
+6. Whether the approval evidence is available in ServiceNow.
+
+### 7.5 Important validation: differences between POC and Pilot
+
+The POC and Pilot forms do not have identical entries in every field. For example, the FOSS answer differs, and the recorded data sources and categories differ.
+
+These differences may be legitimate because the intended scope or implementation may change by stage. They should nevertheless be validated against the actual Pilot implementation and the latest approved governance information. Do not change answers merely to make them match the reference use case or the POC form.
+
+---
+
+## 8. Governance and Control References
+
+The following governance references are visible in the submitted records.
+
+| Governance item       | UC0008395 reference                                                            | Action / interpretation                                                                              |
+| --------------------- | ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- |
+| Cyber Security        | RITM46706401                                                                   | Inspect the linked record and investigate the warning displayed in ServiceNow                        |
+| DataVisa              | DVC042192                                                                      | Confirm the current status and applicability to the Pilot scope                                      |
+| QMO                   | QM-003091                                                                      | Confirm the approval record and whether any follow-up is required                                    |
+| FOSS                  | Not applicable in the recorded details; POC answer was Yes and Pilot answer No | Validate the model licensing/category answer against the actual models and current form requirements |
+| GBGF AIRCO            | Approval date shown as 7 October 2026 in the POC record                        | Confirm the applicable decision and evidence for the Pilot request                                   |
+| MRM / risk assessment | Specific Pilot completion evidence not yet confirmed                           | Check whether a review is required and ensure its outcome is documented                              |
+| Feeder form           | Completed for Pilot submission, according to the team                          | Retain the submitted record and confirm whether any additional action is requested                   |
+
+The applicability and status of each control must be confirmed from the relevant ServiceNow records and governance owners. A reference ID appearing on the form is not, by itself, proof that the underlying review is complete.
+
+## 9. Outstanding Actions and Next Steps
+
+### Priority 1 – Resolve the Pilot request
+
+* Open RITM47013792 and inspect the Core Tasks dashboard.
+* Record each governance task, assignee, status, decision and latest comments.
+* Identify any pending reviews, conditional approval requirements or rejected/returned tasks.
+* Follow up with the relevant owner for each outstanding action.
+
+### Priority 2 – Validate governance references
+
+* Open Cyber Security request RITM46706401 and confirm its current state.
+* Confirm the DataVisa record DVC042192 is valid for the current Pilot scope.
+* Verify QMO reference QM-003091 and its associated approval details.
+* Confirm the feeder form is recorded and no further supporting information is required.
+
+### Priority 3 – Reconcile the submitted implementation details
+
+* Verify the FOSS answer against the models actually being used.
+* Validate the data sources and data categories for Pilot.
+* Confirm the model names, Azure platform, serving application and API implementation details.
+* Verify countries of development, data origin, service usage and hosting jurisdictions.
+* Ensure the human-in-the-loop description reflects the actual operational process.
+
+### Priority 4 – Capture testing and evidence
+
+* Link backend implementation and test evidence.
+* Record the test scenarios and model-response validation approach.
+* Document any known limitations, exception handling and human review controls.
+* Record performance or business-benefit measures only when supported by evidence.
+
+### Priority 5 – Confirm Pilot closure and plan Production separately
+
+* Confirm the required Pilot governance decisions have been recorded.
+* Resolve all applicable conditions.
+* Verify that the Pilot request reaches Closed Complete.
+* Identify the separate Production governance request and its prerequisites when the team is ready to progress.
+
+Do not assume that a successful backend test or a completed POC request is sufficient authorization to invoke the models in the Pilot environment.
+
+---
+
+## 10. Production Readiness – Future Stage
+
+Production governance is a separate stage and has not been confirmed as submitted or approved for UC0008395 in the records reviewed for this page.
+
+Once Pilot governance is complete, the team should identify and follow the applicable Production requirements, including:
+
+* Production-stage AI governance submission and review.
+* Applicable security, data and risk-control approvals.
+* Confirmation of the intended model, environment, authentication and API configuration.
+* Operational monitoring, exception handling and human oversight arrangements.
+* Evidence of functional, performance and security testing where required.
+* Confirmation of the required approval status before Production deployment.
+
+The exact requirements and sequence should be confirmed with the Group AI Platform governance team and the relevant control owners.
+
+## 11. Risks, Assumptions and Open Questions
+
+| Item                                    | Current understanding                                                                                    | Required follow-up                                                     |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Pilot request status                    | Open in the screenshot reviewed                                                                          | Inspect individual governance tasks and latest comments                |
+| Cyber Security warning                  | Warning icon displayed                                                                                   | Confirm the underlying request status and whether action is needed     |
+| FOSS answer differs by stage            | POC Yes; Pilot No                                                                                        | Validate against the actual models and applicable classification       |
+| Data sources/categories differ by stage | POC lists more sources and data categories than Pilot                                                    | Confirm that the Pilot entries accurately represent the intended scope |
+| Benefit metrics                         | Design work ongoing; metrics to be updated                                                               | Obtain validated benefit measures from the business                    |
+| Model configuration                     | Azure models are listed in the POC/Pilot governance records; QWEN3 was used for Ideation experimentation | Confirm the final intended model configuration                         |
+| Production request                      | Not confirmed for UC0008395                                                                              | Confirm after Pilot governance is complete                             |
+| Target go-live                          | 1 November 2026 shown in Pilot form                                                                      | Validate against the actual governance and delivery schedule           |
+
+## 12. Reference Records
+
+| Record             | Purpose                     |
+| ------------------ | --------------------------- |
+| Use case UC0008395 | Main use-case record        |
+| RITM46513319       | POC governance request      |
+| RITM47013792       | Pilot governance request    |
+| RITM45347997       | Supporting benefits request |
+| RITM46706401       | Cyber Security reference    |
+| DVC042192          | DataVisa reference          |
+| QM-003091          | QMO reference               |
+
+ServiceNow use-case record: https://hsbcitid.service-now.com/ai_cloud?id=ai_use_case_breakdown&sys_id=3710692493e243586ceef9a52603d6af
+
+## 13. Summary
+
+UC0008395 has progressed from initial Group AI Platform experimentation through POC completion. The team has submitted the Pilot governance request and completed the newly introduced feeder form. The immediate focus is to establish the exact status of the Pilot governance tasks, resolve any outstanding conditions, validate the supporting governance references and obtain the required approval/closure.
+
+Once Pilot governance is complete, Production should be handled as a separate approval stage. The team should retain the ServiceNow records, governance decisions, technical test evidence and validated business outcomes to provide a clear audit trail and a reusable reference for future Group AI Platform use cases.
+
+---
+
+**Document maintenance note:** Update this page whenever a governance task changes status, a new approval is received, an implementation detail changes, or measurable benefits become available. Ensure that all approval claims and status changes are supported by the relevant ServiceNow records.
