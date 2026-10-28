@@ -1,5 +1,5 @@
-Thanks, Suhas, for the quick response!
+Hi [Name], I've submitted the DSP onboarding request for WS5 (UC0008395), request number: [Request Number].
 
-Understood that separate service accounts are recommended for different use cases. Since our existing service account is already onboarded to DSP and the new use case uses the same EIM ID, could you please confirm whether we can technically reuse the existing service account for this use case as well, with a separate DSP onboarding request if required?
+I understand the usual approval timeline is around 1–2 weeks. As the request was submitted a little later than planned, could you please review it and help expedite the approval, if possible?
 
-We can follow the recommended approach if a separate account is mandatory, but we'd like to understand whether reuse is permitted in this scenario before creating another account.
+Thanks for your support!
