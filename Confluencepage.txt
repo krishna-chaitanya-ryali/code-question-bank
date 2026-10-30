@@ -1,5 +1,6 @@
-Hi [Name], I've submitted the DSP onboarding request for WS5 (UC0008395), request number: [Request Number].
-
-I understand the usual approval timeline is around 1–2 weeks. As the request was submitted a little later than planned, could you please review it and help expedite the approval, if possible?
-
-Thanks for your support!
+Here is the refined, carefully framed message that clearly explains your exact setup across Ideation, POC, and Production, while asking about reusing the existing onboarded service account since both use cases share the same EIM ID:
+"Hi Suhas, quick question regarding DSP onboarding and service account setup for our backend API testing.
+To give a quick context across our environments (Ideation, POC, and Production):
+ * In Ideation, both use cases tested completely fine using our single service account.
+ * In POC, we know separate DSP onboardings are required for each use case. However, since both use cases share the exact same EIM ID, can we reuse the service account that is already onboarded for the first use case to test the second use case in POC? Or do we still need to initiate a new DSP onboarding request specifically to register the second use case ID against that same service account/EIM?
+Just wanted to confirm the expected process before moving forward. Thanks!"
